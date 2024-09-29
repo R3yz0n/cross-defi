@@ -3,11 +3,11 @@ import React, { Fragment } from "react"
 import { OrderType, TradeType } from "../../store/tradeSlice"
 import LimitForm from "./forms/LimitForm"
 
-interface ITradeTabProps {
+interface IDisplaySelectedTradeTab {
    selectedTrade: TradeType
    orderType: OrderType
 }
-const SelectTradeTab: React.FC<ITradeTabProps> = (props) => {
+const DisplaySelectedTradeTab: React.FC<IDisplaySelectedTradeTab> = (props) => {
    return (
       <Fragment>
          {props.selectedTrade === "limit" &&
@@ -16,4 +16,4 @@ const SelectTradeTab: React.FC<ITradeTabProps> = (props) => {
    )
 }
 
-export default SelectTradeTab
+export default DisplaySelectedTradeTab

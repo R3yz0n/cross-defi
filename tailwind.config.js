@@ -8,6 +8,7 @@ export default {
       extend: {
          fontSize: {
             "10px": ["10px", { lineHeight: "14px" }],
+            "11px": ["11px", { lineHeight: "13px" }],
             "13px": ["13px", { lineHeight: "18px" }],
          },
          colors: {
@@ -17,13 +18,14 @@ export default {
                tertiary: "#1E222A", // Tertiary background color
             },
             text: {
-               secondary: "#B0B3B6", // Text color 1
-               primary: "#f5f5f5e7", // Text color 2
+               primary: "#FCFDFFD7",
+               secondary: "#fcfdff75",
             },
 
             red: "#F25575",
             green: "#0DCB81",
-            yellow: "#FDD700",
+            // yellow: "#FDD700",
+            yellow: "#FC8801",
          },
       },
    },

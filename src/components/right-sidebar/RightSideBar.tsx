@@ -1,11 +1,10 @@
 import TokenCard from "./TokenCard"
 
 import { BsSearch } from "react-icons/bs"
-import { useSelector } from "react-redux"
-import { RootState } from "../../store/store"
+
+import { tokens } from "../../utils/tokens"
 
 const RightSideBar = () => {
-   const { tokens } = useSelector((state: RootState) => state.token)
    return (
       <section className="bg-background-secondary w-72 2xl:w-[316px] py-10 px-3 ">
          <div className="relative rounded-md border-text-secondary border ">

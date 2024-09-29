@@ -4,14 +4,16 @@ const notificationService = {
    success: (message: string, position: ToastPosition = "top-center", options?: ToastOptions) => {
       toast.success(message, {
          position,
-         autoClose: 3000,
-         ...options, // Spread any additional options if provided
+         autoClose: 10000,
+         draggable: true,
+         ...options,
       })
    },
    error: (message: string, position: ToastPosition = "top-center", options?: ToastOptions) => {
       toast.error(message, {
          position,
-         autoClose: 5000,
+         autoClose: 3000,
+         draggable: true,
          ...options,
       })
    },
@@ -19,6 +21,7 @@ const notificationService = {
       toast.info(message, {
          position,
          autoClose: 3000,
+         draggable: true,
          ...options,
       })
    },
@@ -26,6 +29,7 @@ const notificationService = {
       toast.warn(message, {
          position,
          autoClose: 3000,
+         draggable: true,
          ...options,
       })
    },
@@ -35,8 +39,7 @@ export default notificationService
 
 // autoClose: 3000,
 // closeOnClick: true,
-// pauseOnHover: true,
-// draggable: true,
+
 // style: {
 //     backgroundColor: '#4CAF50', // Customize background color
 //     color: '#FFFFFF', // Customize text color

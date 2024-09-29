@@ -10,8 +10,14 @@
 html {
    background-color: #000200; /* primary bg color */
    /* padding: 12px; */
-   color: #f5f5f5e7; /* primary  text color */
+   color: #fcfdff75;
+
+
 }
 .b {
    border: 1px solid red;
+}
+
+.tradingview-widget-copyright{
+   display: none;
 }
