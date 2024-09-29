@@ -1,11 +1,9 @@
 // import { Button } from "./wallet/Button";
 import { Route, Routes } from "react-router-dom"
 import Home from "./pages/Home"
-import notificationService from "./helpers/notificationService"
+import TradeModal from "./components/trade/ModalWrapper"
 
 const App: React.FC = () => {
-   let a = "s"
-   // notificationService.success("Welcome to the app!", "top-right")
    return (
       <div className="w-screen h-screen     px-2 py-3">
          <Routes>
