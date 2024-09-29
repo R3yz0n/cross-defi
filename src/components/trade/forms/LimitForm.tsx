@@ -64,7 +64,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                <input
                   type="number"
                   id="atPrice"
-                  className="bg-background-tertiary  border-gray-700 border text-text-secondary text-sm rounded focus:border-yellow   focus:outline-none block w-full p-2.5"
+                  className="bg-background-tertiary  border-gray-700 border text-text-primary text-sm rounded focus:border-yellow   focus:outline-none block w-full p-2.5"
                   placeholder="Enter target buy price"
                   required
                />
@@ -77,7 +77,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                   <input
                      type="number"
                      id="amount"
-                     className="bg-background-tertiary  border-gray-700 border text-text-secondary text-sm rounded focus:border-yellow   focus:outline-none block w-full p-2.5"
+                     className="bg-background-tertiary  border-gray-700 border text-text-primary text-sm rounded focus:border-yellow   focus:outline-none block w-full p-2.5"
                      placeholder="Enter  amount in USDT"
                      required
                   />

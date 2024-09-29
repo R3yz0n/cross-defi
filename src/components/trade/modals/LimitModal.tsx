@@ -17,7 +17,7 @@ const LimitModal: React.FC<ILimitModalProps> = ({ isOpen, onClose, onConfirm, tr
    return (
       <ModalWrapper isOpen={isOpen} onClose={onClose} onConfirm={onConfirm} title="Order Confirmation">
          {/* First Row Icon , token name and order tradeType */}
-         <section className="flex items-center mb-5  justify-between">
+         <section className="flex items-center mb-5  justify-between text-text-primary">
             <aside>
                <h6 className=" font-medium text-xs md:text-sm text-text-secondary">Trigger Token</h6>
                <div className="flex gap-2 items-center font-semibold mt-1">
@@ -32,15 +32,15 @@ const LimitModal: React.FC<ILimitModalProps> = ({ isOpen, onClose, onConfirm, tr
                   <span className="text-sm md:text-base">{tokenToBuy?.symbol}</span>
                </div>
             </aside>
-            <aside className="-mt-5 w-auto">
-               {tradeType === "buy" && <span className="bg-green text-gree bg-opacity-30 rounded  py-1 px-3 text-sm">Buy</span>}
+            <aside className="-mt-5 w-auto text-white">
+               {tradeType === "buy" && <span className="bg-green text-gree bg-opacity-40 rounded  py-1 px-3 text-sm">Buy</span>}
 
                {tradeType === "sell" && <span className="bg-red text-red bg-opacity-30 rounded  py-1 px-3 text-sm">Sell</span>}
             </aside>
          </section>
 
          {/* Second Row Triiger price and amount in USDT*/}
-         <section className="flex items-center  mb-5 justify-between w-2/3">
+         <section className="flex items-center  mb-5 justify-between w-2/3 text-text-primary">
             <aside>
                <h6 className=" font-medium mb-1 text-xs md:text-sm text-text-secondary">Trigger Price</h6>
                <p className="text-xs pl-1 font-semibold">{triggerPrice}</p>
