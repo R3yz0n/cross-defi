@@ -10,6 +10,7 @@ export default {
             "10px": ["10px", { lineHeight: "14px" }],
             "11px": ["11px", { lineHeight: "13px" }],
             "13px": ["13px", { lineHeight: "18px" }],
+            "15px": ["15px", { lineHeight: "18px" }],
          },
          colors: {
             background: {
