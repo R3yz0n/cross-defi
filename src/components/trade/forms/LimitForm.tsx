@@ -1,18 +1,27 @@
 import React, { Fragment, useState } from "react"
 import TokenDropDown from "../TokenDropDown"
 import { ITokenType } from "../../../store/tokenSlice"
-import { RootState } from "../../../store/store"
-import { useSelector } from "react-redux"
+
+import LimitModal from "../modals/LimitModal"
+import { findTokenBySymbol } from "../../../utils/tokens"
 
 interface ILimitFormProps {
    tradeType: string
    maxAmount: number
 }
 const LimitForm: React.FC<ILimitFormProps> = (props) => {
-   const { tokens } = useSelector((state: RootState) => state.token)
-   const [triggerToken, setTriggerToken] = useState<ITokenType | null>(tokens.find((token) => token.symbol === "BTC") || null)
-   const [tokenToBuy, setTokenToBuy] = useState<ITokenType | null>(tokens.find((token) => token.symbol === "ETH") || null)
-   // console.log(triggerToken)
+   const [triggerToken, setTriggerToken] = useState<ITokenType | null>(findTokenBySymbol("BTC"))
+   const [tokenToBuy, setTokenToBuy] = useState<ITokenType | null>(findTokenBySymbol("ETH"))
+   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false)
+
+   const openLimitModal = () => setIsLimitModalOpen(true)
+   const closeLimitModal = () => setIsLimitModalOpen(false)
+
+   const handleConfirmLimit = () => {
+      console.log("Limit confirmed")
+      // Add any additional confirmation logic here
+      closeLimitModal()
+   }
 
    // Callback to handle selecting the token
    const handleTokenToBuyChange = (token: ITokenType) => {
@@ -77,6 +86,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
             {props.tradeType === "buy" ? (
                <button
+                  onClick={openLimitModal}
                   type="submit"
                   className={`bg-green  text-gray-800 font-semibold tracking-wide block active:w-[98%] hover:opacity-80 transition-all duration-200 mx-auto  rounded py-1 w-full`}
                >
@@ -84,6 +94,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                </button>
             ) : (
                <button
+                  onClick={openLimitModal}
                   type="submit"
                   className={`bg-red  text-gray-800 font-semibold tracking-wide block active:w-[98%] hover:opacity-80 transition-all duration-200 mx-auto  rounded py-1 w-full`}
                >
@@ -91,6 +102,17 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                </button>
             )}
          </form>
+
+         <LimitModal
+            isOpen={isLimitModalOpen}
+            onClose={closeLimitModal}
+            onConfirm={handleConfirmLimit}
+            tradeType={props.tradeType}
+            triggerToken={triggerToken}
+            tokenToBuy={tokenToBuy}
+            triggerPrice={40000}
+            amount={1000}
+         />
       </Fragment>
    )
 }
