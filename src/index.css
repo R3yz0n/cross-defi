@@ -11,6 +11,7 @@ html {
    background-color: #000200; /* primary bg color */
    /* padding: 12px; */
    color: #fcfdff75;
+   overflow: auto;
 
 
 }

@@ -7,7 +7,7 @@ const TradingChart: React.FC = () => {
 
    const tokenSymbol: string = selectedTokenInSideBar !== null ? selectedTokenInSideBar?.symbol : "BTC"
    return (
-      <section title="TradingChart.tsx" className="h-5/6">
+      <section title="TradingChart.tsx" className="h-full">
          <AdvancedRealTimeChart
             theme="dark"
             height={500}

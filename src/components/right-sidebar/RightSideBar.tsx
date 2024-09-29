@@ -6,7 +6,7 @@ import { tokens } from "../../utils/tokens"
 
 const RightSideBar = () => {
    return (
-      <section className="bg-background-secondary w-72 2xl:w-[316px] py-10 px-3 ">
+      <section className="bg-background-secondary h-full hidden xl:block   w-72 2xl:w-[316px] py-10 px-3 ">
          <div className="relative rounded-md border-text-secondary border ">
             <input
                type="search"
