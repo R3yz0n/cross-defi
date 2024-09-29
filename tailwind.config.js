@@ -18,13 +18,14 @@ export default {
                tertiary: "#1E222A", // Tertiary background color
             },
             text: {
-               secondary: "#B0B3B6", // Text color 1
-               primary: "#f5f5f5e7", // Text color 2
+               primary: "#FCFDFFD7",
+               secondary: "#fcfdff75",
             },
 
             red: "#F25575",
             green: "#0DCB81",
-            yellow: "#FDD700",
+            // yellow: "#FDD700",
+            yellow: "#FC8801",
          },
       },
    },
