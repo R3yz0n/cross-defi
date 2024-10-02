@@ -12,64 +12,68 @@ interface IOpenOrder {
 
 const OpenOrders: React.FC = () => {
    return (
-      <section title="sushant" className=" md:px-4 md:pl-6  max-w-full overflow-x-scroll  md:overflow-x-auto   px-1  ">
-         <ul className="overflow-auto w-max md:w-full ">
-            <li>
-               <ol className="flex gap-5  justify-between text-11px  sm:text-xs 2xl:text-sm font-bold mb-4">
-                  <li className="w-1/6">Trigger&nbsp;Token</li>
-                  <li className="w-1/6">Token&nbsp;To&nbsp;buy</li>
-                  <li className="w-1/6">Order&nbsp;Time</li>
-                  <li className="w-1/6">Side</li>
-                  <li className="w-1/6">Avg.&nbsp;Fill</li>
-                  <li className="w-1/6">Order&nbsp;Amount</li>
-                  <li className="w-20">
-                     <button className="text-yellow">Cancel&nbsp;all</button>
-                  </li>
-               </ol>
-            </li>
+      <section className="min-w-full max-w-[98%] overflow-y-scroll px-2 md:w-full md:px-0 md:pl-5">
+         <div className="max-h-64 w-full overflow-y-auto">
+            <table className="min-w-full table-auto text-left">
+               <thead>
+                  <tr className="sticky top-0 z-20 whitespace-nowrap bg-background-primary text-13px font-bold sm:text-sm">
+                     <th className="w-1/6 px-2 py-3">Trigger Token</th>
+                     <th className="w-1/6 px-2 py-3">Token To Buy</th>
+                     <th className="w-1/6 px-2 py-3">Side</th>
+                     <th className="w-1/6 px-2 py-3">Avg. Fill</th>
+                     <th className="w-1/6 px-2 py-3">Order Amount</th>
+                     <th className="w-[5%] px-2 py-3">
+                        <button className="text-yellow hover:text-red">Cancel all</button>
+                     </th>
+                  </tr>
+               </thead>
+               <tbody className="overflow-y-auto">
+                  {openOrders.map((openOrder, index) => (
+                     <tr key={index} className="whitespace-nowrap text-xs text-text-primary sm:text-sm 2xl:text-15px">
+                        {/* Trigger Token with icon */}
+                        <td className="px-2 py-3">
+                           <div className="flex items-center gap-2">
+                              <img
+                                 className="h-5 w-5 sm:h-6 sm:w-6"
+                                 src={findTokenBySymbol(openOrder?.triggerToken)?.logo_url}
+                                 alt={openOrder.triggerToken}
+                              />
+                              {openOrder?.triggerToken}
+                           </div>
+                        </td>
 
-            {/* Mapped list of orders */}
-            {openOrders.map((openOrder, index) => (
-               <li key={index} className="">
-                  <ol className="flex justify-between   text-xs sm:text-13px  2xl:text-15px  text-text-primary mb-2 mt-6">
-                     {/* Trigger Token with icon */}
-                     <li className="w-1/6 flex items-center gap-2">
-                        <img
-                           className="h-4 w-4 sm:w-6 sm:h-6"
-                           src={findTokenBySymbol(openOrder?.triggerToken)?.logo_url}
-                           alt={openOrder.triggerToken}
-                        />
-                        {openOrder?.triggerToken}
-                     </li>
+                        {/* Token to Buy with icon */}
+                        <td className="px-2 py-3">
+                           <div className="flex items-center gap-2">
+                              <img
+                                 className="h-5 w-5 sm:h-6 sm:w-6"
+                                 src={findTokenBySymbol(openOrder?.tokenToBuy)?.logo_url}
+                                 alt={openOrder.tokenToBuy}
+                              />
+                              {openOrder?.tokenToBuy}
+                           </div>
+                        </td>
 
-                     {/* Token to Buy with icon */}
-                     <li className="w-1/6 flex items-center gap-2">
-                        <img className="h-4 w-4 sm:w-6 sm:h-6" src={findTokenBySymbol(openOrder?.tokenToBuy)?.logo_url} alt={openOrder.tokenToBuy} />
-                        {openOrder?.tokenToBuy}
-                     </li>
+                        {/* Side */}
+                        <td className="px-2 py-3">
+                           {openOrder?.side === "Buy" ? <span className="text-green">Buy</span> : <span className="text-red">Sell</span>}
+                        </td>
 
-                     {/* Order Time */}
-                     <li className="w-1/6">{openOrder?.orderTime}</li>
+                        {/* Avg. Fill */}
+                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">$ {openOrder?.avgFill}</td>
 
-                     {/* Side */}
-                     <li className="w-1/6">
-                        {openOrder?.side === "Buy" ? <span className="text-green">Buy</span> : <span className="text-red">Sell</span>}
-                     </li>
+                        {/* Order Amount */}
+                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">{openOrder?.orderAmount} USDT</td>
 
-                     {/* Avg. Fill */}
-                     <li className="w-1/6">$ {openOrder?.avgFill}</li>
-
-                     {/* Order Amount */}
-                     <li className="w-1/6">{openOrder?.orderAmount} USDT</li>
-
-                     {/* Cancel button */}
-                     <li className="w-20">
-                        <button className="text-red-500 bg-background-tertiary shadow-md px-3 py-0.5 rounded">Cancel</button>
-                     </li>
-                  </ol>
-               </li>
-            ))}
-         </ul>
+                        {/* Cancel button */}
+                        <td className="px-2 py-3">
+                           <button className="text-red-500 rounded bg-background-secondary px-3 py-0.5 shadow-md hover:bg-red">Cancel</button>
+                        </td>
+                     </tr>
+                  ))}
+               </tbody>
+            </table>
+         </div>
       </section>
    )
 }
@@ -101,4 +105,37 @@ const openOrders: IOpenOrder[] = [
       avgFill: "150.00",
       orderAmount: 12,
    },
+   {
+      triggerToken: "SOL",
+      tokenToBuy: "ADA",
+      orderTime: "2:15 PM",
+      side: "Buy",
+      avgFill: "150.00",
+      orderAmount: 12,
+   },
+   {
+      triggerToken: "SOL",
+      tokenToBuy: "ADA",
+      orderTime: "2:15 PM",
+      side: "Buy",
+      avgFill: "150.00",
+      orderAmount: 12,
+   },
+   {
+      triggerToken: "SOL",
+      tokenToBuy: "ADA",
+      orderTime: "2:15 PM",
+      side: "Buy",
+      avgFill: "150.00",
+      orderAmount: 12,
+   },
+   {
+      triggerToken: "SOL",
+      tokenToBuy: "ADA",
+      orderTime: "2:15 PM",
+      side: "Buy",
+      avgFill: "150.00",
+      orderAmount: 12,
+   },
 ]
+// TO DO equity not available  / available

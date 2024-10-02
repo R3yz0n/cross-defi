@@ -6,7 +6,7 @@ const Order: React.FC = () => {
    const [selectedTab, setSelectedTab] = useState("openOrders")
 
    return (
-      <section title="Order.tsx" className="bg-background-secondary mt-2   pb-3  shadow-md">
+      <section title="Order.tsx" className="h-[330px] px-0.5">
          {/* Order Type Tab Selector (open orders order history , assests)*/}
          <OrderTabs selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
          {/* Display Lists Based on Selected Tab like (open orders order history , assests) */}
