@@ -8,9 +8,7 @@
    box-sizing: border-box;
 }
 html {
-   /* primary */
-   /* background-color: #000200;  */
-   /* padding: 12px; */
+
    color: #fcfdff75;
    scrollbar-width: thin;
    scrollbar-color: #6a748775 #000200;
@@ -27,8 +25,3 @@ html {
    display: none;
 }
 
-
-.custom-scrollbar{
-   scrollbar-color: #6a748775 #000200;
-   scrollbar-width: thin;
-}
