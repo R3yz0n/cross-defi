@@ -14,9 +14,8 @@ export default {
          },
          colors: {
             background: {
-               primary: "#000200", // Primary background color new
-               secondary: "#101217", // Secondary background color
-               tertiary: "#1E222A", // Tertiary background color
+               primary: "#101217",
+               secondary: "#1E222A",
             },
             text: {
                primary: "#FCFDFFD7",
@@ -30,5 +29,5 @@ export default {
          },
       },
    },
-   plugins: [],
+   plugins: [require("tailwind-scrollbar")],
 }
