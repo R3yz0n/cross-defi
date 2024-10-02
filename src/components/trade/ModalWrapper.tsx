@@ -15,24 +15,24 @@ const ModalWrapper: React.FC<IModalWrapperProps> = ({ isOpen, onClose, onConfirm
 
    return ReactDOM.createPortal(
       <section className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-         <div className="bg-background-tertiary   rounded-lg shadow-lg p-6  md:p-7 lg:p-8 relative w-[95%] sm:w-[424px] md:w-[600px]">
-            <h2 className="text-lg md:text-xl font-medium text-text-primary"> {title}</h2>
-            <button className="absolute top-1 right-3 text-text-primary text-3xl hover:text-red" onClick={onClose}>
+         <div className="relative w-[95%] rounded-lg bg-background-secondary p-6 shadow-lg sm:w-[424px] md:w-[600px] md:p-7 lg:p-8">
+            <h2 className="text-lg font-medium text-text-primary md:text-xl"> {title}</h2>
+            <button className="absolute right-3 top-1 text-3xl text-text-primary hover:text-red" onClick={onClose}>
                &times;
             </button>
 
-            <aside className="mt-4  md:w-4/5">{children}</aside>
+            <aside className="mt-4 md:w-4/5">{children}</aside>
 
-            <aside className="mt-6 flex justify-end text-sm space-x-4 font-semibold">
+            <aside className="mt-6 flex justify-end space-x-4 text-sm font-semibold">
                <button
-                  className="px-3 md:px-4 py-1 md:py-1.5 text-text-primary border-yellow border rounded hover:bg-yellow hover:bg-opacity-10  "
+                  className="rounded border border-yellow px-3 py-1 text-text-primary hover:bg-yellow hover:bg-opacity-10 md:px-4 md:py-1.5"
                   onClick={onClose}
                >
                   Cancel
                </button>
                {showConfirmButton && (
                   <button
-                     className="px-3 text-sm md:text-base md:px-4 py-1 md:py-1.5 bg-yellow text-gray-900  rounded hover:contrast-75"
+                     className="rounded bg-yellow px-3 py-1 text-sm text-gray-900 hover:contrast-75 md:px-4 md:py-1.5 md:text-base"
                      onClick={onConfirm}
                   >
                      Confirm

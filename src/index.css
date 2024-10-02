@@ -8,10 +8,12 @@
    box-sizing: border-box;
 }
 html {
-   background-color: #000200; /* primary bg color */
+   /* primary */
+   /* background-color: #000200;  */
    /* padding: 12px; */
    color: #fcfdff75;
-   overflow: auto;
+   scrollbar-width: thin;
+   scrollbar-color: #6a748775 #000200;
 
 
 }
@@ -19,6 +21,12 @@ html {
    border: 1px solid red;
 }
 
-.tradingview-widget-copyright{
+.tradingview-widget-copyright {
    display: none;
+}
+
+
+.custom-scrollbar{
+   scrollbar-color: #6a748775 #000200;
+   scrollbar-width: thin;
 }

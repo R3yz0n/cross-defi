@@ -34,11 +34,14 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
    return (
       <Fragment>
-         <form onSubmit={(e) => e.preventDefault()} className="max-w-sm mx-auto px-3 py-5">
+         <form onSubmit={(e) => e.preventDefault()} className="mx-auto px-3 py-5 text-13px">
             <section className="mb-5 flex flex-col gap-3">
                {/* Trigger token */}
 
-               <label title="buy/sell at" className="  flex flex-col w-full  select-none  rounded-md   text-sm  gap-2 font-medium text-text-primary ">
+               <label
+                  title="buy/sell at"
+                  className="flex w-full select-none flex-col gap-2 rounded-md text-xs font-medium text-text-primary sm:text-sm"
+               >
                   Trigger token
                   <TokenDropDown
                      disabledToken={tokenToBuy} // Pass the token to buy as a disabled token
@@ -49,7 +52,10 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
                {/* Token to sell/buy */}
 
-               <label title="buy/sell at" className="  flex flex-col w-full  select-none  rounded-md   text-sm  gap-2 font-medium text-text-primary ">
+               <label
+                  title="buy/sell at"
+                  className="flex w-full select-none flex-col gap-2 rounded-md text-xs font-medium text-text-primary sm:text-sm"
+               >
                   Token to buy
                   <TokenDropDown
                      disabledToken={triggerToken} // Pass the trigger token as a prop
@@ -58,37 +64,35 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                   />
                </label>
 
-               <label htmlFor="triggerPrice" className="block  select-none  text-sm font-medium text-text-primary ">
+               <label htmlFor="triggerPrice" className="block select-none text-xs font-medium text-text-primary sm:text-sm">
                   Trigger Price
                </label>
                <input
                   type="number"
                   id="atPrice"
-                  className="bg-background-tertiary  border-gray-700 border text-text-primary text-sm rounded focus:border-yellow   focus:outline-none block w-full p-2.5"
+                  className="text-text-primarytext-xs block w-full rounded border border-gray-700 bg-background-secondary px-3 py-1.5 focus:border-yellow focus:outline-none sm:p-2.5 sm:text-sm"
                   placeholder="Enter target buy price"
                   required
                />
 
-               <div className="mb-5">
-                  <label htmlFor="amount" className="flex justify-between select-none pr-4  text-sm font-medium text-text-primary ">
-                     Amount
-                     <p className="text-xs font-normal text-yellow">Max : {props.maxAmount} USDT</p>
-                  </label>
-                  <input
-                     type="number"
-                     id="amount"
-                     className="bg-background-tertiary  border-gray-700 border text-text-primary text-sm rounded focus:border-yellow   focus:outline-none block w-full p-2.5"
-                     placeholder="Enter  amount in USDT"
-                     required
-                  />
-               </div>
+               <label htmlFor="amount" className="flex select-none justify-between pr-4 text-xs font-medium text-text-primary sm:text-sm">
+                  Amount
+                  <p className="text-xs font-normal text-yellow">Max : {props.maxAmount} USDT</p>
+               </label>
+               <input
+                  type="number"
+                  id="amount"
+                  className="text-text-primarytext-xs block w-full rounded border border-gray-700 bg-background-secondary px-3 py-1.5 focus:border-yellow focus:outline-none sm:p-2.5 sm:text-sm"
+                  placeholder="Enter  amount in USDT"
+                  required
+               />
             </section>
 
             {props.tradeType === "buy" ? (
                <button
                   onClick={openLimitModal}
                   type="submit"
-                  className={`bg-green  text-gray-800 font-semibold tracking-wide block active:w-[98%] hover:opacity-80 transition-all duration-200 mx-auto  rounded py-1 w-full`}
+                  className={`mx-auto block w-full rounded bg-green py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80 active:w-[98%] md:mt-6 md:py-2`}
                >
                   Buy
                </button>
@@ -96,7 +100,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                <button
                   onClick={openLimitModal}
                   type="submit"
-                  className={`bg-red  text-gray-800 font-semibold tracking-wide block active:w-[98%] hover:opacity-80 transition-all duration-200 mx-auto  rounded py-1 w-full`}
+                  className={`mx-auto block w-full rounded bg-red py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80 active:w-[98%] md:mt-6 md:py-2`}
                >
                   Sell
                </button>

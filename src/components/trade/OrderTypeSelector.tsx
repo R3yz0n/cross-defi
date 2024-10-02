@@ -12,22 +12,20 @@ const OrderTypeSelector: React.FC = () => {
    }
 
    return (
-      <section className="flex justify-around  mb-4">
+      <section className="mb-4 flex justify-around">
          <h2
             onClick={() => handleOrderType("buy")}
-            className={`text-base 2xl:text-lg hover:brightness-125 hover:bg-background-tertiary hover:text-green font-medium py-2
-               w-full text-center cursor-pointer transition-all duration-300 border-b-[3px]  pb-1 ${
-                  orderType === "buy" ? "border-green text-green bg-background-tertiary" : "border-text-secondary"
-               }`}
+            className={`w-full cursor-pointer border-b-[3px] py-2 pb-1 text-center text-sm font-medium transition-all duration-300 hover:bg-background-secondary hover:text-green hover:brightness-125 md:text-base 2xl:text-lg ${
+               orderType === "buy" ? "border-green bg-background-secondary text-green" : "border-text-secondary"
+            }`}
          >
             Buy
          </h2>
          <h2
             onClick={() => handleOrderType("sell")}
-            className={`text-base 2xl:text-lg hover:brightness-125 hover:text-red hover:bg-background-tertiary font-medium py-2 
-               w-full text-center cursor-pointer transition-all duration-300 border-b-[3px]  pb-1 ${
-                  orderType === "sell" ? "border-red text-red bg-background-tertiary" : "border-text-secondary"
-               }`}
+            className={`w-full cursor-pointer border-b-[3px] py-2 pb-1 text-center text-sm font-medium transition-all duration-300 hover:bg-background-secondary hover:text-red hover:brightness-125 md:text-base 2xl:text-lg ${
+               orderType === "sell" ? "border-red bg-background-secondary text-red" : "border-text-secondary"
+            }`}
          >
             Sell
          </h2>

@@ -24,17 +24,17 @@ const TokenDropDown: React.FC<TokenDropDownProps> = ({ selectedToken, onSelectTo
       <section className="relative inline-block w-full">
          {/* Display selected cryptocurrency */}
          <div
-            className="flex select-none px-2.5 py-2 border items-center gap-2 cursor-pointer rounded-md bg-background-tertiary border-gray-700 w-full"
+            className="flex w-full cursor-pointer select-none items-center gap-2 rounded-md border border-gray-700 bg-background-secondary px-2.5 py-1.5 sm:py-2"
             onClick={() => setIsOpen(!isOpen)}
          >
-            <img src={selectedToken?.logo_url} className="w-7 h-7" alt={`${selectedToken?.name} logo`} />
+            <img src={selectedToken?.logo_url} className="h-5 w-5 md:h-7 md:w-7" alt={`${selectedToken?.name} logo`} />
             <div>{selectedToken?.symbol}</div>
             <BsTriangleFill className={`transform transition-transform ${isOpen ? "" : "rotate-180"}`} size={10} />
          </div>
 
          {/* Dropdown options */}
          {isOpen && (
-            <ul onMouseLeave={() => setIsOpen(false)} className="absolute mt-2 w-full bg-background-secondary border border-gray-700 rounded-md z-10">
+            <ul onMouseLeave={() => setIsOpen(false)} className="absolute z-10 mt-2 w-full rounded-md border border-gray-700 bg-background-primary">
                {tokens
                   // .filter((token) => token?.id !== selectedToken?.id)
 
@@ -44,12 +44,12 @@ const TokenDropDown: React.FC<TokenDropDownProps> = ({ selectedToken, onSelectTo
                   .map((token) => (
                      <li
                         key={token.id}
-                        className={`flex px-2 py-2 items-center gap-2 cursor-pointer rounded-md hover:bg-background-secondary ${
-                           selectedToken?.id === token.id ? "bg-yellow-500" : "bg-background-tertiary"
+                        className={`flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 hover:bg-background-primary sm:py-2 ${
+                           selectedToken?.id === token.id ? "bg-yellow-500" : "bg-background-secondary"
                         }`}
                         onClick={() => handleSelectCrypto(token)} // Select the cryptocurrency on click
                      >
-                        <img src={token?.logo_url} className="w-7 h-7" alt={`${token.name} logo`} />
+                        <img src={token?.logo_url} className="h-5 w-5 md:h-7 md:w-7" alt={`${token.name} logo`} />
                         <div>{token?.symbol}</div>
                      </li>
                   ))}

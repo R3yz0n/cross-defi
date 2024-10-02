@@ -7,7 +7,7 @@ interface IOrderTabSelector {
 
 const OrderTabSelector: React.FC<IOrderTabSelector> = ({ selectedTab, setSelectedTab }) => {
    return (
-      <aside className="flex text-15px 2xl:text-base space-x-4 gap-2 border-gray-700 border-b-2 font-medium text-text-secondary">
+      <aside className="flex text-15px 2xl:text-base space-x-4 gap-2 border-gray-700 border-b-2  font-medium text-text-secondary">
          <button
             onClick={() => setSelectedTab("openOrders")}
             className={`p-2 pl-3 relative -mb-0.5 ${selectedTab === "openOrders" ? "border-yellow border-b-2 text-text-primary" : ""}`}
