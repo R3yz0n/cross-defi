@@ -23,7 +23,7 @@ const TokenCard: React.FC<ITokenCardProps> = ({ token, onToggleMenu }) => {
          }}
          className={` ${
             selectedTokenInSideBar?.id === token.id ? "border-b-0 border-l-2 border-yellow bg-background-secondary" : "border-b-[1px] border-gray-700"
-         } md-pl-2 flex cursor-pointer items-center gap-2 rounded-md p-2 pl-4 transition-all duration-300 ease-linear hover:bg-background-secondary md:py-3`}
+         } md-pl-2 flex cursor-pointer items-center gap-2 rounded-md p-2 pl-4 transition-all duration-300 ease-linear hover:bg-background-secondary md:py-2 2xl:py-3`}
       >
          <img src={token.logo_url} className="h-7 w-7 2xl:h-9 2xl:w-9" alt="logo" />
          <aside className="flex w-full gap-3">

@@ -30,9 +30,14 @@ export const tokenSlice = createSlice({
       selectTokenInSideBar: (state, action: PayloadAction<number>) => {
          state.selectedTokenInSideBar = state.tokens.find((token) => token.id === action.payload) || null
       },
+      searchTokenInSideBar: (state, action: PayloadAction<string>) => {
+         const searchTerm = action.payload.toUpperCase() // Make search case-insensitive
+
+         state.tokens = initialState.tokens.filter((token) => token.symbol.includes(searchTerm))
+      },
    },
 })
 
 // Export actions and reducer
-export const { selectTokenInSideBar } = tokenSlice.actions
+export const { selectTokenInSideBar, searchTokenInSideBar } = tokenSlice.actions
 export default tokenSlice.reducer

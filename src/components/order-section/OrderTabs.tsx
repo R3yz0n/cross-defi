@@ -2,27 +2,27 @@ import React from "react"
 
 interface IOrderTabSelector {
    selectedTab: string
-   setSelectedTab: (tab: string) => void
+   onSelectTab: (tab: string) => void
 }
 
-const OrderTabSelector: React.FC<IOrderTabSelector> = ({ selectedTab, setSelectedTab }) => {
+const OrderTabSelector: React.FC<IOrderTabSelector> = ({ selectedTab, onSelectTab }) => {
    return (
-      <aside className="flex text-15px 2xl:text-base space-x-4 gap-2 border-gray-700 border-b-2  font-medium text-text-secondary">
+      <aside className="flex gap-2 space-x-4 border-b-2 border-gray-700 text-15px font-medium text-text-secondary 2xl:text-base">
          <button
-            onClick={() => setSelectedTab("openOrders")}
-            className={`p-2 pl-3 relative -mb-0.5 ${selectedTab === "openOrders" ? "border-yellow border-b-2 text-text-primary" : ""}`}
+            onClick={() => onSelectTab("openOrders")}
+            className={`relative -mb-0.5 p-2 pl-3 ${selectedTab === "openOrders" ? "border-b-2 border-yellow text-text-primary" : ""}`}
          >
             Open Orders
          </button>
          <button
-            onClick={() => setSelectedTab("orderHistory")}
-            className={`p-2 -mb-0.5 ${selectedTab === "orderHistory" ? "border-yellow border-b-2 text-text-primary" : ""}`}
+            onClick={() => onSelectTab("orderHistory")}
+            className={`-mb-0.5 p-2 ${selectedTab === "orderHistory" ? "border-b-2 border-yellow text-text-primary" : ""}`}
          >
             Order History
          </button>
          <button
-            onClick={() => setSelectedTab("assets")}
-            className={`p-2 -mb-0.5 ${selectedTab === "assets" ? "border-yellow text-text-primary border-b-2" : ""}`}
+            onClick={() => onSelectTab("assets")}
+            className={`-mb-0.5 p-2 ${selectedTab === "assets" ? "border-b-2 border-yellow text-text-primary" : ""}`}
          >
             Assets
          </button>

@@ -18,7 +18,7 @@ const Layout: React.FC<ILayoutProps> = (props) => {
                   <TradingChart />
                </div>
 
-               <div className="main col-span-2 min-h-full rounded-md border-t-4 border-t-black pb-4 md:border-t-8 lg:col-span-1 lg:border-l-8 lg:border-t-0 lg:border-l-black xl:row-span-3 xl:pr-2">
+               <div className="main col-span-2 min-h-full rounded-md border-t-4 border-t-black pb-4 md:border-t-8 lg:col-span-1 lg:border-l-8 lg:border-t-0 lg:border-l-black xl:row-span-3">
                   <Trade />
                </div>
 

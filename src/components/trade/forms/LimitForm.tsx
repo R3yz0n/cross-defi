@@ -35,7 +35,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    return (
       <Fragment>
          <form onSubmit={(e) => e.preventDefault()} className="mx-auto px-3 py-5 text-13px">
-            <section className="mb-5 flex flex-col gap-3">
+            <section className="mb-5 flex flex-col gap-4">
                {/* Trigger token */}
 
                <label
@@ -69,8 +69,8 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                </label>
                <input
                   type="number"
-                  id="atPrice"
-                  className="text-text-primarytext-xs block w-full rounded border border-gray-700 bg-background-secondary px-3 py-1.5 focus:border-yellow focus:outline-none sm:p-2.5 sm:text-sm"
+                  id="triggerPrice"
+                  className="text-text-primarytext-xs w-full rounded border border-gray-700 bg-background-secondary p-2 focus:border-yellow focus:text-text-primary focus:outline-none sm:text-sm md:px-2.5 md:py-1.5 2xl:p-2.5"
                   placeholder="Enter target buy price"
                   required
                />
@@ -82,7 +82,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                <input
                   type="number"
                   id="amount"
-                  className="text-text-primarytext-xs block w-full rounded border border-gray-700 bg-background-secondary px-3 py-1.5 focus:border-yellow focus:outline-none sm:p-2.5 sm:text-sm"
+                  className="text-text-primarytext-xs p2 block w-full rounded border border-gray-700 bg-background-secondary p-2 focus:border-yellow focus:text-text-primary focus:outline-none sm:text-sm md:px-2.5 md:py-1.5 2xl:p-2.5"
                   placeholder="Enter  amount in USDT"
                   required
                />
