@@ -21,7 +21,14 @@ html {
    border: 1px solid red;
 }
 
+
+/* remove water mark */
 .tradingview-widget-copyright {
    display: none;
+ 
 }
 
+
+.dropdown{
+   z-index: +99999 !important;
+}

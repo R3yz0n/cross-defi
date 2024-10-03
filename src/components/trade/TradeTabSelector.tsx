@@ -2,6 +2,8 @@ import React from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { RootState, AppDispatch } from "../../store/store"
 import { setTab, TradeType } from "../../store/tradeSlice"
+import { motion } from "framer-motion"
+import { btnClick } from "../../animations"
 
 const TradeTabSelector: React.FC = () => {
    const dispatch = useDispatch<AppDispatch>()
@@ -10,18 +12,17 @@ const TradeTabSelector: React.FC = () => {
    const handleTabClick = (tab: TradeType) => {
       dispatch(setTab(tab))
    }
-
    return (
-      <section className="flex px-2 gap-5 text-text-secondary">
-         <button onClick={() => handleTabClick("market")} className={`${selectedTrade === "market" ? "text-yellow" : ""}`}>
+      <section className="flex gap-5 px-2 text-text-secondary">
+         <motion.button {...btnClick} onClick={() => handleTabClick("market")} className={`${selectedTrade === "market" ? "text-yellow" : ""}`}>
             Market
-         </button>
-         <button onClick={() => handleTabClick("limit")} className={`${selectedTrade === "limit" ? "text-yellow" : ""}`}>
+         </motion.button>
+         <motion.button {...btnClick} onClick={() => handleTabClick("limit")} className={`${selectedTrade === "limit" ? "text-yellow" : ""}`}>
             Limit
-         </button>
-         <button onClick={() => handleTabClick("trigger")} className={`${selectedTrade === "trigger" ? "text-yellow" : ""}`}>
+         </motion.button>
+         <motion.button {...btnClick} onClick={() => handleTabClick("trigger")} className={`${selectedTrade === "trigger" ? "text-yellow" : ""}`}>
             Trigger
-         </button>
+         </motion.button>
       </section>
    )
 }

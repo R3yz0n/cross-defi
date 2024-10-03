@@ -1,5 +1,7 @@
 import React from "react"
 import { findTokenBySymbol } from "../../../utils/tokens"
+import { motion } from "framer-motion"
+import { btnClick } from "../../../animations"
 
 interface IOpenOrder {
    triggerToken: string
@@ -9,7 +11,6 @@ interface IOpenOrder {
    avgFill: number
    orderAmount: number
 }
-
 const OpenOrders: React.FC = () => {
    return (
       <section className="min-w-full max-w-[98%] overflow-y-scroll px-2 md:w-full md:px-0 md:pl-5">
@@ -23,7 +24,9 @@ const OpenOrders: React.FC = () => {
                      <th className="w-1/6 px-2 py-3">Avg. Fill</th>
                      <th className="w-1/6 px-2 py-3">Order Amount</th>
                      <th className="w-[5%] px-2 py-3">
-                        <button className="text-yellow hover:text-red">Cancel all</button>
+                        <motion.button {...btnClick} className="text-yellow hover:text-red">
+                           Cancel all
+                        </motion.button>
                      </th>
                   </tr>
                </thead>
@@ -67,9 +70,12 @@ const OpenOrders: React.FC = () => {
 
                         {/* Cancel button */}
                         <td className="px-2 py-3">
-                           <button className="text-red-500 rounded bg-background-secondary px-3 py-0.5 text-[0.9em] shadow-md hover:bg-red">
+                           <motion.button
+                              {...btnClick}
+                              className="text-red-500 rounded bg-background-secondary px-3 py-0.5 text-[0.9em] shadow-md hover:bg-red"
+                           >
                               Cancel
-                           </button>
+                           </motion.button>
                         </td>
                      </tr>
                   ))}

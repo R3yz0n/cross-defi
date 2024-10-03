@@ -10,6 +10,7 @@ import { BrowserRouter } from "react-router-dom"
 import { Provider } from "react-redux"
 import { store } from "./store/store.ts"
 import { ToastContainer } from "react-toastify"
+import { AnimatePresence } from "framer-motion"
 
 const queryClient = new QueryClient()
 
@@ -18,7 +19,9 @@ createRoot(document.getElementById("root")!).render(
       <WagmiProvider config={config}>
          <QueryClientProvider client={queryClient}>
             <BrowserRouter>
-               <App />
+               <AnimatePresence>
+                  <App />
+               </AnimatePresence>
                <ToastContainer />
             </BrowserRouter>
          </QueryClientProvider>

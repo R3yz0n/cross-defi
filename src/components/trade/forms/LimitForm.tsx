@@ -4,6 +4,8 @@ import { ITokenType } from "../../../store/tokenSlice"
 
 import LimitModal from "../modals/LimitModal"
 import { findTokenBySymbol } from "../../../utils/tokens"
+import { motion } from "framer-motion"
+import { btnClick } from "../../../animations"
 
 interface ILimitFormProps {
    tradeType: string
@@ -87,23 +89,24 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                   required
                />
             </section>
-
             {props.tradeType === "buy" ? (
-               <button
+               <motion.button
+                  {...btnClick}
                   onClick={openLimitModal}
                   type="submit"
-                  className={`mx-auto block w-full rounded bg-green py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80 active:w-[98%] md:mt-6 md:py-2`}
+                  className={`mx-auto block w-full rounded bg-green py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80 md:mt-6 md:py-2`}
                >
                   Buy
-               </button>
+               </motion.button>
             ) : (
-               <button
+               <motion.button
+                  {...btnClick}
                   onClick={openLimitModal}
                   type="submit"
-                  className={`mx-auto block w-full rounded bg-red py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80 active:w-[98%] md:mt-6 md:py-2`}
+                  className={`mx-auto block w-full rounded bg-red py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80 md:mt-6 md:py-2`}
                >
                   Sell
-               </button>
+               </motion.button>
             )}
          </form>
 

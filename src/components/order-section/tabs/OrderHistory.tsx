@@ -1,5 +1,7 @@
 import React from "react"
 import { findTokenBySymbol } from "../../../utils/tokens"
+import { motion } from "framer-motion"
+import { btnClick } from "../../../animations"
 
 interface IOrderHistory {
    triggerToken: string
@@ -78,9 +80,12 @@ const OrderHistory: React.FC = () => {
                         </td>
                         {/* Cancel button */}
                         <td className="px-2 py-3">
-                           <button className="text-red-500 rounded bg-background-secondary px-3 py-0.5 text-[0.9em] shadow-md hover:text-yellow">
+                           <motion.button
+                              {...btnClick}
+                              className="text-red-500 rounded bg-background-secondary px-3 py-0.5 text-[0.9em] shadow-md hover:text-yellow"
+                           >
                               Details
-                           </button>
+                           </motion.button>
                         </td>
                      </tr>
                   ))}

@@ -3,6 +3,8 @@ import { BsTriangleFill } from "react-icons/bs"
 import { useSelector } from "react-redux"
 import { RootState } from "../../store/store"
 import { ITokenType } from "../../store/tokenSlice"
+import { motion } from "framer-motion"
+import { pop, slideTop } from "../../animations"
 
 interface TokenDropDownProps {
    selectedToken: ITokenType | null
@@ -34,7 +36,7 @@ const TokenDropDown: React.FC<TokenDropDownProps> = ({ selectedToken, onSelectTo
 
          {/* Dropdown options */}
          {isOpen && (
-            <ul onMouseLeave={() => setIsOpen(false)} className="absolute z-10 mt-2 w-full rounded-md bg-background-primary">
+            <ul onMouseLeave={() => setIsOpen(false)} className="absolute z-10 mt-2 w-full overflow-hidden rounded-md bg-background-primary">
                {tokens
                   // .filter((token) => token?.id !== selectedToken?.id)
 
@@ -42,7 +44,8 @@ const TokenDropDown: React.FC<TokenDropDownProps> = ({ selectedToken, onSelectTo
                   .filter((token) => token?.id !== selectedToken?.id && token?.id !== disabledToken?.id)
 
                   .map((token) => (
-                     <li
+                     <motion.li
+                        {...slideTop}
                         key={token.id}
                         className={`flex cursor-pointer items-center gap-2 px-2 py-1 hover:bg-background-secondary hover:bg-opacity-70 sm:py-2 ${
                            selectedToken?.id === token.id ? "bg-yellow-500" : "bg-background-secondary"
@@ -51,7 +54,7 @@ const TokenDropDown: React.FC<TokenDropDownProps> = ({ selectedToken, onSelectTo
                      >
                         <img src={token?.logo_url} className="h-5 w-5 md:h-5 md:w-5 2xl:h-7 2xl:w-7" alt={`${token.name} logo`} />
                         <div>{token?.symbol}</div>
-                     </li>
+                     </motion.li>
                   ))}
             </ul>
          )}

@@ -1,32 +1,89 @@
-import { FaWallet } from "react-icons/fa"
-
 import { ImMenu } from "react-icons/im"
-import { ImFolderDownload } from "react-icons/im"
+
+import { WalletOptions } from "./WalletOption"
+
+import React, { useEffect } from "react"
+import { useAccount } from "wagmi"
+import { useDispatch, useSelector } from "react-redux"
+import { AppDispatch, RootState } from "../../store/store"
+import { addWalletAddress } from "../../store/walletSlice"
+
+import { SiQuantconnect } from "react-icons/si"
+import { CgMoreVerticalR } from "react-icons/cg"
+import { RiFolderDownloadFill } from "react-icons/ri"
+import { motion } from "framer-motion"
+import { btnClick, pop, slideTop } from "../../animations"
+import WalletOperation from "./WalletOperation"
 
 interface IHeaderProps {
    onToggleMenu: () => void
 }
 const Header: React.FC<IHeaderProps> = (props) => {
+   const [showDropDown, setShowDropDown] = React.useState<boolean>(false)
+   const { isConnected, address, isConnecting } = useAccount()
+
+   const dispatch = useDispatch<AppDispatch>()
+   const { walletAddress } = useSelector((state: RootState) => state.wallet)
+
+   useEffect(() => {
+      if (address) {
+         dispatch(addWalletAddress(address))
+      }
+   }, [isConnected, address])
+
+   const handleCloseDropDown = () => setShowDropDown(!showDropDown)
    return (
       <header>
-         <nav className="col-span-2 flex h-16 w-full items-center justify-between border-b-4 border-b-black px-4 pt-2 text-[18px] font-semibold text-text-primary md:h-[70px] md:border-b-8 md:px-8 xl:text-lg 2xl:h-20 2xl:text-[22px]">
+         <nav className="2xl: col-span-2 flex h-16 w-full items-center justify-between border-b-4 border-b-black px-4 pt-2 font-semibold text-text-primary md:h-[70px] md:border-b-8 md:px-8 2xl:h-20">
             <aside className="flex items-center gap-3">
-               <button type="button" className="cursor-pointer xl:hidden">
-                  <ImMenu className="text-[1.3em]" onClick={props.onToggleMenu} />
-               </button>
-               <h3>
-                  <span className="text-[1.2em] text-yellow">Cross Chain </span> DEX
+               <motion.button {...btnClick} type="button" className="cursor-pointer xl:hidden">
+                  <ImMenu className="text-xl md:text-2xl" onClick={props.onToggleMenu} />
+               </motion.button>
+               <h3 className="text-base md:text-xl 2xl:text-2xl">
+                  <span className="text-[1.1em] text-yellow">Cross Chain </span> DEX
                </h3>
             </aside>
-            <aside className="flex justify-center gap-4 pr-3 sm:gap-5 sm:pr-0 md:gap-8 lg:gap-12">
-               <button type="button" className="flex cursor-pointer items-center gap-2 text-[1.2em] hover:text-text-secondary sm:text-[1em]">
-                  <FaWallet />
-                  <h3 className="hidden sm:inline-block">Wallet</h3>
-               </button>
-               <button type="button" className="flex cursor-pointer items-center gap-2 text-[1.2em] hover:text-text-secondary sm:text-[1em]">
-                  <ImFolderDownload />
-                  <h3 className="hidden sm:inline-block">Deposit</h3>
-               </button>
+            <aside className="z-50 mx-auto mr-2 rounded border border-gray-700 bg-background-secondary px-3 py-1 text-13px font-normal text-text-primary shadow-black drop-shadow-md md:mr-4 md:text-base 2xl:px-4 2xl:py-1.5 2xl:text-xl 2xl:font-medium">
+               {/* show connect button when account not connected */}
+
+               <motion.button {...btnClick} type="button" className="flex items-center gap-2 rounded-md">
+                  <RiFolderDownloadFill className="text-[1.2em] text-yellow" />
+                  <h3 className="hidden md:inline-block">Deposit</h3>
+               </motion.button>
+            </aside>
+
+            <aside className="relative z-50 rounded border border-gray-700 bg-background-secondary px-3 py-1 text-13px font-normal text-text-primary shadow-black drop-shadow-md md:text-base 2xl:px-4 2xl:py-1.5 2xl:text-xl 2xl:font-medium">
+               {/* show connect button when account not connected */}
+               <div>
+                  {isConnecting === true ? (
+                     <div className="flex items-center gap-2 rounded-md">
+                        <h3 className="text-yellow">Connecting..</h3>
+                     </div>
+                  ) : isConnected === true ? (
+                     <motion.button
+                        {...btnClick}
+                        type="button"
+                        onClick={() => setShowDropDown(!showDropDown)}
+                        className="flex items-center gap-2 rounded-md"
+                     >
+                        <CgMoreVerticalR className="text-[1.2em] text-yellow" />
+
+                        <h3 className="">{walletAddress !== null && formatWalletAddress(walletAddress, 6, 4)}</h3>
+                     </motion.button>
+                  ) : (
+                     <motion.button
+                        {...btnClick}
+                        type="button"
+                        onClick={() => setShowDropDown(!showDropDown)}
+                        className="flex items-center gap-2 rounded-md"
+                     >
+                        <SiQuantconnect className="text-[1.2em] text-yellow" />
+
+                        <h3>Connect</h3>
+                     </motion.button>
+                  )}
+               </div>
+               {showDropDown && <Wallet isConnected={isConnected} onCloseDropDown={handleCloseDropDown} />}
             </aside>
          </nav>
       </header>
@@ -34,3 +91,25 @@ const Header: React.FC<IHeaderProps> = (props) => {
 }
 
 export default Header
+
+type IWalletProps = {
+   onCloseDropDown: () => void
+   isConnected: boolean
+}
+
+export function Wallet(props: IWalletProps) {
+   if (props.isConnected) {
+      return <WalletOperation onCloseDropDown={props.onCloseDropDown} />
+   }
+
+   return <WalletOptions onCloseDropDown={props.onCloseDropDown} />
+}
+
+export const formatWalletAddress = (address: string, firstChars: number, lastChars: number): string => {
+   if (!address || address.length < firstChars + lastChars) {
+      throw new Error("Invalid address length")
+   }
+   const start = address.slice(0, firstChars)
+   const end = address.slice(-lastChars)
+   return `${start}...${end}`
+}

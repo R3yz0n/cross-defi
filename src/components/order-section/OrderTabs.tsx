@@ -1,4 +1,6 @@
+import { motion } from "framer-motion"
 import React from "react"
+import { btnClick } from "../../animations"
 
 interface IOrderTabSelector {
    selectedTab: string
@@ -8,24 +10,27 @@ interface IOrderTabSelector {
 const OrderTabSelector: React.FC<IOrderTabSelector> = ({ selectedTab, onSelectTab }) => {
    return (
       <aside className="flex gap-2 space-x-4 border-b-2 border-gray-700 text-15px font-medium text-text-secondary 2xl:text-base">
-         <button
+         <motion.button
+            {...btnClick}
             onClick={() => onSelectTab("openOrders")}
-            className={`relative -mb-0.5 p-2 pl-3 ${selectedTab === "openOrders" ? "border-b-2 border-yellow text-text-primary" : ""}`}
+            className={`relative p-2 pl-3 ${selectedTab === "openOrders" ? "border-b-2 border-yellow text-text-primary" : ""}`}
          >
             Open Orders
-         </button>
-         <button
+         </motion.button>
+         <motion.button
+            {...btnClick}
             onClick={() => onSelectTab("orderHistory")}
-            className={`-mb-0.5 p-2 ${selectedTab === "orderHistory" ? "border-b-2 border-yellow text-text-primary" : ""}`}
+            className={`p-2 ${selectedTab === "orderHistory" ? "border-b-2 border-yellow text-text-primary" : ""}`}
          >
             Order History
-         </button>
-         <button
+         </motion.button>
+         <motion.button
+            {...btnClick}
             onClick={() => onSelectTab("assets")}
-            className={`-mb-0.5 p-2 ${selectedTab === "assets" ? "border-b-2 border-yellow text-text-primary" : ""}`}
+            className={`p-2 ${selectedTab === "assets" ? "border-b-2 border-yellow text-text-primary" : ""}`}
          >
             Assets
-         </button>
+         </motion.button>
       </aside>
    )
 }

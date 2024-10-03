@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "../../store/store"
 import { ITokenType, selectTokenInSideBar } from "../../store/tokenSlice"
 import { useEffect } from "react"
+import { motion } from "framer-motion"
+import { btnClick } from "../../animations"
 
 interface ITokenCardProps {
    onToggleMenu: () => void
@@ -16,7 +18,8 @@ const TokenCard: React.FC<ITokenCardProps> = ({ token, onToggleMenu }) => {
       dispatch(selectTokenInSideBar(1))
    }, [])
    return (
-      <li
+      <motion.li 
+      {...btnClick}
          onClick={() => {
             dispatch(selectTokenInSideBar(token?.id))
             onToggleMenu()
@@ -42,7 +45,7 @@ const TokenCard: React.FC<ITokenCardProps> = ({ token, onToggleMenu }) => {
                </p>
             </div>
          </aside>
-      </li>
+      </motion.li>
    )
 }
 
