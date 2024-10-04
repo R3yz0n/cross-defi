@@ -15,8 +15,16 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const [triggerToken, setTriggerToken] = useState<ITokenType | null>(findTokenBySymbol("BTC"))
    const [tokenToBuy, setTokenToBuy] = useState<ITokenType | null>(findTokenBySymbol("ETH"))
    const [isLimitModalOpen, setIsLimitModalOpen] = useState(false)
+   const [triggerPrice, setTriggerPrice] = useState<number | null>(null)
+   const [amount, setAmount] = useState<number | null>(null) //usdt amount
 
-   const openLimitModal = () => setIsLimitModalOpen(true)
+   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      console.log(triggerPrice, amount)
+      if (triggerPrice === null || amount === null) return
+
+      setIsLimitModalOpen(true)
+   }
    const closeLimitModal = () => setIsLimitModalOpen(false)
 
    const handleConfirmLimit = () => {
@@ -36,7 +44,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
    return (
       <Fragment>
-         <form onSubmit={(e) => e.preventDefault()} className="mx-auto px-3 py-5 text-13px">
+         <form onSubmit={handleSubmit} className="mx-auto px-3 py-5 text-13px">
             <section className="mb-5 flex flex-col gap-4">
                {/* Trigger token */}
 
@@ -70,10 +78,11 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                   Trigger Price
                </label>
                <input
-                  type="number"
+                  type="text"
                   id="triggerPrice"
                   className="text-text-primarytext-xs w-full rounded border border-gray-700 bg-background-secondary p-2 focus:border-yellow focus:text-text-primary focus:outline-none sm:text-sm md:px-2.5 md:py-1.5 2xl:p-2.5"
                   placeholder="Enter target buy price"
+                  onChange={(e) => setTriggerPrice(parseFloat(e.target.value))}
                   required
                />
 
@@ -82,8 +91,9 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                   <p className="text-xs font-normal text-yellow">Max : {props.maxAmount} USDT</p>
                </label>
                <input
-                  type="number"
+                  type="text"
                   id="amount"
+                  onChange={(e) => setAmount(parseFloat(e.target.value))}
                   className="text-text-primarytext-xs p2 block w-full rounded border border-gray-700 bg-background-secondary p-2 focus:border-yellow focus:text-text-primary focus:outline-none sm:text-sm md:px-2.5 md:py-1.5 2xl:p-2.5"
                   placeholder="Enter  amount in USDT"
                   required
@@ -92,7 +102,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             {props.tradeType === "buy" ? (
                <motion.button
                   {...btnClick}
-                  onClick={openLimitModal}
                   type="submit"
                   className={`mx-auto block w-full rounded bg-green py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80 md:mt-6 md:py-2`}
                >
@@ -101,7 +110,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             ) : (
                <motion.button
                   {...btnClick}
-                  onClick={openLimitModal}
                   type="submit"
                   className={`mx-auto block w-full rounded bg-red py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80 md:mt-6 md:py-2`}
                >
@@ -117,8 +125,8 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             tradeType={props.tradeType}
             triggerToken={triggerToken}
             tokenToBuy={tokenToBuy}
-            triggerPrice={40000}
-            amount={1000}
+            triggerPrice={triggerPrice}
+            amount={amount}
          />
       </Fragment>
    )

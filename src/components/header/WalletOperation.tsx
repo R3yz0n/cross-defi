@@ -22,21 +22,21 @@ const WalletOperation: React.FC<IWalletOperation> = (props) => {
       >
          <motion.button onClick={() => props.onCloseDropDown} {...btnClick} type="button">
             <h3 className="flex items-center gap-3 rounded-md px-3.5 py-1.5 hover:bg-background-primary">
-               <IoMdSettings className="text-[1.2em] text-yellow" />
+               <IoMdSettings className="text-[1.2em]" />
                Settings
             </h3>
          </motion.button>
 
          <motion.button onClick={() => props.onCloseDropDown} {...btnClick} type="button">
             <h3 className="flex items-center gap-3 rounded-md px-3.5 py-1.5 hover:bg-background-primary">
-               <IoMdSettings className="text-[1.2em] text-yellow" />
+               <IoMdSettings className="text-[1.2em]" />
                Order History
             </h3>
          </motion.button>
 
          <motion.button onClick={() => props.onCloseDropDown} {...btnClick} type="button">
             <h3 className="flex items-center gap-3 rounded-md px-3.5 py-1.5 hover:bg-background-primary">
-               <IoMdSettings className="text-[1.2em] text-yellow" />
+               <IoMdSettings className="text-[1.2em]" />
                Trade History
             </h3>
          </motion.button>
@@ -50,7 +50,7 @@ const WalletOperation: React.FC<IWalletOperation> = (props) => {
             {...btnClick}
             type="button"
          >
-            <h3 className="flex items-center gap-3 rounded-md px-3.5 py-1.5 hover:bg-background-primary">
+            <h3 className="flex items-center gap-3 rounded-md px-3.5 py-1.5 text-yellow hover:bg-background-primary">
                <IoMdLogOut className="text-[1.2em] text-yellow" />
                Disconnect
             </h3>

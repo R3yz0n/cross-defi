@@ -9,10 +9,9 @@ import { AppDispatch, RootState } from "../../store/store"
 import { addWalletAddress } from "../../store/walletSlice"
 
 import { SiQuantconnect } from "react-icons/si"
-import { CgMoreVerticalR } from "react-icons/cg"
 import { RiFolderDownloadFill } from "react-icons/ri"
 import { motion } from "framer-motion"
-import { btnClick, pop, slideTop } from "../../animations"
+import { btnClick } from "../../animations"
 import WalletOperation from "./WalletOperation"
 
 interface IHeaderProps {
@@ -40,19 +39,12 @@ const Header: React.FC<IHeaderProps> = (props) => {
                   <ImMenu className="text-xl md:text-2xl" onClick={props.onToggleMenu} />
                </motion.button>
                <h3 className="text-base md:text-xl 2xl:text-2xl">
-                  <span className="text-[1.1em] text-yellow">Cross Chain </span> DEX
+                  Trade Flux
+                  <span className="ml-2 text-[1.1em] text-yellow">AI </span>
                </h3>
             </aside>
-            <aside className="z-50 mx-auto mr-2 rounded border border-gray-700 bg-background-secondary px-3 py-1 text-13px font-normal text-text-primary shadow-black drop-shadow-md md:mr-4 md:text-base 2xl:px-4 2xl:py-1.5 2xl:text-xl 2xl:font-medium">
-               {/* show connect button when account not connected */}
 
-               <motion.button {...btnClick} type="button" className="flex items-center gap-2 rounded-md">
-                  <RiFolderDownloadFill className="text-[1.2em] text-yellow" />
-                  <h3 className="hidden md:inline-block">Deposit</h3>
-               </motion.button>
-            </aside>
-
-            <aside className="relative z-50 rounded border border-gray-700 bg-background-secondary px-3 py-1 text-13px font-normal text-text-primary shadow-black drop-shadow-md md:text-base 2xl:px-4 2xl:py-1.5 2xl:text-xl 2xl:font-medium">
+            <aside className="border-1 relative z-50 rounded-3xl border border-gray-800 bg-background-secondary px-3 py-1 text-13px font-normal text-text-primary shadow-md md:px-5 md:text-base 2xl:px-6 2xl:py-1.5 2xl:text-lg 2xl:font-medium">
                {/* show connect button when account not connected */}
                <div>
                   {isConnecting === true ? (
@@ -66,8 +58,6 @@ const Header: React.FC<IHeaderProps> = (props) => {
                         onClick={() => setShowDropDown(!showDropDown)}
                         className="flex items-center gap-2 rounded-md"
                      >
-                        <CgMoreVerticalR className="text-[1.2em] text-yellow" />
-
                         <h3 className="">{walletAddress !== null && formatWalletAddress(walletAddress, 6, 4)}</h3>
                      </motion.button>
                   ) : (
