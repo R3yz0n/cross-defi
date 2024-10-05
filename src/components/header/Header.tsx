@@ -16,6 +16,7 @@ import WalletOperation from "./WalletOperation"
 
 interface IHeaderProps {
    onToggleMenu: () => void
+   showMenu: boolean
 }
 const Header: React.FC<IHeaderProps> = (props) => {
    const [showDropDown, setShowDropDown] = React.useState<boolean>(false)
@@ -33,10 +34,10 @@ const Header: React.FC<IHeaderProps> = (props) => {
    const handleCloseDropDown = () => setShowDropDown(!showDropDown)
    return (
       <header>
-         <nav className="2xl: col-span-2 flex h-16 w-full items-center justify-between border-b-4 border-b-black px-4 pt-2 font-semibold text-text-primary md:h-[70px] md:border-b-8 md:px-8 2xl:h-20">
+         <nav className="col-span-2 flex h-16 w-full items-center justify-between border-b-4 border-b-black px-4 pt-2 font-semibold text-text-primary md:h-[70px] md:border-b-8 md:px-6 2xl:h-20">
             <aside className="flex items-center gap-3">
-               <motion.button {...btnClick} type="button" className="cursor-pointer xl:hidden">
-                  <ImMenu className="text-xl md:text-2xl" onClick={props.onToggleMenu} />
+               <motion.button {...btnClick} type="button" className={`block cursor-pointer ${props.showMenu ? "xl:hidden" : "inline-block"}`}>
+                  <ImMenu className="text-2xl md:text-2xl 2xl:text-3xl" onClick={props.onToggleMenu} />
                </motion.button>
                <h3 className="text-base md:text-xl 2xl:text-2xl">
                   Trade Flux
