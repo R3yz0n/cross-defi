@@ -1,10 +1,10 @@
 import React, { useState } from "react"
 import { BsTriangleFill } from "react-icons/bs"
 import { useSelector } from "react-redux"
-import { RootState } from "../../store/store"
-import { ITokenType } from "../../store/tokenSlice"
+import { RootState } from "../../../store/store"
+import { ITokenType } from "../../../store/tokenSlice"
 import { motion } from "framer-motion"
-import { pop, slideTop } from "../../animations"
+import { pop, slideTop } from "../../../animations"
 
 interface TokenDropDownProps {
    selectedToken: ITokenType | null

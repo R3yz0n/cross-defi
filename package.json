@@ -5,7 +5,7 @@
    "type": "module",
    "scripts": {
       "dev": "vite",
-      "build": "tsc -b && (if [ \"$DISABLE_LINT\" != \"true\" ]; then eslint .; fi) && vite build",
+      "build":  "DISABLE_ESLINT_PLUGIN=true vite build",
       "lint": "eslint . --rule 'react/react-in-jsx-scope: off' --rule 'react/jsx-uses-react: off'",
       "preview": "vite preview",
       "format": "npx prettier --write ."

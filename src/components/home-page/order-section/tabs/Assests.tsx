@@ -1,5 +1,5 @@
 import React from "react"
-import { findTokenBySymbol } from "../../../utils/tokens"
+import { findTokenBySymbol } from "../../../../utils/tokens"
 
 interface IAssests {
    symbol: string

@@ -1,6 +1,6 @@
 import React from "react"
 import ModalWrapper from "../ModalWrapper"
-import { ITokenType } from "../../../store/tokenSlice"
+import { ITokenType } from "../../../../store/tokenSlice"
 
 interface ILimitModalProps {
    isOpen: boolean

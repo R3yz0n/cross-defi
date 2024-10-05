@@ -1,11 +1,11 @@
 import React, { Fragment, useState } from "react"
 import TokenDropDown from "../TokenDropDown"
-import { ITokenType } from "../../../store/tokenSlice"
+import { ITokenType } from "../../../../store/tokenSlice"
 
 import LimitModal from "../modals/LimitModal"
-import { findTokenBySymbol } from "../../../utils/tokens"
+import { findTokenBySymbol } from "../../../../utils/tokens"
 import { motion } from "framer-motion"
-import { btnClick } from "../../../animations"
+import { btnClick } from "../../../../animations"
 
 interface ILimitFormProps {
    tradeType: string

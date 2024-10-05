@@ -1,9 +1,9 @@
 import React from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { RootState, AppDispatch } from "../../store/store"
-import { setTab, TradeType } from "../../store/tradeSlice"
+import { RootState, AppDispatch } from "../../../store/store"
+import { setTab, TradeType } from "../../../store/tradeSlice"
 import { motion } from "framer-motion"
-import { btnClick } from "../../animations"
+import { btnClick } from "../../../animations"
 
 const TradeTabSelector: React.FC = () => {
    const dispatch = useDispatch<AppDispatch>()

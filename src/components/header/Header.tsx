@@ -9,7 +9,7 @@ import { AppDispatch, RootState } from "../../store/store"
 import { addWalletAddress } from "../../store/walletSlice"
 
 import { SiQuantconnect } from "react-icons/si"
-import { RiFolderDownloadFill } from "react-icons/ri"
+
 import { motion } from "framer-motion"
 import { btnClick } from "../../animations"
 import WalletOperation from "./WalletOperation"

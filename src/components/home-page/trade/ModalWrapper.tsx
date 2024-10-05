@@ -1,7 +1,7 @@
 import { motion } from "framer-motion"
 import React from "react"
 import ReactDOM from "react-dom"
-import { btnClick, pop } from "../../animations"
+import { btnClick, pop } from "../../../animations"
 
 interface IModalWrapperProps {
    isOpen: boolean

@@ -1,6 +1,6 @@
 import React, { Fragment } from "react"
 
-import { OrderType, TradeType } from "../../store/tradeSlice"
+import { OrderType, TradeType } from "../../../store/tradeSlice"
 import LimitForm from "./forms/LimitForm"
 
 interface IDisplaySelectedTradeTab {

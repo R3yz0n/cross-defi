@@ -1,6 +1,6 @@
 import { motion } from "framer-motion"
 import React from "react"
-import { btnClick } from "../../animations"
+import { btnClick } from "../../../animations"
 
 interface IOrderTabSelector {
    selectedTab: string

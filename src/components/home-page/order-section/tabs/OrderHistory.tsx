@@ -1,7 +1,7 @@
-import React from "react"
-import { findTokenBySymbol } from "../../../utils/tokens"
 import { motion } from "framer-motion"
-import { btnClick } from "../../../animations"
+import React from "react"
+import { btnClick } from "../../../../animations"
+import { findTokenBySymbol } from "../../../../utils/tokens"
 
 interface IOrderHistory {
    triggerToken: string
