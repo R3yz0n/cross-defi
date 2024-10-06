@@ -30,7 +30,7 @@ const PromptInput: React.FC = () => {
    return (
       <form
          onSubmit={handlePromptSubmit}
-         className={`absolute bottom-2 left-1/2 flex w-[95%] -translate-x-1/2 items-end text-sm md:w-4/5 md:text-base xl:w-3/4 2xl:bottom-4 2xl:text-xl`}
+         className={`absolute bottom-4 left-1/2 flex w-[95%] -translate-x-1/2 items-end text-sm md:w-4/5 md:text-base xl:w-3/4 2xl:bottom-4 2xl:text-xl`}
       >
          <motion.button
             {...btnClick}
