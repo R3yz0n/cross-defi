@@ -4,7 +4,8 @@ import Header from "../components/header/Header"
 import PagesRoutes from "./PagesRoutes"
 
 const Layout: React.FC = () => {
-   const [showMenu, setShowMenu] = useState<boolean>(true)
+   const [showMenu, setShowMenu] = useState<boolean>(window.innerWidth > 1280 ? true : false)
+   console.log(window.innerWidth)
 
    const toggleMenu = () => {
       setShowMenu(!showMenu)
@@ -19,6 +20,7 @@ const Layout: React.FC = () => {
          </aside>
          <section className="w-full grid-cols-2 md:px-1 lg:px-0 xl:border-l-8 xl:border-l-black">
             <Header onToggleMenu={toggleMenu} showMenu={showMenu} />
+
             <PagesRoutes />
          </section>
       </React.Fragment>
