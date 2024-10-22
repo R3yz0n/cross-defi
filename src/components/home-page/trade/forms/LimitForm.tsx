@@ -1,11 +1,10 @@
-import React, { Fragment, useState } from "react"
+import React, { Fragment, useEffect, useState } from "react"
 import TokenDropDown from "../TokenDropDown"
 import { ITokenType } from "../../../../store/tokenSlice"
-import { useAccount, useReadContract, useWriteContract } from "wagmi"
-
-// import { multiTokenKeeperFactoryAddress, linkTokenAddress, defaultTriggerPrice, defaultAmount, maxApproveAmount } from "../../../constants/blockchain"
+import { useAccount, useChainId, useReadContract, useWriteContract, useSwitchChain } from "wagmi"
 
 import LimitModal from "../modals/LimitModal"
+import DeployMultiTokenKeeper from "../modals/DeployMultiTokenKeeper"
 import { findTokenBySymbol } from "../../../../utils/tokens"
 import { motion } from "framer-motion"
 import { btnClick } from "../../../../animations"
@@ -13,6 +12,8 @@ import { erc20Abi } from "viem"
 import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
 import { linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
 import { ethers } from "ethers"
+import { config } from "../../../../config"
+import { waitForTransactionReceipt } from "viem/actions"
 
 interface ILimitFormProps {
    tradeType: string
@@ -25,10 +26,16 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const [triggerPrice, setTriggerPrice] = useState<number | null>(null)
    const [amount, setAmount] = useState<number | null>(null) //usdt amount
 
-   const { address, isConnected } = useAccount()
-   const { writeContractAsync, writeContract } = useWriteContract()
+   const { address, isConnected, chainId } = useAccount()
+   const { writeContractAsync: write, isPending: awaitingWalletConfirmations, data: hash, error: writeError } = useWriteContract()
 
-   const { data } = useReadContract({
+   console.log(writeError)
+
+   const expectedChainId = useChainId()
+
+   const { chains, switchChain } = useSwitchChain()
+
+   const { data: multiTokenKeeper } = useReadContract({
       abi: multiTokenKeeperFactoryAbi.abi as any,
       address: multiTokenKeeperFactoryAddress,
       functionName: "getMultiTokenKeeper",
@@ -42,28 +49,39 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       args: isConnected ? [address, multiTokenKeeperFactoryAddress] : undefined,
    })
 
-   const handleApprove = () => {
+   const handleApprove = async () => {
+      try {
+         const amountToApprove = ethers.parseUnits("10000000000000000000000000000000", 18)
+
+         // Adjust decimals as needed
+
+         const hash = await write(
+            {
+               abi: erc20Abi,
+               address: linkTokenAddress, // Token contract address
+               functionName: "approve",
+               args: [multiTokenKeeperFactoryAddress, amountToApprove],
+            },
+            {
+               onError(error, variables, context) {
+                  console.log(error)
+               },
+            }
+         )
+         await waitForTransactionReceipt(config as any, { hash })
+         console.log(hash)
+      } catch (error: any) {
+         console.log(error)
+      }
       // Approve function parameters
-      const amountToApprove = ethers.parseUnits("10000000000000000000000000000000", 18)
-
-      console.log(amountToApprove)
-      // Adjust decimals as needed
-
-      return writeContract({
-         abi: erc20Abi,
-         address: linkTokenAddress, // Token contract address
-         functionName: "approve",
-         args: [multiTokenKeeperFactoryAddress, amountToApprove],
-      })
    }
 
-   const createAndRegisterMultiTokenKeeper = () => {
+   const createAndRegisterMultiTokenKeeper = async () => {
+      debugger
+      await handleApprove()
       // Approve function parameters
 
-      // console.log(amountToApprove)
-      // Adjust decimals as needed
-
-      return writeContractAsync({
+      return write({
          abi: multiTokenKeeperFactoryAbi.abi as any,
          address: multiTokenKeeperFactoryAddress, // Token contract address
          functionName: "createAndRegisterMultiTokenKeeper",
@@ -71,16 +89,27 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       })
    }
 
-   // const handleConfirmLimit = async () => {
-   //    console.log("Limit confirmed")
-   //    // Add any additional confirmation logic here
-   //    // closeLimitModal()
-   //    await createAndRegisterMultiTokenKeeper()
-   // }
-
-   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
-      console.log(triggerPrice, amount)
+      debugger
+      if (Number(expectedChainId) != Number(chainId)) {
+         const targetChain: any = chains.find(({ id }) => Number(id) === Number(expectedChainId))
+
+         if (targetChain) {
+            await switchChain({ chainId: targetChain?.id })
+         } else {
+            console.error("Target chain not found in available chains")
+         }
+      }
+
+      if (multiTokenKeeper === "0x0000000000000000000000000000000000000000") {
+         try {
+            await createAndRegisterMultiTokenKeeper()
+         } catch (error: any) {
+            console.log(error)
+         }
+      }
+      // debugger
       if (triggerPrice === null || amount === null) return
 
       setIsLimitModalOpen(true)
@@ -88,7 +117,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const closeLimitModal = () => setIsLimitModalOpen(false)
 
    const handleConfirmLimit = () => {
-      console.log("Limit confirmed")
       // Add any additional confirmation logic here
       closeLimitModal()
    }
@@ -101,6 +129,13 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const handleTriggerTokenChange = (token: ITokenType) => {
       setTriggerToken(token)
    }
+
+   // useEffect(() => {
+   //    if (multiTokenKeeper === "0x0000000000000000000000000000000000000000") {
+   //       // Open modal to deploy multiTokenKeeper
+   //       // setIsDeployModalOpen(true)
+   //    }
+   // }, [multiTokenKeeper])
 
    return (
       <Fragment>
@@ -155,7 +190,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                   id="amount"
                   onChange={(e) => setAmount(parseFloat(e.target.value))}
                   className="text-text-primarytext-xs p2 block w-full rounded border border-gray-700 bg-background-secondary p-2 focus:border-yellow focus:text-text-primary focus:outline-none sm:text-sm md:px-2.5 md:py-1.5 2xl:p-2.5"
-                  placeholder="Enter  amount in USDT"
+                  placeholder="Enter amount in USDT"
                   required
                />
             </section>
