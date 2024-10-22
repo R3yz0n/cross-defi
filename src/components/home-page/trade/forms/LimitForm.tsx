@@ -1,11 +1,18 @@
 import React, { Fragment, useState } from "react"
 import TokenDropDown from "../TokenDropDown"
 import { ITokenType } from "../../../../store/tokenSlice"
+import { useAccount, useReadContract, useWriteContract } from "wagmi"
+
+// import { multiTokenKeeperFactoryAddress, linkTokenAddress, defaultTriggerPrice, defaultAmount, maxApproveAmount } from "../../../constants/blockchain"
 
 import LimitModal from "../modals/LimitModal"
 import { findTokenBySymbol } from "../../../../utils/tokens"
 import { motion } from "framer-motion"
 import { btnClick } from "../../../../animations"
+import { erc20Abi } from "viem"
+import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
+import { linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
+import { ethers } from "ethers"
 
 interface ILimitFormProps {
    tradeType: string
@@ -17,6 +24,59 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const [isLimitModalOpen, setIsLimitModalOpen] = useState(false)
    const [triggerPrice, setTriggerPrice] = useState<number | null>(null)
    const [amount, setAmount] = useState<number | null>(null) //usdt amount
+
+   const { address, isConnected } = useAccount()
+   const { writeContractAsync, writeContract } = useWriteContract()
+
+   const { data } = useReadContract({
+      abi: multiTokenKeeperFactoryAbi.abi as any,
+      address: multiTokenKeeperFactoryAddress,
+      functionName: "getMultiTokenKeeper",
+      args: isConnected ? [address] : undefined,
+   })
+
+   const { data: allowance } = useReadContract({
+      abi: erc20Abi,
+      address: linkTokenAddress,
+      functionName: "allowance",
+      args: isConnected ? [address, multiTokenKeeperFactoryAddress] : undefined,
+   })
+
+   const handleApprove = () => {
+      // Approve function parameters
+      const amountToApprove = ethers.parseUnits("10000000000000000000000000000000", 18)
+
+      console.log(amountToApprove)
+      // Adjust decimals as needed
+
+      return writeContract({
+         abi: erc20Abi,
+         address: linkTokenAddress, // Token contract address
+         functionName: "approve",
+         args: [multiTokenKeeperFactoryAddress, amountToApprove],
+      })
+   }
+
+   const createAndRegisterMultiTokenKeeper = () => {
+      // Approve function parameters
+
+      // console.log(amountToApprove)
+      // Adjust decimals as needed
+
+      return writeContractAsync({
+         abi: multiTokenKeeperFactoryAbi.abi as any,
+         address: multiTokenKeeperFactoryAddress, // Token contract address
+         functionName: "createAndRegisterMultiTokenKeeper",
+         args: [address as any],
+      })
+   }
+
+   // const handleConfirmLimit = async () => {
+   //    console.log("Limit confirmed")
+   //    // Add any additional confirmation logic here
+   //    // closeLimitModal()
+   //    await createAndRegisterMultiTokenKeeper()
+   // }
 
    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
