@@ -13,14 +13,21 @@ import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/mul
 import { linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
 import { ethers } from "ethers"
 import { config } from "../../../../config"
+import WalletConnectModal from "../../../WalletConnectModal"
+import { useSelector } from "react-redux"
+import { RootState } from "../../../../store/store"
+import AllowanceModal from "../modals/AllowanceModal"
 
 interface ILimitFormProps {
    tradeType: string
    maxAmount: number
 }
 const LimitForm: React.FC<ILimitFormProps> = (props) => {
+   const { walletAddress } = useSelector((state: RootState) => state.wallet)
    const [triggerToken, setTriggerToken] = useState<ITokenType | null>(findTokenBySymbol("BTC"))
    const [tokenToBuy, setTokenToBuy] = useState<ITokenType | null>(findTokenBySymbol("ETH"))
+   const [showWalletConnectModal, setWalletConnectModal] = useState<boolean>(false)
+   const [showAllowanceModal, setShowAllowanceModal] = useState<boolean>(false)
    const [isLimitModalOpen, setIsLimitModalOpen] = useState(false)
    const [triggerPrice, setTriggerPrice] = useState<number | null>(null)
    const [amount, setAmount] = useState<number | null>(null) //usdt amount
@@ -32,10 +39,13 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       hash,
    })
 
-   console.log(isConfirmed)
-   console.log(isConfirming)
-
+   // console.log(isConfirmed)
+   // console.log(isConfirming)
+   // TO DO if adress is 0 then you havent created multi token keeper
    const expectedChainId = useChainId()
+
+   // 0x allowance / approive / allowance  balance  of link >4 create multi
+   // allowance less than 4 xa vani approve
 
    const { chains, switchChain } = useSwitchChain()
 
@@ -45,6 +55,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       functionName: "getMultiTokenKeeper",
       args: isConnected ? [address] : undefined,
    })
+   console.log(multiTokenKeeper)
 
    const { data: allowance } = useReadContract({
       abi: erc20Abi,
@@ -85,6 +96,9 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    }
 
    const handleApprove = async () => {
+      console.log()
+      console.log(allowance)
+
       try {
          if (allowance === null || allowance === undefined) {
             console.log("Allowance is null, aborting approval process.")
@@ -92,8 +106,10 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
          }
 
          if (allowance > ethers.parseUnits("100000", 18)) {
+            //
             return
          }
+         console.log("ether is larger")
          const amountToApprove = ethers.parseUnits("10000000000000000000000000000000", 18)
 
          console.log(allowance)
@@ -144,6 +160,12 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
+
+      if (walletAddress === null) {
+         setWalletConnectModal(true)
+         return
+      }
+
       debugger
       if (Number(expectedChainId) != Number(chainId)) {
          const targetChain: any = chains.find(({ id }) => Number(id) === Number(expectedChainId))
@@ -184,12 +206,15 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       setTriggerToken(token)
    }
 
-   // useEffect(() => {
-   //    if (multiTokenKeeper === "0x0000000000000000000000000000000000000000") {
-   //       // Open modal to deploy multiTokenKeeper
-   //       // setIsDeployModalOpen(true)
-   //    }
-   // }, [multiTokenKeeper])
+   // Open the modal when there exists and walletAddress but the multiTokenKeeper is undefined
+   useEffect(() => {
+      if (walletAddress) {
+         // console.log(walletAddress, multiTokenKeeper)
+         if (multiTokenKeeper === "0x0000000000000000000000000000000000000000") {
+            setShowAllowanceModal(true)
+         }
+      }
+   }, [multiTokenKeeper])
 
    return (
       <Fragment>
@@ -281,6 +306,8 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             triggerPrice={triggerPrice}
             amount={amount}
          />
+         <WalletConnectModal isOpen={showWalletConnectModal} onClose={() => setWalletConnectModal(false)} />
+         <AllowanceModal isOpen={showAllowanceModal} onApprove={handleApprove} onClose={() => setShowAllowanceModal(false)} />
       </Fragment>
    )
 }
