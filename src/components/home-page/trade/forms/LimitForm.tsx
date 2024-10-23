@@ -1,10 +1,10 @@
 import React, { Fragment, useEffect, useState } from "react"
 import TokenDropDown from "../TokenDropDown"
 import { ITokenType } from "../../../../store/tokenSlice"
-import { useAccount, useChainId, useReadContract, useWriteContract, useSwitchChain } from "wagmi"
+import { useAccount, useChainId, useReadContract, useWriteContract, useSwitchChain, useWaitForTransactionReceipt } from "wagmi"
+import { readContract, waitForTransactionReceipt } from "@wagmi/core"
 
 import LimitModal from "../modals/LimitModal"
-import DeployMultiTokenKeeper from "../modals/DeployMultiTokenKeeper"
 import { findTokenBySymbol } from "../../../../utils/tokens"
 import { motion } from "framer-motion"
 import { btnClick } from "../../../../animations"
@@ -13,7 +13,6 @@ import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/mul
 import { linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
 import { ethers } from "ethers"
 import { config } from "../../../../config"
-import { waitForTransactionReceipt } from "viem/actions"
 
 interface ILimitFormProps {
    tradeType: string
@@ -29,7 +28,12 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const { address, isConnected, chainId } = useAccount()
    const { writeContractAsync: write, isPending: awaitingWalletConfirmations, data: hash, error: writeError } = useWriteContract()
 
-   console.log(writeError)
+   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+      hash,
+   })
+
+   console.log(isConfirmed)
+   console.log(isConfirming)
 
    const expectedChainId = useChainId()
 
@@ -49,26 +53,61 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       args: isConnected ? [address, multiTokenKeeperFactoryAddress] : undefined,
    })
 
+   /**
+    * Fetches the token balance for a specific token and wallet address.
+    *
+    * @param {string} tokenAddress - The address of the token contract (ERC20).
+    * @param {string} walletAddress - The wallet address to check the balance for.
+    * @param {number} decimals - The number of decimals for the token (default 18 for most tokens).
+    * @returns {Promise<string | null>} - The balance formatted as a string, or null if there's an error.
+    */
+   const getTokenBalance = async (tokenAddress: any, walletAddress: any, decimals: number = 18): Promise<any> => {
+      try {
+         const result = await readContract(config, {
+            abi: erc20Abi,
+            address: tokenAddress,
+            functionName: "balanceOf",
+            args: [walletAddress],
+         })
+
+         console.log(result)
+
+         // Format balance using the token's decimals
+         const formattedBalance = ethers.formatUnits(result, decimals)
+
+         console.log(`formattedBalance ==>${formattedBalance}`)
+
+         return formattedBalance
+      } catch (error) {
+         console.error("Error fetching token balance:", error)
+         return null
+      }
+   }
+
    const handleApprove = async () => {
       try {
+         if (allowance === null || allowance === undefined) {
+            console.log("Allowance is null, aborting approval process.")
+            return
+         }
+
+         if (allowance > ethers.parseUnits("100000", 18)) {
+            return
+         }
          const amountToApprove = ethers.parseUnits("10000000000000000000000000000000", 18)
 
+         console.log(allowance)
          // Adjust decimals as needed
 
-         const hash = await write(
-            {
-               abi: erc20Abi,
-               address: linkTokenAddress, // Token contract address
-               functionName: "approve",
-               args: [multiTokenKeeperFactoryAddress, amountToApprove],
-            },
-            {
-               onError(error, variables, context) {
-                  console.log(error)
-               },
-            }
-         )
-         await waitForTransactionReceipt(config as any, { hash })
+         const hash = await write({
+            abi: erc20Abi,
+            address: linkTokenAddress, // Token contract address
+            functionName: "approve",
+            args: [multiTokenKeeperFactoryAddress, amountToApprove],
+         })
+
+         const result = await waitForTransactionReceipt(config, { hash })
+         console.log(result)
          console.log(hash)
       } catch (error: any) {
          console.log(error)
@@ -79,14 +118,28 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const createAndRegisterMultiTokenKeeper = async () => {
       debugger
       await handleApprove()
-      // Approve function parameters
 
-      return write({
+      const balance = await getTokenBalance(linkTokenAddress, address)
+
+      console.log(balance)
+
+      if (parseFloat(balance) < 4) {
+         console.log("insufficient link balance")
+      }
+
+      const hash = await write({
          abi: multiTokenKeeperFactoryAbi.abi as any,
          address: multiTokenKeeperFactoryAddress, // Token contract address
          functionName: "createAndRegisterMultiTokenKeeper",
          args: [address as any],
       })
+
+      const result = await waitForTransactionReceipt(config, { hash })
+      // Approve function parameters
+
+      console.log(result)
+
+      return
    }
 
    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -105,6 +158,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       if (multiTokenKeeper === "0x0000000000000000000000000000000000000000") {
          try {
             await createAndRegisterMultiTokenKeeper()
+            window.location.reload()
          } catch (error: any) {
             console.log(error)
          }
@@ -212,6 +266,10 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                </motion.button>
             )}
          </form>
+
+         {hash && <div>Transaction Hash: {hash}</div>}
+         {isConfirming && <div>Waiting for confirmation...</div>}
+         {isConfirmed && <div>Transaction confirmed.</div>}
 
          <LimitModal
             isOpen={isLimitModalOpen}
