@@ -1,5 +1,5 @@
 import { http, createConfig } from "wagmi"
-import { Chain, mainnet, sepolia } from "wagmi/chains"
+import { baseSepolia, Chain, mainnet } from "wagmi/chains"
 import { walletConnect } from "wagmi/connectors"
 
 const projectId: string = import.meta.env.VITE_PROJECT_ID
@@ -7,7 +7,7 @@ console.log(projectId)
 
 const isProduction: string = import.meta.env.MODE === "production" ? "production" : "development"
 
-const selectedChain: Chain = isProduction === "production" ? mainnet : sepolia
+const selectedChain: Chain = isProduction === "production" ? mainnet : baseSepolia
 
 export const config = createConfig({
    chains: [selectedChain],
