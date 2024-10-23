@@ -1,8 +1,8 @@
-import React, { Fragment, useEffect, useState } from "react"
+import React, { Fragment, useEffect, useState, useMemo, useCallback } from "react"
 import TokenDropDown from "../TokenDropDown"
 import { ITokenType } from "../../../../store/tokenSlice"
 import { useAccount, useChainId, useReadContract, useWriteContract, useSwitchChain, useWaitForTransactionReceipt } from "wagmi"
-import { readContract, waitForTransactionReceipt } from "@wagmi/core"
+import { readContract } from "@wagmi/core"
 
 import LimitModal from "../modals/LimitModal"
 import { findTokenBySymbol } from "../../../../utils/tokens"
@@ -17,36 +17,33 @@ import WalletConnectModal from "../../../WalletConnectModal"
 import { useSelector } from "react-redux"
 import { RootState } from "../../../../store/store"
 import AllowanceModal from "../modals/AllowanceModal"
+import CreateMultiTokenKeeperModal from "../modals/CreateMultiTokenKeeperModal"
+import InsufficientBalance from "../modals/InsufficientBalance"
 
 interface ILimitFormProps {
    tradeType: string
    maxAmount: number
 }
+
 const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const { walletAddress } = useSelector((state: RootState) => state.wallet)
    const [triggerToken, setTriggerToken] = useState<ITokenType | null>(findTokenBySymbol("BTC"))
    const [tokenToBuy, setTokenToBuy] = useState<ITokenType | null>(findTokenBySymbol("ETH"))
    const [showWalletConnectModal, setWalletConnectModal] = useState<boolean>(false)
    const [showAllowanceModal, setShowAllowanceModal] = useState<boolean>(false)
+   const [showMultiTokenKeeperModal, setShowMultiTokenKeeperModal] = useState<boolean>(false)
+   const [showInsufficientBalanceModal, setShowInsufficientBalanceModal] = useState<boolean>(false)
+
    const [isLimitModalOpen, setIsLimitModalOpen] = useState(false)
    const [triggerPrice, setTriggerPrice] = useState<number | null>(null)
-   const [amount, setAmount] = useState<number | null>(null) //usdt amount
+   const [amount, setAmount] = useState<number | null>(null)
 
    const { address, isConnected, chainId } = useAccount()
-   const { writeContractAsync: write, isPending: awaitingWalletConfirmations, data: hash, error: writeError } = useWriteContract()
+   const { writeContractAsync: write, data: hash } = useWriteContract()
+   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash })
 
-   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-      hash,
-   })
-
-   // console.log(isConfirmed)
-   // console.log(isConfirming)
-   // TO DO if adress is 0 then you havent created multi token keeper
+   console.log(hash)
    const expectedChainId = useChainId()
-
-   // 0x allowance / approive / allowance  balance  of link >4 create multi
-   // allowance less than 4 xa vani approve
-
    const { chains, switchChain } = useSwitchChain()
 
    const { data: multiTokenKeeper } = useReadContract({
@@ -55,7 +52,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       functionName: "getMultiTokenKeeper",
       args: isConnected ? [address] : undefined,
    })
-   console.log(multiTokenKeeper)
 
    const { data: allowance } = useReadContract({
       abi: erc20Abi,
@@ -64,14 +60,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       args: isConnected ? [address, multiTokenKeeperFactoryAddress] : undefined,
    })
 
-   /**
-    * Fetches the token balance for a specific token and wallet address.
-    *
-    * @param {string} tokenAddress - The address of the token contract (ERC20).
-    * @param {string} walletAddress - The wallet address to check the balance for.
-    * @param {number} decimals - The number of decimals for the token (default 18 for most tokens).
-    * @returns {Promise<string | null>} - The balance formatted as a string, or null if there's an error.
-    */
    const getTokenBalance = async (tokenAddress: any, walletAddress: any, decimals: number = 18): Promise<any> => {
       try {
          const result = await readContract(config, {
@@ -81,14 +69,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             args: [walletAddress],
          })
 
-         console.log(result)
-
-         // Format balance using the token's decimals
-         const formattedBalance = ethers.formatUnits(result, decimals)
-
-         console.log(`formattedBalance ==>${formattedBalance}`)
-
-         return formattedBalance
+         return ethers.formatUnits(result, decimals)
       } catch (error) {
          console.error("Error fetching token balance:", error)
          return null
@@ -96,156 +77,95 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    }
 
    const handleApprove = async () => {
-      console.log()
       console.log(allowance)
+      debugger
+      // if (allowance === null || allowance === undefined || allowance > ethers.parseUnits("100000", 18)) return
 
       try {
-         if (allowance === null || allowance === undefined) {
-            console.log("Allowance is null, aborting approval process.")
-            return
-         }
-
-         if (allowance > ethers.parseUnits("100000", 18)) {
-            //
-            return
-         }
-         console.log("ether is larger")
          const amountToApprove = ethers.parseUnits("10000000000000000000000000000000", 18)
-
-         console.log(allowance)
-         // Adjust decimals as needed
-
-         const hash = await write({
+         await write({
             abi: erc20Abi,
-            address: linkTokenAddress, // Token contract address
+            address: linkTokenAddress,
             functionName: "approve",
             args: [multiTokenKeeperFactoryAddress, amountToApprove],
          })
 
-         const result = await waitForTransactionReceipt(config, { hash })
-         console.log(result)
-         console.log(hash)
-      } catch (error: any) {
-         console.log(error)
+         // await waitForTransactionReceipt(config, { hash })
+      } catch (error) {
+         console.error("Error during approval:", error)
       }
-      // Approve function parameters
    }
 
    const createAndRegisterMultiTokenKeeper = async () => {
-      debugger
-      await handleApprove()
+      // await handleApprove()
 
       const balance = await getTokenBalance(linkTokenAddress, address)
-
-      console.log(balance)
-
       if (parseFloat(balance) < 4) {
-         console.log("insufficient link balance")
+         console.log("Insufficient LINK balance")
+         setShowInsufficientBalanceModal(true)
+         return
       }
 
-      const hash = await write({
+      await write({
          abi: multiTokenKeeperFactoryAbi.abi as any,
-         address: multiTokenKeeperFactoryAddress, // Token contract address
+         address: multiTokenKeeperFactoryAddress,
          functionName: "createAndRegisterMultiTokenKeeper",
          args: [address as any],
       })
-
-      const result = await waitForTransactionReceipt(config, { hash })
-      // Approve function parameters
-
-      console.log(result)
-
-      return
    }
 
    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
 
-      if (walletAddress === null) {
+      if (!walletAddress) {
          setWalletConnectModal(true)
          return
       }
 
-      debugger
-      if (Number(expectedChainId) != Number(chainId)) {
-         const targetChain: any = chains.find(({ id }) => Number(id) === Number(expectedChainId))
-
-         if (targetChain) {
-            await switchChain({ chainId: targetChain?.id })
-         } else {
-            console.error("Target chain not found in available chains")
-         }
+      if (Number(expectedChainId) !== Number(chainId)) {
+         const targetChain = chains.find(({ id }) => Number(id) === Number(expectedChainId))
+         if (targetChain) await switchChain({ chainId: targetChain?.id })
+         else console.error("Target chain not found")
       }
 
       if (multiTokenKeeper === "0x0000000000000000000000000000000000000000") {
-         try {
-            await createAndRegisterMultiTokenKeeper()
-            window.location.reload()
-         } catch (error: any) {
-            console.log(error)
-         }
+         await createAndRegisterMultiTokenKeeper()
+         window.location.reload()
       }
-      // debugger
-      if (triggerPrice === null || amount === null) return
 
-      setIsLimitModalOpen(true)
-   }
-   const closeLimitModal = () => setIsLimitModalOpen(false)
-
-   const handleConfirmLimit = () => {
-      // Add any additional confirmation logic here
-      closeLimitModal()
+      if (triggerPrice !== null && amount !== null) setIsLimitModalOpen(true)
    }
 
-   // Callback to handle selecting the token
-   const handleTokenToBuyChange = (token: ITokenType) => {
-      setTokenToBuy(token)
-   }
-
-   const handleTriggerTokenChange = (token: ITokenType) => {
-      setTriggerToken(token)
-   }
-
-   // Open the modal when there exists and walletAddress but the multiTokenKeeper is undefined
    useEffect(() => {
-      if (walletAddress) {
-         // console.log(walletAddress, multiTokenKeeper)
-         if (multiTokenKeeper === "0x0000000000000000000000000000000000000000") {
+      if (allowance) {
+         console.log(walletAddress && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18))
+         if (walletAddress && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18)) {
+            setShowMultiTokenKeeperModal(true)
+         }
+         if (walletAddress && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && !(allowance > ethers.parseUnits("100000", 18))) {
             setShowAllowanceModal(true)
          }
       }
-   }, [multiTokenKeeper])
+   }, [walletAddress, multiTokenKeeper, allowance])
+
+   useEffect(() => {
+      if (isConfirmed && isLimitModalOpen) setIsLimitModalOpen(false) // Close modal when confirmed
+      if (isConfirmed && showAllowanceModal) setShowAllowanceModal(false) // Close modal when confirmed
+      if (isConfirmed && showMultiTokenKeeperModal) setShowMultiTokenKeeperModal(false) // Close modal when confirmed
+   }, [isConfirmed, isLimitModalOpen, showAllowanceModal, showMultiTokenKeeperModal])
 
    return (
       <Fragment>
          <form onSubmit={handleSubmit} className="mx-auto px-3 py-5 text-13px">
             <section className="mb-5 flex flex-col gap-4">
-               {/* Trigger token */}
-
-               <label
-                  title="buy/sell at"
-                  className="flex w-full select-none flex-col gap-2 rounded-md text-xs font-medium text-text-primary sm:text-sm"
-               >
+               <label className="flex w-full select-none flex-col gap-2 rounded-md text-xs font-medium text-text-primary sm:text-sm">
                   Trigger token
-                  <TokenDropDown
-                     disabledToken={tokenToBuy} // Pass the token to buy as a disabled token
-                     selectedToken={triggerToken}
-                     onSelectToken={handleTriggerTokenChange}
-                  />
+                  <TokenDropDown disabledToken={tokenToBuy} selectedToken={triggerToken} onSelectToken={setTriggerToken} />
                </label>
 
-               {/* Token to sell/buy */}
-
-               <label
-                  title="buy/sell at"
-                  className="flex w-full select-none flex-col gap-2 rounded-md text-xs font-medium text-text-primary sm:text-sm"
-               >
+               <label className="flex w-full select-none flex-col gap-2 rounded-md text-xs font-medium text-text-primary sm:text-sm">
                   Token to buy
-                  <TokenDropDown
-                     disabledToken={triggerToken} // Pass the trigger token as a prop
-                     selectedToken={tokenToBuy}
-                     onSelectToken={handleTokenToBuyChange}
-                  />
+                  <TokenDropDown disabledToken={triggerToken} selectedToken={tokenToBuy} onSelectToken={setTokenToBuy} />
                </label>
 
                <label htmlFor="triggerPrice" className="block select-none text-xs font-medium text-text-primary sm:text-sm">
@@ -254,7 +174,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                <input
                   type="text"
                   id="triggerPrice"
-                  className="text-text-primarytext-xs w-full rounded border border-gray-700 bg-background-secondary p-2 focus:border-yellow focus:text-text-primary focus:outline-none sm:text-sm md:px-2.5 md:py-1.5 2xl:p-2.5"
+                  className="text-text-primarytext-xs w-full rounded border border-gray-700 bg-background-secondary p-2"
                   placeholder="Enter target buy price"
                   onChange={(e) => setTriggerPrice(parseFloat(e.target.value))}
                   required
@@ -262,44 +182,33 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
                <label htmlFor="amount" className="flex select-none justify-between pr-4 text-xs font-medium text-text-primary sm:text-sm">
                   Amount
-                  <p className="text-xs font-normal text-yellow">Max : {props.maxAmount} USDT</p>
+                  <p className="text-xs font-normal text-yellow">Max: {props.maxAmount} USDT</p>
                </label>
                <input
                   type="text"
                   id="amount"
                   onChange={(e) => setAmount(parseFloat(e.target.value))}
-                  className="text-text-primarytext-xs p2 block w-full rounded border border-gray-700 bg-background-secondary p-2 focus:border-yellow focus:text-text-primary focus:outline-none sm:text-sm md:px-2.5 md:py-1.5 2xl:p-2.5"
+                  className="text-text-primarytext-xs p2 block w-full rounded border border-gray-700 bg-background-secondary p-2"
                   placeholder="Enter amount in USDT"
                   required
                />
             </section>
-            {props.tradeType === "buy" ? (
-               <motion.button
-                  {...btnClick}
-                  type="submit"
-                  className={`mx-auto block w-full rounded bg-green py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80 md:mt-6 md:py-2`}
-               >
-                  Buy
-               </motion.button>
-            ) : (
-               <motion.button
-                  {...btnClick}
-                  type="submit"
-                  className={`mx-auto block w-full rounded bg-red py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80 md:mt-6 md:py-2`}
-               >
-                  Sell
-               </motion.button>
-            )}
-         </form>
 
+            <motion.button
+               {...btnClick}
+               type="submit"
+               className={`mx-auto block w-full rounded ${props.tradeType === "buy" ? "bg-green" : "bg-red"} py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80`}
+            >
+               {props.tradeType === "buy" ? "Buy" : "Sell"}
+            </motion.button>
+         </form>
          {hash && <div>Transaction Hash: {hash}</div>}
          {isConfirming && <div>Waiting for confirmation...</div>}
          {isConfirmed && <div>Transaction confirmed.</div>}
-
          <LimitModal
             isOpen={isLimitModalOpen}
-            onClose={closeLimitModal}
-            onConfirm={handleConfirmLimit}
+            onClose={() => setIsLimitModalOpen(false)}
+            onConfirm={handleSubmit}
             tradeType={props.tradeType}
             triggerToken={triggerToken}
             tokenToBuy={tokenToBuy}
@@ -307,7 +216,15 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             amount={amount}
          />
          <WalletConnectModal isOpen={showWalletConnectModal} onClose={() => setWalletConnectModal(false)} />
-         <AllowanceModal isOpen={showAllowanceModal} onApprove={handleApprove} onClose={() => setShowAllowanceModal(false)} />
+         {/* transactionHash?: string | null // Add transactionHash prop */}
+         <AllowanceModal isOpen={showAllowanceModal} onApprove={handleApprove} onClose={() => setShowAllowanceModal(false)} transactionHash={hash} />
+         <CreateMultiTokenKeeperModal
+            isOpen={showMultiTokenKeeperModal}
+            onApprove={createAndRegisterMultiTokenKeeper}
+            onClose={() => setShowMultiTokenKeeperModal(false)}
+            transactionHash={hash}
+         />
+         <InsufficientBalance isOpen={showInsufficientBalanceModal} onClose={() => setShowInsufficientBalanceModal(false)} />
       </Fragment>
    )
 }
