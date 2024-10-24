@@ -1,7 +1,12 @@
 import { motion } from "framer-motion"
-import React from "react"
+import React, { useState } from "react"
 import { btnClick } from "../../../../animations"
-import { findTokenBySymbol } from "../../../../utils/tokens"
+import { findTokenByAddress, findTokenByAggregator, findTokenBySymbol } from "../../../../utils/tokens"
+import { useAccount, useReadContract } from "wagmi"
+import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
+import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
+import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeper"
+import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
 
 interface IOpenOrder {
    triggerToken: string
@@ -12,6 +17,35 @@ interface IOpenOrder {
    orderAmount: number
 }
 const OpenOrders: React.FC = () => {
+   const { address, isConnected, chainId } = useAccount()
+
+   const [openOrders, setOpenOrders] = useState<IOpenOrder[]>([])
+
+   const { data: multiTokenKeeper } = useReadContract({
+      abi: multiTokenKeeperFactoryAbi.abi as any,
+      address: multiTokenKeeperFactoryAddress,
+      functionName: "getMultiTokenKeeper",
+      args: isConnected ? [address] : undefined,
+   })
+
+   const { data: orderManager } = useReadContract({
+      abi: multiTokenKeeperAbi.abi as any,
+      address: multiTokenKeeper,
+      functionName: "orderManager",
+      args: [],
+   })
+
+   const { data: activeOrders } = useReadContract({
+      abi: orderManagerAbi as any,
+      address: orderManager,
+      functionName: "getActiveOrders",
+      args: [],
+   })
+
+   // Check if activeOrders is loaded and has data
+   const orders = activeOrders ? (activeOrders as any) : []
+   console.log(activeOrders)
+
    return (
       <section className="min-w-full max-w-[98%] overflow-y-scroll px-2 md:w-full md:px-0 md:pl-5">
          <div className="max-h-64 w-full overflow-y-auto">
@@ -31,17 +65,17 @@ const OpenOrders: React.FC = () => {
                   </tr>
                </thead>
                <tbody className="overflow-y-auto">
-                  {openOrders.map((openOrder, index) => (
+                  {orders.map((openOrder, index) => (
                      <tr key={index} className="whitespace-nowrap text-xs text-text-primary sm:text-sm 2xl:text-15px">
                         {/* Trigger Token with icon */}
                         <td className="px-2 py-3">
                            <div className="flex items-center gap-2">
                               <img
                                  className="h-5 w-5 sm:h-6 sm:w-6"
-                                 src={findTokenBySymbol(openOrder?.triggerToken)?.logo_url}
+                                 src={findTokenByAggregator(openOrder?.priceFeed)?.logo_url}
                                  alt={openOrder.triggerToken}
                               />
-                              {openOrder?.triggerToken}
+                              {findTokenByAggregator(openOrder?.priceFeed)?.name}
                            </div>
                         </td>
 
@@ -50,10 +84,10 @@ const OpenOrders: React.FC = () => {
                            <div className="flex items-center gap-2">
                               <img
                                  className="h-5 w-5 sm:h-6 sm:w-6"
-                                 src={findTokenBySymbol(openOrder?.tokenToBuy)?.logo_url}
+                                 src={findTokenByAddress(openOrder?.token)?.logo_url}
                                  alt={openOrder.tokenToBuy}
                               />
-                              {openOrder?.tokenToBuy}
+                              {findTokenByAddress(openOrder?.token)?.name}
                            </div>
                         </td>
 
@@ -63,10 +97,10 @@ const OpenOrders: React.FC = () => {
                         </td>
 
                         {/* Avg. Fill */}
-                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">${openOrder?.avgFill.toLocaleString()}</td>
+                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">${openOrder?.priceThreshold.toString()}</td>
 
                         {/* Order Amount */}
-                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">{openOrder?.orderAmount.toLocaleString()} USDT</td>
+                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">{openOrder?.amount.toString()} USDT</td>
 
                         {/* Cancel button */}
                         <td className="px-2 py-3">

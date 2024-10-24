@@ -8,6 +8,8 @@ export interface ITokenType {
    price_usd: number
    price_increase_24h_percent: number
    logo_url: string
+   address: string
+   priceAggregator?: string
 }
 
 export interface ITokenState {

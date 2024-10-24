@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import ModalWrapper from "../ModalWrapper"
 
 interface ICreateMultiTokenKeeperModal {
@@ -9,8 +9,26 @@ interface ICreateMultiTokenKeeperModal {
 }
 
 const CreateMultiTokenKeeperModal: React.FC<ICreateMultiTokenKeeperModal> = ({ isOpen, onApprove, onClose, transactionHash }) => {
+   const [isButtonDisabled, setIsButtonDisabled] = useState(false)
+
+   const handleApprove = () => {
+      setIsButtonDisabled(true)
+      onApprove()
+
+      setTimeout(() => {
+         setIsButtonDisabled(false) // Enable the button after 2 seconds
+      }, 5000)
+   }
+
    return (
-      <ModalWrapper confirmButtonTitle="Approve" onClose={onClose} onConfirm={onApprove} isOpen={isOpen} title="Create MultiToken Keeper">
+      <ModalWrapper
+         confirmButtonTitle="Approve"
+         onClose={onClose}
+         onConfirm={handleApprove}
+         isOpen={isOpen}
+         title="Create MultiToken Keeper"
+         isConfirmButtonDisabled={isButtonDisabled} // Pass the disabled state
+      >
          <div className="text-sm text-gray-700">
             <p>
                You need to deposit 3 Chainlink tokens (LINK) to create your MultiToken Keeper. This action will approve the necessary tokens for the

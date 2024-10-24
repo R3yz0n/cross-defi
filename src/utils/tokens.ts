@@ -8,6 +8,8 @@ export const tokens: ITokenType[] = [
       price_usd: 26850.45,
       price_increase_24h_percent: 2.5,
       logo_url: "https://cryptologos.cc/logos/bitcoin-btc-logo.png",
+      address: "0x981e90dE16a26f6A44e39406dD218490D7789e0D",
+      priceAggregator: "0x0FB99723Aee6f420beAD13e6bBB79b7E6F034298",
    },
    {
       id: 2,
@@ -16,86 +18,27 @@ export const tokens: ITokenType[] = [
       price_usd: 1650.7,
       price_increase_24h_percent: 1.8,
       logo_url: "https://cryptologos.cc/logos/ethereum-eth-logo.png",
+      address: "0x0f5C50184EF3ADF2581fd115A0eB4f3cC7F296A1",
+      priceAggregator: "0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1",
    },
    {
       id: 3,
-      name: "Cardano",
-      symbol: "ADA",
+      name: "Chainlink",
+      symbol: "Link",
       price_usd: 0.256,
       price_increase_24h_percent: 3.1,
-      logo_url: "https://cryptologos.cc/logos/cardano-ada-logo.png",
-   },
-   {
-      id: 5,
-      name: "Binance Coin",
-      symbol: "BNB",
-      price_usd: 215.0,
-      price_increase_24h_percent: 0.9,
-      logo_url: "https://cryptologos.cc/logos/binance-coin-bnb-logo.png",
-   },
-   {
-      id: 6,
-      name: "Solana",
-      symbol: "SOL",
-      price_usd: 22.95,
-      price_increase_24h_percent: 4.6,
-      logo_url: "https://cryptologos.cc/logos/solana-sol-logo.png",
-   },
-   {
-      id: 7,
-      name: "Ripple",
-      symbol: "XRP",
-      price_usd: 0.513,
-      price_increase_24h_percent: 2.3,
-      logo_url: "https://cryptologos.cc/logos/xrp-xrp-logo.png",
-   },
-   {
-      id: 8,
-      name: "Polygon",
-      symbol: "MATIC",
-      price_usd: 0.8,
-      price_increase_24h_percent: 1.2,
-      logo_url: "https://cryptologos.cc/logos/polygon-matic-logo.png",
-   },
-   {
-      id: 9,
-      name: "Polkadot",
-      symbol: "DOT",
-      price_usd: 4.55,
-      price_increase_24h_percent: 2.0,
-      logo_url: "https://cryptologos.cc/logos/polkadot-new-dot-logo.png",
-   },
-   {
-      id: 10,
-      name: "Avalanche",
-      symbol: "AVAX",
-      price_usd: 9.75,
-      price_increase_24h_percent: 3.5,
-      logo_url: "https://cryptologos.cc/logos/avalanche-avax-logo.png",
-   },
-   {
-      id: 11,
-      name: "Chainlink",
-      symbol: "LINK",
-      price_usd: 7.45,
-      price_increase_24h_percent: 2.9,
       logo_url: "https://cryptologos.cc/logos/chainlink-link-logo.png",
+      address: "0x926B66bCaB5c283023045EBc84Fd215c31911f3B",
+      priceAggregator: "0xb113F5A928BCfF189C998ab20d753a47F9dE5A61",
    },
    {
-      id: 12,
-      name: "Litecoin",
-      symbol: "LTC",
-      price_usd: 68.25,
-      price_increase_24h_percent: 1.7,
-      logo_url: "https://cryptologos.cc/logos/litecoin-ltc-logo.png",
-   },
-   {
-      id: 13,
-      name: "Uniswap",
-      symbol: "UNI",
-      price_usd: 4.15,
-      price_increase_24h_percent: 1.9,
-      logo_url: "https://cryptologos.cc/logos/uniswap-uni-logo.png",
+      id: 4,
+      name: "USDT",
+      symbol: "USDT",
+      price_usd: 0.256,
+      price_increase_24h_percent: 3.1,
+      logo_url: "https://cryptologos.cc/logos/tether-usdt-logo.png",
+      address: "0xe7A527BD98566FDc99EA72bf16c6cc4eFe3606a0",
    },
 ]
 // Utility function to find a token by id
@@ -106,4 +49,11 @@ export const findTokenById = (id: number): ITokenType | null => {
 // Utility function to find a token by symbol
 export const findTokenBySymbol = (symbol: string): ITokenType | null => {
    return tokens.find((token) => token.symbol === symbol) || null
+}
+
+export const findTokenByAggregator = (priceFeed: string): ITokenType | null => {
+   return tokens.find((token) => token.priceAggregator?.toLowerCase() === priceFeed?.toLowerCase()) || null
+}
+export const findTokenByAddress = (address: string): ITokenType | null => {
+   return tokens.find((token) => token.address?.toLowerCase() === address?.toLowerCase()) || null
 }
