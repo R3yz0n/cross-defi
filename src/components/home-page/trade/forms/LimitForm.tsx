@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState, useMemo, useCallback } from "react"
+import React, { Fragment, useEffect, useState } from "react"
 import TokenDropDown from "../TokenDropDown"
 import { ITokenType } from "../../../../store/tokenSlice"
 import { useAccount, useChainId, useReadContract, useWriteContract, useSwitchChain, useWaitForTransactionReceipt } from "wagmi"
@@ -77,8 +77,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    }
 
    const handleApprove = async () => {
-      console.log(allowance)
-      debugger
       // if (allowance === null || allowance === undefined || allowance > ethers.parseUnits("100000", 18)) return
 
       try {
@@ -101,7 +99,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
       const balance = await getTokenBalance(linkTokenAddress, address)
       if (parseFloat(balance) < 4) {
-         console.log("Insufficient LINK balance")
          setShowInsufficientBalanceModal(true)
          return
       }
@@ -199,7 +196,8 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                type="submit"
                className={`mx-auto block w-full rounded ${props.tradeType === "buy" ? "bg-green" : "bg-red"} py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80`}
             >
-               {props.tradeType === "buy" ? "Buy" : "Sell"}
+               {isConnected ? (props.tradeType === "buy" ? "Buy" : "Sell") : "Connect Wallet"}
+               {/* {props.tradeType === "buy" ? "Buy" : "Sell"} */}
             </motion.button>
          </form>
          {hash && <div>Transaction Hash: {hash}</div>}
