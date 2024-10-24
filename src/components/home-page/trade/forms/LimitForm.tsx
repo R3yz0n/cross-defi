@@ -39,6 +39,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const [isLimitModalOpen, setIsLimitModalOpen] = useState(false)
    const [triggerPrice, setTriggerPrice] = useState<number>(0)
    const [amount, setAmount] = useState<number>(0)
+   const [sellTokenBalance, setSellTokenBalance] = useState<number>(0)
 
    const { address, isConnected, chainId } = useAccount()
    const { writeContractAsync: write, data: hash } = useWriteContract()
@@ -145,16 +146,37 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
          else console.error("Target chain not found")
       }
 
-      // await handleApprove(usdtAddress)
-
-      await buy()
-
-      // if (multiTokenKeeper === "0x0000000000000000000000000000000000000000") {
-      //    await createAndRegisterMultiTokenKeeper()
-      //    window.location.reload()
-      // }
+      if (props.tradeType === "buy") {
+         await buy()
+      } else if (props.tradeType === "sell") {
+         await sell()
+      }
 
       if (triggerPrice !== null && amount !== null) setIsLimitModalOpen(true)
+   }
+
+   const sell = async () => {
+      if (!address) {
+         setWalletConnectModal(true)
+         return
+      }
+
+      try {
+         await write({
+            abi: multiTokenKeeperAbi.abi as any,
+            address: multiTokenKeeper,
+            functionName: "addOrder",
+            args: [
+               tokenToBuy?.address, // _token (address of the token to sell)
+               triggerToken?.priceAggregator, // _priceFeed (address of the price feed for the trigger token)
+               1, // _orderType (assuming 1 for sell type)
+               ethers.parseUnits(triggerPrice.toString(), 8),
+               ethers.parseUnits(amount?.toString(), 6),
+            ],
+         })
+      } catch (error) {
+         console.error("Error executing sell order:", error)
+      }
    }
 
    // Create a buy function for the contract interaction
@@ -181,24 +203,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
          console.error("Error executing buy order:", error)
       }
    }
-
-   // const getUsdtBalance = async () => {
-   //    if (!address) return
-
-   //    try {
-   //       const balance = await readContract(config, {
-   //          abi: erc20Abi,
-   //          address: usdt,
-   //          functionName: "balanceOf",
-   //          args: [address],
-   //       })
-
-   //       const formattedBalance = parseFloat(ethers.formatUnits(balance, 6)) // USDT typically has 6 decimals
-   //       setUsdtBalance(formattedBalance)
-   //    } catch (error) {
-   //       console.error("Error fetching USDT balance:", error)
-   //    }
-   // }
 
    const getUsdtBalance = async (address: string | undefined, setUsdtBalance: React.Dispatch<React.SetStateAction<number>>) => {
       if (!address) return

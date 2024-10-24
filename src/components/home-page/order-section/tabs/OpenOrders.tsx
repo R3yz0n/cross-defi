@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import React, { useState } from "react"
+import React from "react"
 import { btnClick } from "../../../../animations"
 import { findTokenByAddress, findTokenByAggregator } from "../../../../utils/tokens"
 import { useAccount, useReadContract } from "wagmi"
@@ -7,15 +7,8 @@ import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/mul
 import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
 import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeper"
 import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
+import { ethers } from "ethers"
 
-interface IOpenOrder {
-   triggerToken: string
-   tokenToBuy: string
-   orderTime: string
-   side: string
-   avgFill: number
-   orderAmount: number
-}
 const OpenOrders: React.FC = () => {
    const { address, isConnected } = useAccount()
 
@@ -53,7 +46,7 @@ const OpenOrders: React.FC = () => {
                      <th className="w-1/6 px-2 py-3">Trigger Token</th>
                      <th className="w-1/6 px-2 py-3">Token To Buy</th>
                      <th className="w-1/6 px-2 py-3">Side</th>
-                     <th className="w-1/6 px-2 py-3">Avg. Fill</th>
+                     <th className="w-1/6 px-2 py-3">Trigger Price</th>
                      <th className="w-1/6 px-2 py-3">Order Amount</th>
                      <th className="w-[5%] px-2 py-3">
                         <motion.button {...btnClick} className="text-yellow hover:text-red">
@@ -91,14 +84,18 @@ const OpenOrders: React.FC = () => {
 
                         {/* Side */}
                         <td className="px-2 py-3">
-                           {openOrder?.side === "Buy" ? <span className="text-green">Buy</span> : <span className="text-red">Sell</span>}
+                           {openOrder?.orderType == 0 ? <span className="text-green">Buy</span> : <span className="text-red">Sell</span>}
                         </td>
 
                         {/* Avg. Fill */}
-                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">${openOrder?.priceThreshold.toString()}</td>
+                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">
+                           ${ethers.formatUnits(openOrder?.priceThreshold.toString(), 8).toString()}
+                        </td>
 
                         {/* Order Amount */}
-                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">{openOrder?.amount.toString()} USDT</td>
+                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">
+                           {openOrder?.orderType == 0 ? ethers.formatUnits(openOrder?.amount.toString(), 6) : 0} USDT
+                        </td>
 
                         {/* Cancel button */}
                         <td className="px-2 py-3">
@@ -119,64 +116,3 @@ const OpenOrders: React.FC = () => {
 }
 
 export default OpenOrders
-
-const openOrders: IOpenOrder[] = [
-   {
-      triggerToken: "ETH",
-      tokenToBuy: "BTC",
-      orderTime: "12:30 PM",
-      side: "Buy",
-      avgFill: 2400.5,
-      orderAmount: 200,
-   },
-   {
-      triggerToken: "BTC",
-      tokenToBuy: "ETH",
-      orderTime: "1:00 PM",
-      side: "Sell",
-      avgFill: 30000.0,
-      orderAmount: 2001,
-   },
-   {
-      triggerToken: "SOL",
-      tokenToBuy: "ADA",
-      orderTime: "2:15 PM",
-      side: "Buy",
-      avgFill: 150.0,
-      orderAmount: 12,
-   },
-   {
-      triggerToken: "SOL",
-      tokenToBuy: "ADA",
-      orderTime: "2:15 PM",
-      side: "Buy",
-      avgFill: 150.0,
-      orderAmount: 12,
-   },
-   {
-      triggerToken: "SOL",
-      tokenToBuy: "ADA",
-      orderTime: "2:15 PM",
-      side: "Buy",
-      avgFill: 150.0,
-      orderAmount: 12,
-   },
-   {
-      triggerToken: "SOL",
-      tokenToBuy: "ADA",
-      orderTime: "2:15 PM",
-      side: "Buy",
-      avgFill: 150.0,
-      orderAmount: 12,
-   },
-   {
-      triggerToken: "SOL",
-      tokenToBuy: "ADA",
-      orderTime: "2:15 PM",
-      side: "Buy",
-      avgFill: 150.0,
-      orderAmount: 12,
-   },
-]
-
-// TO DO equity not available  / available
