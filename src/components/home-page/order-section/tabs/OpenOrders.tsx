@@ -1,7 +1,7 @@
 import { motion } from "framer-motion"
 import React, { useState } from "react"
 import { btnClick } from "../../../../animations"
-import { findTokenByAddress, findTokenByAggregator, findTokenBySymbol } from "../../../../utils/tokens"
+import { findTokenByAddress, findTokenByAggregator } from "../../../../utils/tokens"
 import { useAccount, useReadContract } from "wagmi"
 import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
 import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
@@ -17,9 +17,7 @@ interface IOpenOrder {
    orderAmount: number
 }
 const OpenOrders: React.FC = () => {
-   const { address, isConnected, chainId } = useAccount()
-
-   const [openOrders, setOpenOrders] = useState<IOpenOrder[]>([])
+   const { address, isConnected } = useAccount()
 
    const { data: multiTokenKeeper } = useReadContract({
       abi: multiTokenKeeperFactoryAbi.abi as any,
