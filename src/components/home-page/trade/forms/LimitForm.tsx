@@ -134,7 +134,9 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    }
 
    useEffect(() => {
-      if (allowance) {
+      console.log(allowance)
+      console.log(multiTokenKeeper)
+      if (allowance !== undefined && multiTokenKeeper) {
          console.log(walletAddress && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18))
          if (walletAddress && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18)) {
             setShowMultiTokenKeeperModal(true)
@@ -143,7 +145,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             setShowAllowanceModal(true)
          }
       }
-   }, [walletAddress, multiTokenKeeper, allowance])
+   }, [walletAddress, multiTokenKeeper, allowance, isConnected])
 
    useEffect(() => {
       if (isConfirmed && isLimitModalOpen) setIsLimitModalOpen(false) // Close modal when confirmed
