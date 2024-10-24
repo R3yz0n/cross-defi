@@ -10,12 +10,12 @@ import { motion } from "framer-motion"
 import { btnClick } from "../../../../animations"
 import { erc20Abi } from "viem"
 import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
+import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeper"
+
 import { linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
 import { ethers } from "ethers"
 import { config } from "../../../../config"
 import WalletConnectModal from "../../../WalletConnectModal"
-import { useSelector } from "react-redux"
-import { RootState } from "../../../../store/store"
 import AllowanceModal from "../modals/AllowanceModal"
 import CreateMultiTokenKeeperModal from "../modals/CreateMultiTokenKeeperModal"
 import InsufficientBalance from "../modals/InsufficientBalance"
@@ -26,17 +26,19 @@ interface ILimitFormProps {
 }
 
 const LimitForm: React.FC<ILimitFormProps> = (props) => {
-   const { walletAddress } = useSelector((state: RootState) => state.wallet)
+   const usdtAddress = "0xe7A527BD98566FDc99EA72bf16c6cc4eFe3606a0"
+
+   // const { walletAddress } = useSelector((state: RootState) => state.wallet)
    const [triggerToken, setTriggerToken] = useState<ITokenType | null>(findTokenBySymbol("BTC"))
    const [tokenToBuy, setTokenToBuy] = useState<ITokenType | null>(findTokenBySymbol("ETH"))
    const [showWalletConnectModal, setWalletConnectModal] = useState<boolean>(false)
    const [showAllowanceModal, setShowAllowanceModal] = useState<boolean>(false)
    const [showMultiTokenKeeperModal, setShowMultiTokenKeeperModal] = useState<boolean>(false)
    const [showInsufficientBalanceModal, setShowInsufficientBalanceModal] = useState<boolean>(false)
-
+   const [usdtBalance, setUsdtBalance] = useState<number>(0) // State for USDT balance
    const [isLimitModalOpen, setIsLimitModalOpen] = useState(false)
-   const [triggerPrice, setTriggerPrice] = useState<number | null>(null)
-   const [amount, setAmount] = useState<number | null>(null)
+   const [triggerPrice, setTriggerPrice] = useState<number>(0)
+   const [amount, setAmount] = useState<number>(0)
 
    const { address, isConnected, chainId } = useAccount()
    const { writeContractAsync: write, data: hash } = useWriteContract()
@@ -76,7 +78,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       }
    }
 
-   const handleApprove = async () => {
+   const handleApproveForMultiTokenKeeper = async () => {
       // if (allowance === null || allowance === undefined || allowance > ethers.parseUnits("100000", 18)) return
 
       try {
@@ -94,8 +96,26 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       }
    }
 
+   const handleApprove = async (tokenAddress: string) => {
+      // if (allowance === null || allowance === undefined || allowance > ethers.parseUnits("100000", 18)) return
+
+      try {
+         const amountToApprove = ethers.parseUnits("10000000000000000000000000000000", 18)
+         await write({
+            abi: erc20Abi,
+            address: tokenAddress,
+            functionName: "approve",
+            args: [multiTokenKeeper, amountToApprove],
+         })
+
+         // await waitForTransactionReceipt(config, { hash })
+      } catch (error) {
+         console.error("Error during approval:", error)
+      }
+   }
+
    const createAndRegisterMultiTokenKeeper = async () => {
-      // await handleApprove()
+      // await handleApproveForMultiTokenKeeper()
 
       const balance = await getTokenBalance(linkTokenAddress, address)
       if (parseFloat(balance) < 4) {
@@ -114,7 +134,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
 
-      if (!walletAddress) {
+      if (!address) {
          setWalletConnectModal(true)
          return
       }
@@ -125,33 +145,106 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
          else console.error("Target chain not found")
       }
 
-      if (multiTokenKeeper === "0x0000000000000000000000000000000000000000") {
-         await createAndRegisterMultiTokenKeeper()
-         window.location.reload()
-      }
+      // await handleApprove(usdtAddress)
+
+      await buy()
+
+      // if (multiTokenKeeper === "0x0000000000000000000000000000000000000000") {
+      //    await createAndRegisterMultiTokenKeeper()
+      //    window.location.reload()
+      // }
 
       if (triggerPrice !== null && amount !== null) setIsLimitModalOpen(true)
+   }
+
+   // Create a buy function for the contract interaction
+   const buy = async () => {
+      if (!address) {
+         setWalletConnectModal(true)
+         return
+      }
+
+      try {
+         await write({
+            abi: multiTokenKeeperAbi.abi as any,
+            address: multiTokenKeeper,
+            functionName: "addOrder",
+            args: [
+               tokenToBuy?.address, // _token (address of the token to buy)
+               triggerToken?.priceAggregator, // _priceFeed (address of the price feed for the trigger token)
+               0, // _orderType (assuming 0 for buy type)
+               ethers.parseUnits(triggerPrice.toString(), 8),
+               ethers.parseUnits(amount?.toString(), 6),
+            ],
+         })
+      } catch (error) {
+         console.error("Error executing buy order:", error)
+      }
+   }
+
+   // const getUsdtBalance = async () => {
+   //    if (!address) return
+
+   //    try {
+   //       const balance = await readContract(config, {
+   //          abi: erc20Abi,
+   //          address: usdt,
+   //          functionName: "balanceOf",
+   //          args: [address],
+   //       })
+
+   //       const formattedBalance = parseFloat(ethers.formatUnits(balance, 6)) // USDT typically has 6 decimals
+   //       setUsdtBalance(formattedBalance)
+   //    } catch (error) {
+   //       console.error("Error fetching USDT balance:", error)
+   //    }
+   // }
+
+   const getUsdtBalance = async (address: string | undefined, setUsdtBalance: React.Dispatch<React.SetStateAction<number>>) => {
+      if (!address) return
+
+      try {
+         const balance = await readContract(config, {
+            abi: erc20Abi,
+            address: usdtAddress,
+            functionName: "balanceOf",
+            args: [address],
+         })
+
+         const formattedBalance = parseFloat(ethers.formatUnits(balance, 6)) // USDT typically has 6 decimals
+
+         console.log(`formattedBalance ${formattedBalance}`)
+         setUsdtBalance(formattedBalance)
+      } catch (error) {
+         console.error("Error fetching USDT balance:", error)
+      }
    }
 
    useEffect(() => {
       console.log(allowance)
       console.log(multiTokenKeeper)
       if (allowance !== undefined && multiTokenKeeper) {
-         console.log(walletAddress && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18))
-         if (walletAddress && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18)) {
+         console.log(address && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18))
+         if (address && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18)) {
             setShowMultiTokenKeeperModal(true)
          }
-         if (walletAddress && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && !(allowance > ethers.parseUnits("100000", 18))) {
+         if (address && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && !(allowance > ethers.parseUnits("100000", 18))) {
             setShowAllowanceModal(true)
          }
       }
-   }, [walletAddress, multiTokenKeeper, allowance, isConnected])
+   }, [address, multiTokenKeeper, allowance, isConnected])
 
    useEffect(() => {
       if (isConfirmed && isLimitModalOpen) setIsLimitModalOpen(false) // Close modal when confirmed
       if (isConfirmed && showAllowanceModal) setShowAllowanceModal(false) // Close modal when confirmed
       if (isConfirmed && showMultiTokenKeeperModal) setShowMultiTokenKeeperModal(false) // Close modal when confirmed
    }, [isConfirmed, isLimitModalOpen, showAllowanceModal, showMultiTokenKeeperModal])
+
+   useEffect(() => {
+      if (isConnected && address) {
+         getUsdtBalance(address, setUsdtBalance)
+      }
+   }, [isConnected, address])
 
    return (
       <Fragment>
@@ -181,12 +274,20 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
                <label htmlFor="amount" className="flex select-none justify-between pr-4 text-xs font-medium text-text-primary sm:text-sm">
                   Amount
-                  <p className="text-xs font-normal text-yellow">Max: {props.maxAmount} USDT</p>
+                  <p className="text-xs font-normal text-yellow">Max: {usdtBalance} USDT</p>
                </label>
                <input
                   type="text"
                   id="amount"
-                  onChange={(e) => setAmount(parseFloat(e.target.value))}
+                  onChange={(e) => {
+                     const value = parseFloat(e.target.value)
+                     if (value > usdtBalance) {
+                        setAmount(usdtBalance) // Set amount to max available balance if it exceeds
+                     } else {
+                        setAmount(value)
+                     }
+                  }}
+                  value={amount || ""}
                   className="text-text-primarytext-xs p2 block w-full rounded border border-gray-700 bg-background-secondary p-2"
                   placeholder="Enter amount in USDT"
                   required
@@ -199,12 +300,8 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                className={`mx-auto block w-full rounded ${props.tradeType === "buy" ? "bg-green" : "bg-red"} py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80`}
             >
                {isConnected ? (props.tradeType === "buy" ? "Buy" : "Sell") : "Connect Wallet"}
-               {/* {props.tradeType === "buy" ? "Buy" : "Sell"} */}
             </motion.button>
          </form>
-         {hash && <div>Transaction Hash: {hash}</div>}
-         {isConfirming && <div>Waiting for confirmation...</div>}
-         {isConfirmed && <div>Transaction confirmed.</div>}
          <LimitModal
             isOpen={isLimitModalOpen}
             onClose={() => setIsLimitModalOpen(false)}
@@ -217,7 +314,12 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
          />
          <WalletConnectModal isOpen={showWalletConnectModal} onClose={() => setWalletConnectModal(false)} />
          {/* transactionHash?: string | null // Add transactionHash prop */}
-         <AllowanceModal isOpen={showAllowanceModal} onApprove={handleApprove} onClose={() => setShowAllowanceModal(false)} transactionHash={hash} />
+         <AllowanceModal
+            isOpen={showAllowanceModal}
+            onApprove={handleApproveForMultiTokenKeeper}
+            onClose={() => setShowAllowanceModal(false)}
+            transactionHash={hash}
+         />
          <CreateMultiTokenKeeperModal
             isOpen={showMultiTokenKeeperModal}
             onApprove={createAndRegisterMultiTokenKeeper}

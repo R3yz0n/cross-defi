@@ -4,7 +4,7 @@ import { useSelector } from "react-redux"
 import { RootState } from "../../../store/store"
 import { ITokenType } from "../../../store/tokenSlice"
 import { motion } from "framer-motion"
-import { pop, slideTop } from "../../../animations"
+import { slideTop } from "../../../animations"
 
 interface TokenDropDownProps {
    selectedToken: ITokenType | null
