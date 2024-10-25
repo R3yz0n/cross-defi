@@ -14,8 +14,9 @@ interface ILimitModalProps {
 }
 
 const LimitModal: React.FC<ILimitModalProps> = ({ isOpen, onClose, onConfirm, tradeType, triggerToken, tokenToBuy, amount, triggerPrice }) => {
+   // onConfirm = { onConfirm }
    return (
-      <ModalWrapper isOpen={isOpen} onClose={onClose} onConfirm={onConfirm} title="Order Confirmation" confirmButtonTitle="Confirm">
+      <ModalWrapper isOpen={isOpen} onClose={onClose} title="Order Confirmation">
          {/* First Row Icon , token name and order tradeType */}
          <section className="mb-5 flex items-center justify-between text-text-primary">
             <aside>
