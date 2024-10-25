@@ -5,10 +5,10 @@ import { useAccount, useChainId, useReadContract, useWriteContract, useSwitchCha
 import { readContract } from "@wagmi/core"
 
 import LimitModal from "../modals/LimitModal"
-import { findTokenBySymbol } from "../../../../utils/tokens"
+import { findTokenBySymbol, usdtToken } from "../../../../utils/tokens"
 import { motion } from "framer-motion"
 import { btnClick } from "../../../../animations"
-import { erc20Abi } from "viem"
+import { erc20Abi, walletActions } from "viem"
 import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
 import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeper"
 
@@ -19,6 +19,9 @@ import WalletConnectModal from "../../../WalletConnectModal"
 import AllowanceModal from "../modals/AllowanceModal"
 import CreateMultiTokenKeeperModal from "../modals/CreateMultiTokenKeeperModal"
 import InsufficientBalance from "../modals/InsufficientBalance"
+import { useSelector } from "react-redux"
+import { RootState } from "../../../../store/store"
+import TakeAllowanceModal from "../modals/TakeAllowanceModal"
 
 interface ILimitFormProps {
    tradeType: string
@@ -27,8 +30,7 @@ interface ILimitFormProps {
 
 const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const usdtAddress = "0xe7A527BD98566FDc99EA72bf16c6cc4eFe3606a0"
-
-   // const { walletAddress } = useSelector((state: RootState) => state.wallet)
+   const { walletAddress } = useSelector((state: RootState) => state.wallet)
    const [triggerToken, setTriggerToken] = useState<ITokenType | null>(findTokenBySymbol("BTC"))
    const [tokenToBuy, setTokenToBuy] = useState<ITokenType | null>(findTokenBySymbol("ETH"))
    const [showWalletConnectModal, setWalletConnectModal] = useState<boolean>(false)
@@ -40,6 +42,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const [triggerPrice, setTriggerPrice] = useState<number>(0)
    const [amount, setAmount] = useState<number>(0)
    const [sellTokenBalance, setSellTokenBalance] = useState<number>(0)
+   // const [take]
 
    const { address, isConnected, chainId } = useAccount()
    const { writeContractAsync: write, data: hash } = useWriteContract()
@@ -163,6 +166,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       }
 
       if (props.tradeType === "buy") {
+         console.log(allowance)
          await buy()
       } else if (props.tradeType === "sell") {
          await sell()
@@ -201,6 +205,22 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
          setWalletConnectModal(true)
          return
       }
+
+      const usdtBalance = await getTokenBalance(usdtToken?.address, walletAddress)
+      console.log(allowance)
+
+      debugger
+      console.log(ethers.parseUnits("100000", 18))
+      // Format the number in ether units
+      // parseFloat(parseFloat(ethers.formatUnits(balance, decimals)).toFixed(4))
+      let formattedAllowance = parseFloat(ethers.formatUnits(allowance, 4))
+      console.log(formattedAllowance)
+      debugger
+      if (usdtBalance < allowance) {
+         console.log("you cannot do it")
+         return
+      }
+      debugger
 
       try {
          const decimals = await readContract(config, {
@@ -353,6 +373,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             transactionHash={hash}
          />
          <InsufficientBalance isOpen={showInsufficientBalanceModal} onClose={() => setShowInsufficientBalanceModal(false)} />
+         <TakeAllowanceModal isOpen={false} />
       </Fragment>
    )
 }

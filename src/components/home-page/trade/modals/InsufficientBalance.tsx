@@ -10,7 +10,7 @@ interface InsufficientBalance {
 const InsufficientBalance: React.FC<InsufficientBalance> = ({ isOpen, onClose, transactionHash }) => {
    return (
       <ModalWrapper onClose={onClose} isOpen={isOpen} title="Insufficient Balance">
-         <div className="text-sm text-gray-700">
+         <div className="text-sm text-text-secondary">
             <p>
                It appears that you don’t have enough Chainlink tokens (LINK) to proceed. You need to deposit 3 LINK tokens to create your MultiToken
                Keeper.
