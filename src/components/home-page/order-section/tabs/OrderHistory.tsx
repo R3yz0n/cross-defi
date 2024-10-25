@@ -1,19 +1,42 @@
 import { motion } from "framer-motion"
 import React from "react"
 import { btnClick } from "../../../../animations"
-import { findTokenBySymbol } from "../../../../utils/tokens"
-
-interface IOrderHistory {
-   triggerToken: string
-   tokenToBuy: string
-   orderTime: string
-   side: string
-   avgFill: number
-   orderAmount: number
-   status: "filled" | "cancelled"
-}
+import { findTokenByAddress, findTokenByAggregator, usdtToken } from "../../../../utils/tokens"
+import { useAccount, useReadContract } from "wagmi"
+import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
+import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
+import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeper"
+import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
+import { ethers } from "ethers"
 
 const OrderHistory: React.FC = () => {
+   const { address, isConnected } = useAccount()
+
+   const { data: multiTokenKeeper } = useReadContract({
+      abi: multiTokenKeeperFactoryAbi.abi as any,
+      address: multiTokenKeeperFactoryAddress,
+      functionName: "getMultiTokenKeeper",
+      args: isConnected ? [address] : undefined,
+   })
+
+   const { data: orderManager } = useReadContract({
+      abi: multiTokenKeeperAbi.abi as any,
+      address: multiTokenKeeper,
+      functionName: "orderManager",
+      args: [],
+   })
+
+   const { data: activeOrders } = useReadContract({
+      abi: orderManagerAbi as any,
+      address: orderManager,
+      functionName: "getFulfilledOrders",
+      args: [],
+   })
+
+   // Check if activeOrders is loaded and has data
+   const orders = activeOrders ? (activeOrders as any) : []
+   console.log(activeOrders)
+
    return (
       <section className="min-w-full max-w-[98%] overflow-y-scroll px-2 md:w-full md:px-0 md:pl-5">
          <div className="max-h-64 w-full overflow-y-auto">
@@ -23,26 +46,26 @@ const OrderHistory: React.FC = () => {
                      <th className="w-1/6 px-2 py-3">Trigger Token</th>
                      <th className="w-1/6 px-2 py-3">Token To Buy</th>
                      <th className="w-1/6 px-2 py-3">Side</th>
-                     <th className="w-1/6 px-2 py-3">Avg. Fill</th>
+                     <th className="w-1/6 px-2 py-3">Trigger Price</th>
                      <th className="w-1/6 px-2 py-3">Order Amount</th>
-                     <th className="w-1/6 px-2 py-3">Status</th>
+                     {/* <th className="w-1/6 px-2 py-3">Status</th> */}
                      <th className="w-[5%] px-2 py-3">
                         <button className="">Actions</button>
                      </th>
                   </tr>
                </thead>
                <tbody className="overflow-y-auto">
-                  {orderHistory.map((orderHistory, index) => (
+                  {orders.map((orderHistory, index) => (
                      <tr key={index} className="whitespace-nowrap text-xs text-text-primary sm:text-sm 2xl:text-15px">
                         {/* Trigger Token with icon */}
                         <td className="px-2 py-3">
                            <div className="flex items-center gap-2">
                               <img
                                  className="h-5 w-5 sm:h-6 sm:w-6"
-                                 src={findTokenBySymbol(orderHistory?.triggerToken)?.logo_url}
+                                 src={findTokenByAggregator(orderHistory?.priceFeed)?.logo_url}
                                  alt={orderHistory.triggerToken}
                               />
-                              {orderHistory?.triggerToken}
+                              {findTokenByAggregator(orderHistory?.priceFeed)?.name}
                            </div>
                         </td>
 
@@ -51,23 +74,27 @@ const OrderHistory: React.FC = () => {
                            <div className="flex items-center gap-2">
                               <img
                                  className="h-5 w-5 sm:h-6 sm:w-6"
-                                 src={findTokenBySymbol(orderHistory?.tokenToBuy)?.logo_url}
+                                 src={findTokenByAddress(orderHistory?.token)?.logo_url}
                                  alt={orderHistory.tokenToBuy}
                               />
-                              {orderHistory?.tokenToBuy}
+                              {findTokenByAddress(orderHistory?.token)?.name}
                            </div>
                         </td>
 
                         {/* Side */}
                         <td className="px-2 py-3">
-                           {orderHistory?.side === "Buy" ? <span className="text-green">Buy</span> : <span className="text-red">Sell</span>}
+                           {orderHistory?.orderType == 0 ? <span className="text-green">Buy</span> : <span className="text-red">Sell</span>}
                         </td>
 
                         {/* Avg. Fill */}
-                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">$ {orderHistory?.avgFill.toLocaleString()}</td>
+                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">
+                           ${ethers.formatUnits(orderHistory?.priceThreshold.toString(), 8).toString()}
+                        </td>
 
                         {/* Order Amount */}
-                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">{orderHistory?.orderAmount.toLocaleString()} USDT</td>
+                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">
+                           {orderHistory?.orderType == 0 ? ethers.formatUnits(orderHistory?.amount.toString(), usdtToken.decimal) : 0} USDT
+                        </td>
 
                         {/* filled or cancell status */}
                         <td className="px-2 py-3 text-[0.8em]">
@@ -98,70 +125,70 @@ const OrderHistory: React.FC = () => {
 
 export default OrderHistory
 
-const orderHistory: IOrderHistory[] = [
-   {
-      triggerToken: "ETH",
-      tokenToBuy: "BTC",
-      orderTime: "12:30 PM",
-      side: "Buy",
-      avgFill: 2400.5, // Changed to number
-      orderAmount: 200,
-      status: "filled",
-   },
-   {
-      triggerToken: "BTC",
-      tokenToBuy: "ETH",
-      orderTime: "1:00 PM",
-      side: "Sell",
-      avgFill: 30000.0, // Changed to number
-      orderAmount: 2001,
-      status: "cancelled",
-   },
-   {
-      triggerToken: "SOL",
-      tokenToBuy: "ADA",
-      orderTime: "2:15 PM",
-      side: "Buy",
-      avgFill: 150.0, // Changed to number
-      orderAmount: 12,
-      status: "filled",
-   },
-   {
-      triggerToken: "SOL",
-      tokenToBuy: "ADA",
-      orderTime: "2:15 PM",
-      side: "Buy",
-      avgFill: 150.0, // Changed to number
-      orderAmount: 12,
-      status: "filled",
-   },
-   {
-      triggerToken: "SOL",
-      tokenToBuy: "ADA",
-      orderTime: "2:15 PM",
-      side: "Buy",
-      avgFill: 150.0, // Changed to number
-      orderAmount: 12,
-      status: "cancelled",
-   },
-   {
-      triggerToken: "SOL",
-      tokenToBuy: "ADA",
-      orderTime: "2:15 PM",
-      side: "Buy",
-      avgFill: 150.0, // Changed to number
-      orderAmount: 12,
-      status: "filled",
-   },
-   {
-      triggerToken: "SOL",
-      tokenToBuy: "ADA",
-      orderTime: "2:15 PM",
-      side: "Buy",
-      avgFill: 150.0, // Changed to number
-      orderAmount: 12,
-      status: "cancelled",
-   },
-]
+// const orderHistory: IOrderHistory[] = [
+//    {
+//       triggerToken: "ETH",
+//       tokenToBuy: "BTC",
+//       orderTime: "12:30 PM",
+//       side: "Buy",
+//       avgFill: 2400.5, // Changed to number
+//       orderAmount: 200,
+//       status: "filled",
+//    },
+//    {
+//       triggerToken: "BTC",
+//       tokenToBuy: "ETH",
+//       orderTime: "1:00 PM",
+//       side: "Sell",
+//       avgFill: 30000.0, // Changed to number
+//       orderAmount: 2001,
+//       status: "cancelled",
+//    },
+//    {
+//       triggerToken: "SOL",
+//       tokenToBuy: "ADA",
+//       orderTime: "2:15 PM",
+//       side: "Buy",
+//       avgFill: 150.0, // Changed to number
+//       orderAmount: 12,
+//       status: "filled",
+//    },
+//    {
+//       triggerToken: "SOL",
+//       tokenToBuy: "ADA",
+//       orderTime: "2:15 PM",
+//       side: "Buy",
+//       avgFill: 150.0, // Changed to number
+//       orderAmount: 12,
+//       status: "filled",
+//    },
+//    {
+//       triggerToken: "SOL",
+//       tokenToBuy: "ADA",
+//       orderTime: "2:15 PM",
+//       side: "Buy",
+//       avgFill: 150.0, // Changed to number
+//       orderAmount: 12,
+//       status: "cancelled",
+//    },
+//    {
+//       triggerToken: "SOL",
+//       tokenToBuy: "ADA",
+//       orderTime: "2:15 PM",
+//       side: "Buy",
+//       avgFill: 150.0, // Changed to number
+//       orderAmount: 12,
+//       status: "filled",
+//    },
+//    {
+//       triggerToken: "SOL",
+//       tokenToBuy: "ADA",
+//       orderTime: "2:15 PM",
+//       side: "Buy",
+//       avgFill: 150.0, // Changed to number
+//       orderAmount: 12,
+//       status: "cancelled",
+//    },
+// ]
 
 // TO DO equity not available  / available

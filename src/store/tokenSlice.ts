@@ -10,6 +10,7 @@ export interface ITokenType {
    logo_url: string
    address: string
    priceAggregator?: string
+   decimal: number
 }
 
 export interface ITokenState {
