@@ -12,7 +12,7 @@ const TradingChart: React.FC = () => {
             theme="dark"
             height={500}
             autosize
-            interval="1"
+            interval="D"
             symbol={`PYTH:${tokenSymbol.toUpperCase()}USD`}
          ></AdvancedRealTimeChart>
       </section>

@@ -63,16 +63,32 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       args: isConnected ? [address, multiTokenKeeperFactoryAddress] : undefined,
    })
 
-   const getTokenBalance = async (tokenAddress: any, walletAddress: any, decimals: number = 18): Promise<any> => {
-      try {
-         const result = await readContract(config, {
-            abi: erc20Abi,
-            address: tokenAddress,
-            functionName: "balanceOf",
-            args: [walletAddress],
-         })
+   const getUsdtBalance = async () => {
+      if (address) {
+         const balance = await getTokenBalance(usdtAddress, address, 6)
+         setUsdtBalance(parseFloat(balance))
+      }
+   }
 
-         return ethers.formatUnits(result, decimals)
+   const getTokenBalance = async (tokenAddress: any, walletAddress: any): Promise<any> => {
+      try {
+         // Execute both the 'decimals' and 'balanceOf' contract calls in parallel
+         const [balance, decimals] = await Promise.all([
+            readContract(config, {
+               abi: erc20Abi,
+               address: tokenAddress,
+               functionName: "balanceOf",
+               args: [walletAddress],
+            }),
+            readContract(config, {
+               abi: erc20Abi,
+               address: tokenAddress,
+               functionName: "decimals",
+               args: [],
+            }),
+         ])
+
+         return parseFloat(parseFloat(ethers.formatUnits(balance, decimals)).toFixed(4))
       } catch (error) {
          console.error("Error fetching token balance:", error)
          return null
@@ -187,6 +203,13 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       }
 
       try {
+         const decimals = await readContract(config, {
+            abi: erc20Abi,
+            address: usdtAddress,
+            functionName: "decimals",
+            args: [],
+         })
+
          await write({
             abi: multiTokenKeeperAbi.abi as any,
             address: multiTokenKeeper,
@@ -196,7 +219,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                triggerToken?.priceAggregator, // _priceFeed (address of the price feed for the trigger token)
                0, // _orderType (assuming 0 for buy type)
                ethers.parseUnits(triggerPrice.toString(), 8),
-               ethers.parseUnits(amount?.toString(), 6),
+               ethers.parseUnits(amount?.toString(), decimals),
             ],
          })
       } catch (error) {
@@ -204,25 +227,22 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       }
    }
 
-   const getUsdtBalance = async (address: string | undefined, setUsdtBalance: React.Dispatch<React.SetStateAction<number>>) => {
-      if (!address) return
-
-      try {
-         const balance = await readContract(config, {
-            abi: erc20Abi,
-            address: usdtAddress,
-            functionName: "balanceOf",
-            args: [address],
-         })
-
-         const formattedBalance = parseFloat(ethers.formatUnits(balance, 6)) // USDT typically has 6 decimals
-
-         console.log(`formattedBalance ${formattedBalance}`)
-         setUsdtBalance(formattedBalance)
-      } catch (error) {
-         console.error("Error fetching USDT balance:", error)
+   const fetchSellTokenBalance = async () => {
+      if (tokenToBuy?.address && address) {
+         const balance = await getTokenBalance(tokenToBuy.address, address)
+         setSellTokenBalance(parseFloat(balance))
       }
    }
+
+   useEffect(() => {
+      if (isConnected && address) {
+         if (props.tradeType === "buy") {
+            getUsdtBalance()
+         } else if (props.tradeType === "sell" && tokenToBuy?.address) {
+            fetchSellTokenBalance()
+         }
+      }
+   }, [isConnected, address, props.tradeType, tokenToBuy])
 
    useEffect(() => {
       console.log(allowance)
@@ -246,7 +266,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
    useEffect(() => {
       if (isConnected && address) {
-         getUsdtBalance(address, setUsdtBalance)
+         getUsdtBalance()
       }
    }, [isConnected, address])
 
@@ -278,7 +298,9 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
                <label htmlFor="amount" className="flex select-none justify-between pr-4 text-xs font-medium text-text-primary sm:text-sm">
                   Amount
-                  <p className="text-xs font-normal text-yellow">Max: {usdtBalance} USDT</p>
+                  <p className="text-xs font-normal text-yellow">
+                     Max: {props.tradeType === "buy" ? `${usdtBalance} USDT` : `${sellTokenBalance} ${tokenToBuy?.symbol}`}
+                  </p>
                </label>
                <input
                   type="text"
