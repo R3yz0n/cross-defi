@@ -41,7 +41,7 @@ const TokenDropDown: React.FC<TokenDropDownProps> = ({ selectedToken, onSelectTo
                   // .filter((token) => token?.id !== selectedToken?.id)
 
                   // Exclude selected and disabled tokens
-                  .filter((token) => token?.id !== selectedToken?.id && token?.id !== disabledToken?.id)
+                  // .filter((token) => token?.id !== selectedToken?.id && token?.id !== disabledToken?.id)
 
                   .map((token) => (
                      <motion.li
