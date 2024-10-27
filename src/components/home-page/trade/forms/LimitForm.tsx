@@ -58,6 +58,12 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const expectedChainId = useChainId()
    const { chains, switchChainAsync } = useSwitchChain()
 
+   // Utility function to fetch ERC-20 token balance
+   const fetchTokenBalance = async (tokenAddress: string, walletAddress: string, decimals: number) => {
+      const balance = await executeReadContract(erc20Abi, tokenAddress, "balanceOf", [walletAddress])
+      return balance ? parseFloat(ethers.formatUnits(balance, decimals).toFixed(4)) : 0
+   }
+
    const { data: multiTokenKeeper } = useReadContract({
       abi: multiTokenKeeperFactoryAbi.abi as any,
       address: multiTokenKeeperFactoryAddress,
