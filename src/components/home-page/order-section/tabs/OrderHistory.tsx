@@ -93,7 +93,9 @@ const OrderHistory: React.FC = () => {
 
                         {/* Order Amount */}
                         <td className="px-2 py-3 text-[0.9em] text-text-secondary">
-                           {orderHistory?.orderType == 0 ? ethers.formatUnits(orderHistory?.amount.toString(), usdtToken.decimal) : 0} USDT
+                           {orderHistory?.orderType == 0
+                              ? `${ethers.formatUnits(orderHistory?.amount.toString(), usdtToken.decimal)} USDT`
+                              : `${ethers.formatUnits(orderHistory?.amount.toString(), findTokenByAddress(orderHistory?.token)?.decimal)} ${findTokenByAddress(orderHistory?.token)?.symbol}`}
                         </td>
 
                         {/* filled or cancell status */}
