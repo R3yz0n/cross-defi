@@ -7,6 +7,9 @@ console.log(projectId)
 
 const isProduction: string = import.meta.env.VITE_MODE === "production" ? "production" : "development"
 
+console.log(isProduction)
+console.log(import.meta.env.VITE_MODE)
+
 const selectedChain: Chain = isProduction === "production" ? mainnet : baseSepolia
 
 export const config = createConfig({

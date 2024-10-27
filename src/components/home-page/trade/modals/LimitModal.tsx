@@ -2,6 +2,8 @@ import React from "react"
 import ModalWrapper from "../ModalWrapper"
 import { ITokenType } from "../../../../store/tokenSlice"
 
+const etherscanBaseUrl = import.meta.env.VITE_MODE === "production" ? "https://basescan.org/tx/" : `https://sepolia.basescan.org/tx/`
+
 interface ILimitModalProps {
    isOpen: boolean
    onClose: () => void
@@ -25,8 +27,6 @@ const LimitModal: React.FC<ILimitModalProps> = ({
    triggerPrice,
    transactionHash,
 }) => {
-   const etherscanBaseUrl = import.meta.env.VITE_MODE === "production" ? "https://basescan.org/tx/" : `https://sepolia.basescan.org/tx/`
-
    console.log(`etherscanBaseUrl ${etherscanBaseUrl}`)
 
    return (
