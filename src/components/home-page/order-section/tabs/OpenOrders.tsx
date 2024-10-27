@@ -1,7 +1,7 @@
 import { motion } from "framer-motion"
 import React from "react"
 import { btnClick } from "../../../../animations"
-import { findTokenByAddress, findTokenByAggregator } from "../../../../utils/tokens"
+import { findTokenByAddress, findTokenByAggregator, usdtToken } from "../../../../utils/tokens"
 import { useAccount, useReadContract } from "wagmi"
 import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
 import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
@@ -94,7 +94,9 @@ const OpenOrders: React.FC = () => {
 
                         {/* Order Amount */}
                         <td className="px-2 py-3 text-[0.9em] text-text-secondary">
-                           {openOrder?.orderType == 0 ? ethers.formatUnits(openOrder?.amount.toString(), 6) : 0} USDT
+                           {openOrder?.orderType == 0
+                              ? `${ethers.formatUnits(openOrder?.amount.toString(), usdtToken.decimal)} USDT`
+                              : `${ethers.formatUnits(openOrder?.amount.toString(), findTokenByAddress(openOrder?.token)?.decimal)} ${findTokenByAddress(openOrder?.token)?.symbol}`}
                         </td>
 
                         {/* Cancel button */}
