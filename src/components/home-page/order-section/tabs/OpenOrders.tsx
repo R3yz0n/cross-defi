@@ -1,17 +1,22 @@
 import { motion } from "framer-motion"
-import React from "react"
+import React, { useEffect } from "react"
 import { btnClick } from "../../../../animations"
 import { findTokenByAddress, findTokenByAggregator, usdtToken } from "../../../../utils/tokens"
-import { useAccount, useReadContract } from "wagmi"
+import { useAccount, useReadContract, useWriteContract } from "wagmi"
 import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
 import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
 import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeper"
 import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
 import { ethers } from "ethers"
+import { AppDispatch, RootState } from "../../../../store/store"
+import { useDispatch, useSelector } from "react-redux"
+import { setOrderPlaced } from "../../../../store/tradeSlice"
 
 const OpenOrders: React.FC = () => {
    const { address, isConnected } = useAccount()
-
+   const { isOrderPlaced } = useSelector((state: RootState) => state.trade)
+   const dispatch = useDispatch<AppDispatch>()
+   const { writeContractAsync: write, data: hash } = useWriteContract()
    const { data: multiTokenKeeper } = useReadContract({
       abi: multiTokenKeeperFactoryAbi.abi as any,
       address: multiTokenKeeperFactoryAddress,
@@ -26,7 +31,7 @@ const OpenOrders: React.FC = () => {
       args: [],
    })
 
-   const { data: activeOrders } = useReadContract({
+   const { data: activeOrders, refetch } = useReadContract({
       abi: orderManagerAbi as any,
       address: orderManager,
       functionName: "getActiveOrders",
@@ -35,7 +40,37 @@ const OpenOrders: React.FC = () => {
 
    // Check if activeOrders is loaded and has data
    const orders = activeOrders ? (activeOrders as any) : []
-   console.log(activeOrders)
+
+   const refetchActiveOrdres = async () => {
+      await refetch()
+      dispatch(setOrderPlaced(false))
+   }
+
+   // Cancel Order with the id
+   const handleCancelOrder = async (orderId: BigInt) => {
+      console.log(orders)
+      console.log(orderId)
+      try {
+         console.log(orderManager)
+         debugger
+         if (orderManager) {
+            await write({
+               abi: orderManagerAbi,
+               address: orderManager,
+               functionName: "cancelOrder",
+               args: [orderId.toString()],
+            })
+         }
+      } catch (error) {
+         console.error("Error during canceling order:", error)
+      }
+   }
+
+   useEffect(() => {
+      if (isOrderPlaced) {
+         refetchActiveOrdres()
+      }
+   }, [dispatch, isOrderPlaced])
 
    return (
       <section className="min-w-full max-w-[98%] overflow-y-scroll px-2 md:w-full md:px-0 md:pl-5">
@@ -103,6 +138,7 @@ const OpenOrders: React.FC = () => {
                         <td className="px-2 py-3">
                            <motion.button
                               {...btnClick}
+                              onClick={() => handleCancelOrder(openOrder?.id)}
                               className="text-red-500 rounded bg-background-secondary px-3 py-0.5 text-[0.9em] shadow-md hover:bg-red"
                            >
                               Cancel

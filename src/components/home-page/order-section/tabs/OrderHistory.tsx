@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import React from "react"
+import React, { useEffect } from "react"
 import { btnClick } from "../../../../animations"
 import { findTokenByAddress, findTokenByAggregator, usdtToken } from "../../../../utils/tokens"
 import { useAccount, useReadContract } from "wagmi"
@@ -8,9 +8,14 @@ import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain
 import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeper"
 import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
 import { ethers } from "ethers"
+import { AppDispatch, RootState } from "../../../../store/store"
+import { useDispatch, useSelector } from "react-redux"
+import { setOrderPlaced } from "../../../../store/tradeSlice"
 
 const OrderHistory: React.FC = () => {
    const { address, isConnected } = useAccount()
+   const { isOrderPlaced } = useSelector((state: RootState) => state.trade)
+   const dispatch = useDispatch<AppDispatch>()
 
    const { data: multiTokenKeeper } = useReadContract({
       abi: multiTokenKeeperFactoryAbi.abi as any,
@@ -26,16 +31,25 @@ const OrderHistory: React.FC = () => {
       args: [],
    })
 
-   const { data: activeOrders } = useReadContract({
+   const { data: fullFilledOrders, refetch } = useReadContract({
       abi: orderManagerAbi as any,
       address: orderManager,
       functionName: "getFulfilledOrders",
       args: [],
    })
 
-   // Check if activeOrders is loaded and has data
-   const orders = activeOrders ? (activeOrders as any) : []
-   console.log(activeOrders)
+   // Check if fullFilledOrders is loaded and has data
+   const orders = fullFilledOrders ? (fullFilledOrders as any) : []
+
+   const refetchFullFilledOrders = async () => {
+      await refetch()
+      dispatch(setOrderPlaced(false))
+   }
+   useEffect(() => {
+      if (isOrderPlaced) {
+         refetchFullFilledOrders()
+      }
+   }, [dispatch, isOrderPlaced])
 
    return (
       <section className="min-w-full max-w-[98%] overflow-y-scroll px-2 md:w-full md:px-0 md:pl-5">

@@ -1,6 +1,9 @@
 import React from "react"
 import ModalWrapper from "../ModalWrapper"
 import { ITokenType } from "../../../../store/tokenSlice"
+import { Link } from "react-router-dom"
+import { motion } from "framer-motion"
+import { btnClick } from "../../../../animations"
 
 const etherscanBaseUrl = import.meta.env.VITE_MODE === "production" ? "https://basescan.org/tx/" : `https://sepolia.basescan.org/tx/`
 
@@ -27,10 +30,8 @@ const LimitModal: React.FC<ILimitModalProps> = ({
    triggerPrice,
    transactionHash,
 }) => {
-   console.log(`etherscanBaseUrl ${etherscanBaseUrl}`)
-
    return (
-      <ModalWrapper isOpen={isOpen} onClose={onClose} title="Order Confirmation">
+      <ModalWrapper isLoading={true} isOpen={isOpen} onClose={onClose} title="Order Confirmation">
          {/* First Row Icon, token name, and order tradeType */}
          <section className="mb-5 flex items-center justify-between text-text-primary">
             <aside>
@@ -67,12 +68,19 @@ const LimitModal: React.FC<ILimitModalProps> = ({
 
          {/* Transaction Hash (conditionally rendered) */}
          {transactionHash && (
-            <section className="mt-4">
-               <h6 className="text-xs font-medium text-text-secondary">Transaction Hash</h6>
-               <p className="break-all text-xs font-semibold">{transactionHash}</p>
-               <a href={`${etherscanBaseUrl}${transactionHash}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                  <h6 className="mt-2 text-xs font-medium text-text-secondary">View on Etherscan</h6>
-               </a>
+            <section className="mt-4 w-full">
+               <h6 className="text-base font-medium text-text-secondary">Transaction Hash</h6>
+               <p className="mt-1 w-full break-all text-13px tracking-wide text-text-primary">{transactionHash}</p>
+               <motion.button className="mt-4" {...btnClick}>
+                  <Link
+                     to={`${etherscanBaseUrl}${transactionHash}`}
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="bg-opacity- mt-5 rounded bg-background-primary px-4 py-2 text-sm font-semibold text-text-primary shadow hover:text-text-secondary"
+                  >
+                     View on Etherscan
+                  </Link>
+               </motion.button>
             </section>
          )}
       </ModalWrapper>

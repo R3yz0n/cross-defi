@@ -21,6 +21,9 @@ import CreateMultiTokenKeeperModal from "../modals/CreateMultiTokenKeeperModal"
 import InsufficientBalance from "../modals/InsufficientBalance"
 import CommonAllowanceModal from "../modals/CommonAllowanceModal"
 import NetworkChangeModal from "../modals/NetworkChangeModal"
+import { useDispatch, useSelector } from "react-redux"
+import { AppDispatch, RootState } from "../../../../store/store"
+import { setOrderPlaced } from "../../../../store/tradeSlice"
 
 interface ILimitFormProps {
    tradeType: string
@@ -31,6 +34,9 @@ const defaultApproveAmount = ethers.parseUnits("10000000000000000000000000000000
 
 const LimitForm: React.FC<ILimitFormProps> = (props) => {
    // Token-related states
+
+   const dispatch = useDispatch<AppDispatch>()
+
    const [triggerToken, setTriggerToken] = useState<ITokenType | null>(findTokenBySymbol("BTC"))
    const [selectedToken, setSelectedToken] = useState<ITokenType | null>(findTokenBySymbol("ETH"))
    const [usdtBalance, setUsdtBalance] = useState<number>(0) // USDT balance
@@ -58,10 +64,20 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const expectedChainId = useChainId()
    const { chains, switchChainAsync } = useSwitchChain()
 
+   // utility function to read a smart contract
+   const executeReadContract = async (abi: any, address: string, functionName: string, args: any[]) => {
+      try {
+         return await readContract(config, { abi, address, functionName, args })
+      } catch (error) {
+         console.log(error)
+         return null
+      }
+   }
+
    // Utility function to fetch ERC-20 token balance
    const fetchTokenBalance = async (tokenAddress: string, walletAddress: string, decimals: number) => {
       const balance = await executeReadContract(erc20Abi, tokenAddress, "balanceOf", [walletAddress])
-      return balance ? parseFloat(ethers.formatUnits(balance, decimals).toFixed(4)) : 0
+      return balance ? parseFloat(ethers.formatUnits(balance, decimals)).toFixed(4) : 0
    }
 
    const { data: multiTokenKeeper } = useReadContract({
@@ -189,7 +205,9 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
       if (props.tradeType === "buy") {
          await buy()
+
          await fetchUsdtBalance()
+         dispatch(setOrderPlaced(true))
       } else if (props.tradeType === "sell") {
          await sell()
          await fetchSellTokenBalance()
@@ -207,7 +225,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       const allowance = await getTokenAllowance(selectedToken?.address, address, multiTokenKeeper)
 
       if (allowance < ethers.parseUnits(amount.toString(), usdtToken.decimal)) {
-         console.log(ethers.parseUnits(amount.toString(), usdtToken.decimal))
          setShowCommonAllowanceModal(true)
          await approve(selectedToken?.address, multiTokenKeeper, defaultApproveAmount)
 
@@ -245,9 +262,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
       const allowance = await getTokenAllowance(usdtToken.address, address, multiTokenKeeper)
 
-      console.log(allowance < ethers.parseUnits(amount.toString(), usdtToken.decimal))
       if (allowance < ethers.parseUnits(amount.toString(), usdtToken.decimal)) {
-         console.log(ethers.parseUnits(amount.toString(), usdtToken.decimal))
          setShowCommonAllowanceModal(true)
          await approve(usdtToken.address, multiTokenKeeper, defaultApproveAmount)
 
@@ -335,8 +350,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    }, [isConnected, address, props.tradeType, selectedToken])
 
    useEffect(() => {
-      console.log(allowance)
-      console.log(multiTokenKeeper)
       if (allowance !== undefined && multiTokenKeeper) {
          console.log(address && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18))
          if (address && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18)) {
