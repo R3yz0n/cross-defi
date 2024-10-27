@@ -25,7 +25,9 @@ const LimitModal: React.FC<ILimitModalProps> = ({
    triggerPrice,
    transactionHash,
 }) => {
-   const etherscanBaseUrl = import.meta.env.MODE === "production" ? "https://basescan.org/tx/" : `https://sepolia.basescan.org/tx/`
+   const etherscanBaseUrl = import.meta.env.VITE_MODE === "production" ? "https://basescan.org/tx/" : `https://sepolia.basescan.org/tx/`
+
+   console.log(`etherscanBaseUrl ${etherscanBaseUrl}`)
 
    return (
       <ModalWrapper isOpen={isOpen} onClose={onClose} title="Order Confirmation">
