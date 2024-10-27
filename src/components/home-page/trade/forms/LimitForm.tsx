@@ -276,6 +276,35 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       }
    }
 
+   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+
+      // Allow only numbers and one decimal point using regex
+      const regex = /^[0-9]*\.?[0-9]*$/
+
+      // Update the amount only if the value matches the regex (valid decimal number)
+      if (regex.test(value)) {
+         const enteredAmount = parseFloat(value)
+
+         // Check if the entered amount is greater than the available balance
+         if (enteredAmount > usdtBalance && props.tradeType === "buy") {
+            setAmount(usdtBalance.toString()) // Set to max balance
+            // toast.warn(`Amount exceeds balance. Set to max available: ${usdtBalance} USDT.`) // Show warning message
+         } else {
+            setAmount(value) // Set the entered value if it's valid
+         }
+
+         if (props.tradeType === "sell") {
+            if (enteredAmount > sellTokenBalance) {
+               setAmount(sellTokenBalance.toString()) // Set to max balance
+               // toast.warn(`Amount exceeds balance. Set to max available: ${sellTokenBalance} ${selectedToken?.symbol}.`) // Show warning message
+            } else {
+               setAmount(value) // Set the entered value if it's valid
+            }
+         }
+      }
+   }
+
    useEffect(() => {
       const fetchUsdtBalance = async () => {
          if (address) {
@@ -370,17 +399,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                <input
                   type="text"
                   id="amount"
-                  onChange={(e) => {
-                     const value = e.target.value
-
-                     // Allow only numbers and one decimal point using regex
-                     const regex = /^[0-9]*\.?[0-9]*$/
-
-                     // Update the amount only if the value matches the regex (valid decimal number)
-                     if (regex.test(value)) {
-                        setAmount(value)
-                     }
-                  }}
+                  onChange={handleAmountChange}
                   value={amount}
                   className="block w-full rounded border border-gray-700 bg-background-secondary p-2 text-xs text-text-primary"
                   placeholder="Enter amount in USDT"
