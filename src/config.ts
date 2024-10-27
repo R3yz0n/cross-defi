@@ -5,7 +5,7 @@ import { walletConnect } from "wagmi/connectors"
 const projectId: string = import.meta.env.VITE_PROJECT_ID
 console.log(projectId)
 
-const isProduction: string = import.meta.env.MODE === "production" ? "production" : "development"
+const isProduction: string = import.meta.env.VITE_MODE === "production" ? "production" : "development"
 
 const selectedChain: Chain = isProduction === "production" ? mainnet : baseSepolia
 

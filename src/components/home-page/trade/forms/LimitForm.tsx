@@ -175,9 +175,9 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       if (Number(expectedChainId) !== Number(chainId)) {
          const targetChain = chains.find(({ id }) => Number(id) === Number(expectedChainId))
          if (targetChain) {
-            setNetworkChangeModal(true)
+            setShowNetworkChangeModal(true)
             await switchChainAsync({ chainId: targetChain?.id })
-            setNetworkChangeModal(false)
+            setShowNetworkChangeModal(false)
          } else console.error("Target chain not found")
       }
 
