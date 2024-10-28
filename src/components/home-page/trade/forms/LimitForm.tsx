@@ -24,6 +24,7 @@ import CommonAllowanceModal from "../modals/CommonAllowanceModal"
 import CreateMultiTokenKeeperModal from "../modals/CreateMultiTokenKeeperModal"
 import InsufficientBalance from "../modals/InsufficientBalance"
 import NetworkChangeModal from "../modals/NetworkChangeModal"
+import { fetchTokenBalance } from "../../../../store/tokenThunk"
 
 interface ILimitFormProps {
    tradeType: string
@@ -64,22 +65,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const expectedChainId = useChainId()
    const { chains, switchChainAsync } = useSwitchChain()
 
-   // utility function to read a smart contract
-   const executeReadContract = async (abi: any, address: string, functionName: string, args: any[]) => {
-      try {
-         return await readContract(config, { abi, address, functionName, args })
-      } catch (error) {
-         console.log(error)
-         return null
-      }
-   }
-
-   // Utility function to fetch ERC-20 token balance
-   const fetchTokenBalance = async (tokenAddress: string, walletAddress: string, decimals: number) => {
-      const balance = await executeReadContract(erc20Abi, tokenAddress, "balanceOf", [walletAddress])
-      return balance ? parseFloat(ethers.formatUnits(balance, decimals)).toFixed(4) : 0
-   }
-
    const { data: multiTokenKeeper } = useReadContract({
       abi: multiTokenKeeperFactoryAbi.abi as any,
       address: multiTokenKeeperFactoryAddress,
@@ -94,28 +79,16 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       args: isConnected ? [address, multiTokenKeeperFactoryAddress] : undefined,
    })
 
-   // Fetch balance functions
+   // Fetch USDT balance functions
    const fetchUsdtBalance = async () => {
       if (address) {
-         const balance = await fetchTokenBalance(usdtToken.address, address, usdtToken.decimal)
-         setUsdtBalance(balance)
-      }
-   }
+         const balance: string | number = await dispatch(
+            fetchTokenBalance({ tokenAddress: usdtToken.address, walletAddress: address, decimals: usdtToken.decimal })
+         )
+            .unwrap()
+            .catch()
 
-   const getTokenBalance = async (tokenAddress: any, walletAddress: any, decimals: number): Promise<any> => {
-      try {
-         // Execute both the 'decimals' and 'balanceOf' contract calls in parallel
-         const balance = await readContract(config, {
-            abi: erc20Abi,
-            address: tokenAddress,
-            functionName: "balanceOf",
-            args: [walletAddress],
-         })
-
-         return parseFloat(parseFloat(ethers.formatUnits(balance, decimals)).toFixed(4))
-      } catch (error) {
-         console.error("Error fetching token balance:", error)
-         return null
+         setUsdtBalance(parseFloat(balance as string))
       }
    }
 
@@ -163,11 +136,15 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    }
 
    const createAndRegisterMultiTokenKeeper = async () => {
-      const balance = await getTokenBalance(linkTokenAddress, address, 18)
-      debugger
-      if (parseFloat(balance) < 4) {
-         setShowInsufficientBalanceModal(true)
-         return
+      // const balance = await getTokenBalance(linkTokenAddress, address, 18)
+      if (address) {
+         const balance: string | number = await dispatch(
+            fetchTokenBalance({ tokenAddress: linkTokenAddress, walletAddress: address, decimals: 18 })
+         ).unwrap()
+         if (parseFloat(balance as string) < 4) {
+            setShowInsufficientBalanceModal(true)
+            return
+         }
       }
 
       await write({
@@ -293,8 +270,11 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
    const fetchSellTokenBalance = async () => {
       if (selectedToken?.address && address) {
-         const balance = await fetchTokenBalance(selectedToken.address, address, selectedToken.decimal)
-         setSellTokenBalance(balance)
+         const balance: string | number = await dispatch(
+            fetchTokenBalance({ tokenAddress: usdtToken.address, walletAddress: address, decimals: usdtToken.decimal })
+         ).unwrap()
+
+         setSellTokenBalance(Number(balance as string))
       }
    }
 
@@ -330,14 +310,18 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    useEffect(() => {
       const fetchUsdtBalance = async () => {
          if (address) {
-            const balance = await getTokenBalance(usdtToken.address, address, usdtToken.decimal)
-            setUsdtBalance(parseFloat(balance))
+            const balance: string | number = await dispatch(
+               fetchTokenBalance({ tokenAddress: usdtToken.address, walletAddress: address, decimals: usdtToken.decimal })
+            ).unwrap()
+            setUsdtBalance(parseFloat(balance as string))
          }
       }
       const fetchSellTokenBalance = async () => {
          if (selectedToken?.address && address) {
-            const balance = await getTokenBalance(selectedToken.address, address, selectedToken.decimal)
-            setSellTokenBalance(parseFloat(balance))
+            const balance: string | number = await dispatch(
+               fetchTokenBalance({ tokenAddress: selectedToken.address, walletAddress: address, decimals: selectedToken.decimal })
+            ).unwrap()
+            setSellTokenBalance(parseFloat(balance as string))
          }
       }
 

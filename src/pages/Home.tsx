@@ -16,7 +16,7 @@ const Home = () => {
       if (walletAddress) {
          dispatch(fetchTokenBalance({ tokenAddress: linkTokenAddress, walletAddress: walletAddress, decimals: 18 })).then((res) => {
             let balance: number = Number(res.payload)
-
+            debugger
             if (balance < 3) {
                setShowInsufficientLinkBalance(true)
             }
