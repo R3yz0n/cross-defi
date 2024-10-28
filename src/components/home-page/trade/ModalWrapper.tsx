@@ -12,6 +12,7 @@ interface IModalWrapperProps {
 
    confirmButtonTitle?: string
    isLoading?: boolean
+   isConfirmButtonDisabled?: boolean
 }
 
 const ModalWrapper: React.FC<IModalWrapperProps> = ({
@@ -21,6 +22,7 @@ const ModalWrapper: React.FC<IModalWrapperProps> = ({
    children,
    title,
    isLoading,
+   isConfirmButtonDisabled,
 
    confirmButtonTitle,
 }) => {
@@ -68,6 +70,7 @@ const ModalWrapper: React.FC<IModalWrapperProps> = ({
                </motion.button>
                {confirmButtonTitle && (
                   <motion.button
+                     disabled={isConfirmButtonDisabled}
                      {...btnClick}
                      className="rounded bg-yellow px-3 py-1 text-sm text-gray-900 hover:contrast-75 md:px-4 md:py-1.5 md:text-base"
                      onClick={onConfirm}

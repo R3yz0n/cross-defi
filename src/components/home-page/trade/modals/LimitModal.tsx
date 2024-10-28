@@ -5,7 +5,7 @@ import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { btnClick } from "../../../../animations"
 
-const etherscanBaseUrl = import.meta.env.VITE_MODE === "production" ? "https://basescan.org/tx/" : `https://sepolia.basescan.org/tx/`
+export const etherscanBaseUrl = import.meta.env.VITE_MODE === "production" ? "https://basescan.org/tx/" : `https://sepolia.basescan.org/tx/`
 
 interface ILimitModalProps {
    isOpen: boolean
@@ -78,7 +78,7 @@ const LimitModal: React.FC<ILimitModalProps> = ({
                      rel="noopener noreferrer"
                      className="bg-opacity- mt-5 rounded bg-background-primary px-4 py-2 text-sm font-semibold text-text-primary shadow hover:text-text-secondary"
                   >
-                     View on Etherscan
+                     View on Etherscan 
                   </Link>
                </motion.button>
             </section>

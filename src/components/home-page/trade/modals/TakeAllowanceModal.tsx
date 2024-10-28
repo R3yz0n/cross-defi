@@ -5,6 +5,7 @@ interface TakeAllowanceModal {
    isOpen: boolean
    onClose: () => void
    transactionHash?: string | null
+   onTakeAllowance:()=>void
 }
 
 const TakeAllowanceModal: React.FC<TakeAllowanceModal> = ({ isOpen, onClose, onTakeAllowance }) => {

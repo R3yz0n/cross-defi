@@ -1,8 +1,36 @@
+import { useEffect, useState } from "react"
 import TradingChart from "../components/home-page/chart/TradingChart"
 import Order from "../components/home-page/order-section/Order"
 import Trade from "../components/home-page/trade/Trade"
+import { linkTokenAddress } from "../constants/blockchain"
+import { fetchTokenBalance } from "../store/tokenThunk"
+import { useDispatch, useSelector } from "react-redux"
+import { AppDispatch, RootState } from "../store/store"
+import InsufficientBalance from "../components/home-page/trade/modals/InsufficientBalance"
 
 const Home = () => {
+   const dispatch = useDispatch<AppDispatch>()
+   const { walletAddress } = useSelector((state: RootState) => state.wallet)
+   const [showInsufficientLinkBalance, setShowInsufficientLinkBalance] = useState<boolean>(false)
+   const fetchLinkBalance = async () => {
+      if (walletAddress) {
+         dispatch(fetchTokenBalance({ tokenAddress: linkTokenAddress, walletAddress: walletAddress, decimals: 18 })).then((res) => {
+            let balance: number = Number(res.payload)
+
+            if (balance < 3) {
+               setShowInsufficientLinkBalance(true)
+            }
+         })
+      }
+   }
+
+   useEffect(() => {
+      const intervalId = setInterval(() => {
+         fetchLinkBalance()
+      }, 20000)
+
+      return () => clearInterval(intervalId)
+   }, [walletAddress, dispatch])
    return (
       <div className="w-full">
          <aside className="grid w-full grid-cols-1 lg:grid-cols-4">
@@ -18,6 +46,7 @@ const Home = () => {
                <Order />
             </div>
          </aside>
+         <InsufficientBalance isOpen={showInsufficientLinkBalance} onClose={() => setShowInsufficientLinkBalance(false)} />
       </div>
    )
 }

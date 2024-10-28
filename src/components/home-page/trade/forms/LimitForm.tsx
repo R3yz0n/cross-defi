@@ -1,29 +1,29 @@
-import React, { Fragment, useEffect, useState } from "react"
-import TokenDropDown from "../TokenDropDown"
-import { ITokenType } from "../../../../store/tokenSlice"
-import { useAccount, useChainId, useReadContract, useWriteContract, useSwitchChain, useWaitForTransactionReceipt } from "wagmi"
 import { readContract } from "@wagmi/core"
+import React, { Fragment, useEffect, useState } from "react"
+import { useAccount, useChainId, useReadContract, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
+import { ITokenType } from "../../../../store/tokenSlice"
+import TokenDropDown from "../TokenDropDown"
 
-import LimitModal from "../modals/LimitModal"
-import { findTokenBySymbol, usdtToken } from "../../../../utils/tokens"
 import { motion } from "framer-motion"
-import { btnClick } from "../../../../animations"
 import { erc20Abi } from "viem"
-import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
+import { btnClick } from "../../../../animations"
 import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeper"
+import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
+import { findTokenBySymbol, usdtToken } from "../../../../utils/tokens"
+import LimitModal from "../modals/LimitModal"
 
-import { linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
 import { ethers } from "ethers"
+import { useDispatch } from "react-redux"
 import { config } from "../../../../config"
+import { linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
+import { AppDispatch } from "../../../../store/store"
+import { setOrderPlaced } from "../../../../store/tradeSlice"
 import WalletConnectModal from "../../../WalletConnectModal"
 import AllowanceModal from "../modals/AllowanceModal"
+import CommonAllowanceModal from "../modals/CommonAllowanceModal"
 import CreateMultiTokenKeeperModal from "../modals/CreateMultiTokenKeeperModal"
 import InsufficientBalance from "../modals/InsufficientBalance"
-import CommonAllowanceModal from "../modals/CommonAllowanceModal"
 import NetworkChangeModal from "../modals/NetworkChangeModal"
-import { useDispatch, useSelector } from "react-redux"
-import { AppDispatch, RootState } from "../../../../store/store"
-import { setOrderPlaced } from "../../../../store/tradeSlice"
 
 interface ILimitFormProps {
    tradeType: string
@@ -164,6 +164,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
    const createAndRegisterMultiTokenKeeper = async () => {
       const balance = await getTokenBalance(linkTokenAddress, address, 18)
+      debugger
       if (parseFloat(balance) < 4) {
          setShowInsufficientBalanceModal(true)
          return
@@ -429,7 +430,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             <motion.button
                {...btnClick}
                type="submit"
-               className={`mx-auto block w-full rounded ${props.tradeType === "buy" ? "bg-green" : "bg-red"} py-1 font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80`}
+               className={`mx-auto block w-full rounded ${props.tradeType === "buy" ? "bg-green" : "bg-red"} py-1.5 text-base font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80`}
             >
                {isConnected ? (props.tradeType === "buy" ? "Buy" : "Sell") : "Connect Wallet"}
             </motion.button>
@@ -461,7 +462,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
          <InsufficientBalance isOpen={showInsufficientBalanceModal} onClose={() => setShowInsufficientBalanceModal(false)} />
 
          <CommonAllowanceModal isOpen={showCommonAllowanceModal} onClose={() => setShowCommonAllowanceModal(false)} />
-         <NetworkChangeModal isOpen={showNetworkChangeModal} />
+         <NetworkChangeModal isOpen={showNetworkChangeModal} onClose={() => setShowNetworkChangeModal(false)} />
       </Fragment>
    )
 }
