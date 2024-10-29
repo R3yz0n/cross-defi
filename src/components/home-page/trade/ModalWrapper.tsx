@@ -66,7 +66,7 @@ const ModalWrapper: React.FC<IModalWrapperProps> = ({
                   className="rounded border border-yellow px-3 py-1 text-text-primary hover:bg-yellow hover:bg-opacity-10 md:px-4 md:py-1.5"
                   onClick={onClose}
                >
-                  Cancel
+                  Close
                </motion.button>
                {confirmButtonTitle && (
                   <motion.button

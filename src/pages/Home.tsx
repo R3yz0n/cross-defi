@@ -16,7 +16,6 @@ const Home = () => {
       if (walletAddress) {
          dispatch(fetchTokenBalance({ tokenAddress: linkTokenAddress, walletAddress: walletAddress, decimals: 18 })).then((res) => {
             let balance: number = Number(res.payload)
-            debugger
             if (balance < 3) {
                setShowInsufficientLinkBalance(true)
             }
@@ -27,7 +26,7 @@ const Home = () => {
    useEffect(() => {
       const intervalId = setInterval(() => {
          fetchLinkBalance()
-      }, 20000)
+      }, 5000)
 
       return () => clearInterval(intervalId)
    }, [walletAddress, dispatch])

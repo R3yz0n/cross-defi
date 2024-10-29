@@ -13,10 +13,10 @@ import { findTokenBySymbol, usdtToken } from "../../../../utils/tokens"
 import LimitModal from "../modals/LimitModal"
 
 import { ethers } from "ethers"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { config } from "../../../../config"
 import { linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
-import { AppDispatch } from "../../../../store/store"
+import { AppDispatch, RootState } from "../../../../store/store"
 import { setOrderPlaced } from "../../../../store/tradeSlice"
 import WalletConnectModal from "../../../WalletConnectModal"
 import AllowanceModal from "../modals/AllowanceModal"
@@ -56,6 +56,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
    // Wallet-related states
    const { address, isConnected, chainId } = useAccount()
+   const { orderType } = useSelector((state: RootState) => state.trade)
 
    // Contract interaction hooks
    const { writeContractAsync: write, data: hash } = useWriteContract()
@@ -223,7 +224,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                ethers.parseUnits(amount?.toString(), selectedToken?.decimal),
             ],
          })
-         setIsLimitModalOpen(false)
+         setIsLimitModalOpen(true)
       } catch (error) {
          console.error("Error executing sell order:", error)
       }
@@ -271,7 +272,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const fetchSellTokenBalance = async () => {
       if (selectedToken?.address && address) {
          const balance: string | number = await dispatch(
-            fetchTokenBalance({ tokenAddress: usdtToken.address, walletAddress: address, decimals: usdtToken.decimal })
+            fetchTokenBalance({ tokenAddress: selectedToken.address, walletAddress: address, decimals: selectedToken.decimal })
          ).unwrap()
 
          setSellTokenBalance(Number(balance as string))
@@ -297,6 +298,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
          }
 
          if (props.tradeType === "sell") {
+            console.log(enteredAmount, sellTokenBalance)
             if (enteredAmount > sellTokenBalance) {
                setAmount(sellTokenBalance.toString()) // Set to max balance
                // toast.warn(`Amount exceeds balance. Set to max available: ${sellTokenBalance} ${selectedToken?.symbol}.`) // Show warning message
@@ -321,6 +323,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             const balance: string | number = await dispatch(
                fetchTokenBalance({ tokenAddress: selectedToken.address, walletAddress: address, decimals: selectedToken.decimal })
             ).unwrap()
+
             setSellTokenBalance(parseFloat(balance as string))
          }
       }
@@ -328,8 +331,13 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       if (isConnected && address) {
          if (props.tradeType === "buy") {
             fetchUsdtBalance()
+            console.log("clear")
+            setTriggerPrice("")
+            setAmount("")
          } else {
             fetchSellTokenBalance()
+            setTriggerPrice("")
+            setAmount("")
          }
       }
    }, [isConnected, address, props.tradeType, selectedToken])
@@ -368,7 +376,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                </label>
 
                <label className="flex w-full select-none flex-col gap-2 rounded-md text-xs font-medium text-text-primary sm:text-sm">
-                  Token to buy
+                  {orderType === "buy" ? "Token to buy" : "Token to sell"}{" "}
                   <TokenDropDown disabledToken={triggerToken} selectedToken={selectedToken} onSelectToken={setSelectedToken} />
                </label>
 
@@ -378,8 +386,9 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                <input
                   type="text"
                   id="triggerPrice"
-                  className="text-text-primarytext-xs w-full rounded border border-gray-700 bg-background-secondary p-2"
+                  className="w-full rounded border border-gray-700 bg-background-secondary p-2 text-xs text-text-primary focus:border-yellow focus:outline-none"
                   placeholder="Enter target buy price"
+                  value={triggerPrice}
                   onChange={(e) => {
                      const value = e.target.value
 
@@ -397,7 +406,8 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                <label htmlFor="amount" className="flex select-none justify-between pr-4 text-xs font-medium text-text-primary sm:text-sm">
                   Amount
                   <p className="text-xs font-normal text-yellow">
-                     Max: {props.tradeType === "buy" ? `${usdtBalance} USDT` : `${sellTokenBalance} ${selectedToken?.symbol}`}
+                     Max: {props.tradeType === "buy" && `${usdtBalance} USDT`}
+                     {props.tradeType === "sell" && `${sellTokenBalance} ${selectedToken?.symbol}`}
                   </p>
                </label>
                <input
@@ -405,8 +415,8 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                   id="amount"
                   onChange={handleAmountChange}
                   value={amount}
-                  className="block w-full rounded border border-gray-700 bg-background-secondary p-2 text-xs text-text-primary"
-                  placeholder="Enter amount in USDT"
+                  className="block w-full rounded border border-gray-700 bg-background-secondary p-2 text-xs text-text-primary focus:border-yellow focus:outline-none"
+                  placeholder={`Enter amount in ${props.tradeType === "buy" ? "USDT" : selectedToken?.symbol}`}
                   required
                />
             </section>
@@ -428,6 +438,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             triggerPrice={triggerPrice}
             amount={amount}
             transactionHash={hash}
+            tokenSymbol={selectedToken?.symbol}
          />
          <WalletConnectModal isOpen={showWalletConnectModal} onClose={() => setWalletConnectModal(false)} />
          {/* transactionHash?: string | null // Add transactionHash prop */}

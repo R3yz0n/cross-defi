@@ -4,6 +4,8 @@ import { ITokenType } from "../../../../store/tokenSlice"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { btnClick } from "../../../../animations"
+import { useSelector } from "react-redux"
+import { RootState } from "../../../../store/store"
 
 export const etherscanBaseUrl = import.meta.env.VITE_MODE === "production" ? "https://basescan.org/tx/" : `https://sepolia.basescan.org/tx/`
 
@@ -16,7 +18,8 @@ interface ILimitModalProps {
    selectedToken: ITokenType | null
    triggerPrice: number
    amount: number
-   transactionHash?: string // Add the transaction hash as an optional prop
+   transactionHash?: string
+   tokenSymbol: string
 }
 
 const LimitModal: React.FC<ILimitModalProps> = ({
@@ -29,7 +32,9 @@ const LimitModal: React.FC<ILimitModalProps> = ({
    amount,
    triggerPrice,
    transactionHash,
+   tokenSymbol,
 }) => {
+   const { orderType } = useSelector((state: RootState) => state.trade)
    return (
       <ModalWrapper isLoading={true} isOpen={isOpen} onClose={onClose} title="Order Confirmation">
          {/* First Row Icon, token name, and order tradeType */}
@@ -42,7 +47,7 @@ const LimitModal: React.FC<ILimitModalProps> = ({
                </div>
             </aside>
             <aside>
-               <h6 className="text-sm text-text-secondary">Token to buy</h6>
+               <h6 className="text-sm text-text-secondary">{orderType === "buy" ? "Token to buy" : "Token to sell"} </h6>
                <div className="mt-1 flex items-center gap-2 font-semibold">
                   <img src={selectedToken?.logo_url} alt="logo" className="h-4 w-4 md:h-6 md:w-6" />
                   <span className="text-sm md:text-base">{selectedToken?.symbol}</span>
@@ -61,7 +66,12 @@ const LimitModal: React.FC<ILimitModalProps> = ({
                <p className="pl-1 text-xs font-semibold">{triggerPrice}</p>
             </aside>
             <aside>
-               <h6 className="mb-1 text-xs font-medium text-text-secondary md:text-sm">Amount (USDT)</h6>
+               {orderType === "buy" && <h6 className="mb-1 text-xs font-medium text-text-secondary md:text-sm">Amount (USDT)</h6>}
+               {orderType === "sell" && (
+                  <h6 className="mb-1 text-xs font-medium text-text-secondary md:text-sm">
+                     Amount ({tokenSymbol && tokenSymbol}) <span className="text-white text-opacity-0">..</span>
+                  </h6>
+               )}
                <p className="pl-1 text-xs font-semibold">{amount}</p>
             </aside>
          </section>
@@ -78,7 +88,7 @@ const LimitModal: React.FC<ILimitModalProps> = ({
                      rel="noopener noreferrer"
                      className="bg-opacity- mt-5 rounded bg-background-primary px-4 py-2 text-sm font-semibold text-text-primary shadow hover:text-text-secondary"
                   >
-                     View on Etherscan 
+                     View on Etherscan
                   </Link>
                </motion.button>
             </section>
