@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit"
-import { config } from "../config"
+import { config } from "../config/wallet-config"
 import { readContract } from "@wagmi/core"
 import { erc20Abi } from "viem"
 import { BigNumberish, ethers } from "ethers"

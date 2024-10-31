@@ -14,7 +14,7 @@ import LimitModal from "../modals/LimitModal"
 
 import { ethers } from "ethers"
 import { useDispatch, useSelector } from "react-redux"
-import { config } from "../../../../config"
+import { config } from "../../../../config/wallet-config"
 import { linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
 import { AppDispatch, RootState } from "../../../../store/store"
 import { setOrderPlaced } from "../../../../store/tradeSlice"
@@ -28,7 +28,6 @@ import { fetchTokenBalance } from "../../../../store/tokenThunk"
 
 interface ILimitFormProps {
    tradeType: string
-   maxAmount: number
 }
 
 const defaultApproveAmount = ethers.parseUnits("10000000000000000000000000000000", 18)

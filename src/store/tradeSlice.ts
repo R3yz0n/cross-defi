@@ -11,7 +11,7 @@ interface OrderState {
 }
 
 const initialState: OrderState = {
-   selectedTrade: "limit",
+   selectedTrade: "market",
    orderType: "buy",
    isOrderPlaced: false,
 }

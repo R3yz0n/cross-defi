@@ -7,6 +7,7 @@ import { fetchTokenBalance } from "../store/tokenThunk"
 import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "../store/store"
 import InsufficientBalance from "../components/home-page/trade/modals/InsufficientBalance"
+import { client } from "../config/thirdweb"
 
 const Home = () => {
    const dispatch = useDispatch<AppDispatch>()
@@ -22,6 +23,7 @@ const Home = () => {
          })
       }
    }
+   console.log(client)
 
    useEffect(() => {
       const intervalId = setInterval(() => {

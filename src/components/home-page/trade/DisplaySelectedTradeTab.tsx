@@ -2,6 +2,7 @@ import React, { Fragment } from "react"
 
 import { OrderType, TradeType } from "../../../store/tradeSlice"
 import LimitForm from "./forms/LimitForm"
+import MarketForm from "./forms/MarketForm"
 
 interface IDisplaySelectedTradeTab {
    selectedTrade: TradeType
@@ -10,8 +11,9 @@ interface IDisplaySelectedTradeTab {
 const DisplaySelectedTradeTab: React.FC<IDisplaySelectedTradeTab> = (props) => {
    return (
       <Fragment>
-         {props.selectedTrade === "limit" &&
-            (props.orderType === "buy" ? <LimitForm tradeType="buy" maxAmount={2000} /> : <LimitForm tradeType="sell" maxAmount={2000} />)}
+         {props.selectedTrade === "limit" && (props.orderType === "buy" ? <LimitForm tradeType="buy" /> : <LimitForm tradeType="sell" />)}
+
+         {props.selectedTrade === "market" && (props.orderType === "buy" ? <MarketForm tradeType="buy" /> : <MarketForm tradeType="sell" />)}
       </Fragment>
    )
 }
