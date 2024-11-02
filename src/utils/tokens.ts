@@ -1,4 +1,5 @@
 import { ITokenType } from "../store/tokenSlice"
+import { createThirdwebClient } from "thirdweb"
 
 export const tokens: ITokenType[] = [
    {
@@ -35,6 +36,7 @@ export const tokens: ITokenType[] = [
       decimal: 18,
    },
 ]
+
 // Utility function to find a token by id
 export const findTokenById = (id: number): ITokenType | null => {
    return tokens.find((token) => token.id === id) || null
@@ -48,6 +50,7 @@ export const findTokenBySymbol = (symbol: string): ITokenType | null => {
 export const findTokenByAggregator = (priceFeed: string): ITokenType | null => {
    return tokens.find((token) => token.priceAggregator?.toLowerCase() === priceFeed?.toLowerCase()) || null
 }
+
 export const findTokenByAddress = (address: string): ITokenType | null => {
    return tokens.find((token) => token.address?.toLowerCase() === address?.toLowerCase()) || null
 }
@@ -56,9 +59,14 @@ export const usdtToken: ITokenType = {
    id: 4,
    name: "USDT",
    symbol: "USDT",
-   price_usd: 0.256,
-   price_increase_24h_percent: 3.1,
+   price_usd: 1.0,
+   price_increase_24h_percent: 0.0,
    logo_url: "https://cryptologos.cc/logos/tether-usdt-logo.png",
    address: "0xe7A527BD98566FDc99EA72bf16c6cc4eFe3606a0",
    decimal: 18,
 }
+
+// Replace 'your_client_id_here' with your actual Thirdweb client ID
+export const client = createThirdwebClient({
+   clientId: "485a0fd95563acb5d9b22ab679e13022",
+})

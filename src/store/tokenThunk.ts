@@ -1,13 +1,13 @@
 import { createAsyncThunk } from "@reduxjs/toolkit"
-import { config } from "../config/wallet-config"
-import { readContract } from "@wagmi/core"
+// import { config } from "../config/wallet-config"
+// import { readContract } from "@wagmi/core"
 import { erc20Abi } from "viem"
-import { BigNumberish, ethers } from "ethers"
+import { ethers } from "ethers"
 
 // Utility function to read a smart contract
 const executeReadContract = async (abi: any, address: string, functionName: string, args: any[]) => {
    try {
-      return await readContract(config, { abi, address, functionName, args })
+      return 0 //await readContract(config, { abi, address, functionName, args })
    } catch (error) {
       console.log(error)
       return null
