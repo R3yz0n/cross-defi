@@ -12,7 +12,6 @@ interface IWalletOperation {
    onCloseDropDown: () => void
 }
 const WalletOperation: React.FC<IWalletOperation> = (props) => {
-   const { disconnect } = useDisconnect()
    const dispatch = useDispatch<AppDispatch>()
 
    return (
@@ -43,7 +42,6 @@ const WalletOperation: React.FC<IWalletOperation> = (props) => {
 
          <motion.button
             onClick={() => {
-               disconnect()
                dispatch(removeWalletAddress())
                props.onCloseDropDown()
             }}

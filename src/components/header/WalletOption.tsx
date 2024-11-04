@@ -1,59 +1,30 @@
 import { motion } from "framer-motion"
-// import { useConnect } from "wagmi"
 import { btnClick, pop } from "../../animations"
-import { client, managedAccountFactory } from "../../config/thirdweb"
-import { createWallet, inAppWallet, smartWallet } from "thirdweb/wallets"
-import { baseSepolia } from "thirdweb/chains"
-import { useDispatch } from "react-redux"
-import { setUserDetails } from "../../store/userDetails"
+import { createWallet } from "thirdweb/wallets"
+import { useDispatch, useSelector } from "react-redux"
 
-const personalWallet: any = inAppWallet()
+import { AppDispatch, RootState } from "../../store/store"
+import { connectPersonalWallet, connectSmartWallet } from "../../store/walletThunk"
 
 interface IWalletOption {
    onCloseDropDown: () => void
 }
-export function WalletOptions(props: IWalletOption) {
-   // Take showModal and setShowModal as props
 
-   const dispatch = useDispatch()
+export function WalletOptions(props: IWalletOption) {
+   const dispatch = useDispatch<AppDispatch>()
 
    const handleConnect = async (wallet: any) => {
       props.onCloseDropDown()
-      const connector = wallet.connector
-      const personalAccount = await personalWallet.connect({
-         strategy: "wallet",
-         chain: baseSepolia,
-         wallet: connector as any,
-         client: client,
-      })
 
-      const Swallet = smartWallet({
-         chain: baseSepolia,
-         factoryAddress: managedAccountFactory,
-         gasless: true,
-         clientId: "485a0fd95563acb5d9b22ab679e13022",
-      })
+      try {
+         const personalAccount = await dispatch(connectPersonalWallet({ connector: wallet.connector })).unwrap()
 
-      const smartAccount = await Swallet.connect({
-         chain: baseSepolia,
-         client,
-         personalAccount,
-      })
+         await dispatch(connectSmartWallet({ personalAccount })).unwrap()
 
-      console.log(smartAccount)
-      dispatch(
-         setUserDetails({
-            personalAccount: personalAccount,
-            smartAccount: smartAccount,
-         })
-      )
-
-      // const tx = await smartAccount.sendTransaction({
-      //    to: "0x75998e806D0BE5B37c5DE74AcfA0006B3C7DCdfF",
-      //    value: "10000",
-      // })
-
-      // console.log(tx)
+         console.log("Wallets connected successfully")
+      } catch (error) {
+         console.error("Failed to connect wallets:", error)
+      }
    }
 
    const wallets = [
