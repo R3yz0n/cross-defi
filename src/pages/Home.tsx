@@ -29,7 +29,7 @@ const Home = () => {
    useEffect(() => {
       const intervalId = setInterval(() => {
          fetchLinkBalance()
-      }, 5000)
+      }, 20000)
 
       return () => clearInterval(intervalId)
    }, [walletAddress, dispatch])

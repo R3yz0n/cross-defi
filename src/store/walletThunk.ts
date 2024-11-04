@@ -1,5 +1,3 @@
-// src/store/thunks/walletThunks.ts
-
 import { createAsyncThunk } from "@reduxjs/toolkit"
 import { inAppWallet, smartWallet } from "thirdweb/wallets"
 import { baseSepolia } from "thirdweb/chains"
