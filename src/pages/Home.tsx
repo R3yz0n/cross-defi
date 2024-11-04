@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "../store/store"
 import InsufficientBalance from "../components/home-page/trade/modals/InsufficientBalance"
 import { client } from "../config/thirdweb"
+import { inAppWallet } from "thirdweb/wallets"
 
 const Home = () => {
    const dispatch = useDispatch<AppDispatch>()

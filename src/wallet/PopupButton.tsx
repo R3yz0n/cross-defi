@@ -1,5 +1,5 @@
-import React from "react"
-import { useConnect } from "wagmi"
+// import React from "react"
+// import { useConnect } from "wagmi"
 
 export const PopupButton = () => {
    return (

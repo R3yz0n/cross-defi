@@ -1,6 +1,6 @@
 import { readContract } from "@wagmi/core"
 import React, { Fragment, useEffect, useState } from "react"
-import { useAccount, useChainId, useReadContract, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
+// import { useAccount, useChainId, useReadContract, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { ITokenType } from "../../../../store/tokenSlice"
 import TokenDropDown from "../TokenDropDown"
 
@@ -54,42 +54,41 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const [isLimitModalOpen, setIsLimitModalOpen] = useState<boolean>(false)
 
    // Wallet-related states
-   const { address, isConnected, chainId } = useAccount()
+   // const { address, isConnected, chainId } = useAccount()
    const { orderType } = useSelector((state: RootState) => state.trade)
 
    // Contract interaction hooks
-   const { writeContractAsync: write, data: hash } = useWriteContract()
-   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash, confirmations: 6 })
+   // const { writeContractAsync: write, data: hash } = useWriteContract()
+   // const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash, confirmations: 6 })
 
    // Chain-related hooks
-   const expectedChainId = useChainId()
-   const { chains, switchChainAsync } = useSwitchChain()
+   // const expectedChainId = useChainId()
+   // const { chains, switchChainAsync } = useSwitchChain()
 
-   const { data: multiTokenKeeper } = useReadContract({
-      abi: multiTokenKeeperFactoryAbi.abi as any,
-      address: multiTokenKeeperFactoryAddress,
-      functionName: "getMultiTokenKeeper",
-      args: isConnected ? [address] : undefined,
-   })
+   // const { data: multiTokenKeeper } = useReadContract({
+   //    abi: multiTokenKeeperFactoryAbi.abi as any,
+   //    address: multiTokenKeeperFactoryAddress,
+   //    functionName: "getMultiTokenKeeper",
+   //    args: isConnected ? [address] : undefined,
+   // })
 
-   const { data: allowance } = useReadContract({
-      abi: erc20Abi,
-      address: linkTokenAddress,
-      functionName: "allowance",
-      args: isConnected ? [address, multiTokenKeeperFactoryAddress] : undefined,
-   })
+   // const { data: allowance } = useReadContract({
+   //    abi: erc20Abi,
+   //    address: linkTokenAddress,
+   //    functionName: "allowance",
+   //    args: isConnected ? [address, multiTokenKeeperFactoryAddress] : undefined,
+   // })
 
    // Fetch USDT balance functions
    const fetchUsdtBalance = async () => {
-      if (address) {
-         const balance: string | number = await dispatch(
-            fetchTokenBalance({ tokenAddress: usdtToken.address, walletAddress: address, decimals: usdtToken.decimal })
-         )
-            .unwrap()
-            .catch()
-
-         setUsdtBalance(parseFloat(balance as string))
-      }
+      // if (address) {
+      //    const balance: string | number = await dispatch(
+      //       fetchTokenBalance({ tokenAddress: usdtToken.address, walletAddress: address, decimals: usdtToken.decimal })
+      //    )
+      //       .unwrap()
+      //       .catch()
+      //    setUsdtBalance(parseFloat(balance as string))
+      // }
    }
 
    /**
@@ -120,16 +119,16 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    }
 
    const handleApproveForMultiTokenKeeper = async () => {
-      if (allowance === null || allowance === undefined || allowance > ethers.parseUnits("100000", 18)) return
+      // if (allowance === null || allowance === undefined || allowance > ethers.parseUnits("100000", 18)) return
 
       try {
          const amountToApprove = ethers.parseUnits("10000000000000000000000000000000", 18)
-         await write({
-            abi: erc20Abi,
-            address: linkTokenAddress,
-            functionName: "approve",
-            args: [multiTokenKeeperFactoryAddress, amountToApprove],
-         })
+         // await write({
+         //    abi: erc20Abi,
+         //    address: linkTokenAddress,
+         //    functionName: "approve",
+         //    args: [multiTokenKeeperFactoryAddress, amountToApprove],
+         // })
       } catch (error) {
          console.error("Error during approval:", error)
       }
@@ -137,233 +136,210 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
    const createAndRegisterMultiTokenKeeper = async () => {
       // const balance = await getTokenBalance(linkTokenAddress, address, 18)
-      if (address) {
-         const balance: string | number = await dispatch(
-            fetchTokenBalance({ tokenAddress: linkTokenAddress, walletAddress: address, decimals: 18 })
-         ).unwrap()
-         if (parseFloat(balance as string) < 4) {
-            setShowInsufficientBalanceModal(true)
-            return
-         }
-      }
-
-      await write({
-         abi: multiTokenKeeperFactoryAbi.abi as any,
-         address: multiTokenKeeperFactoryAddress,
-         functionName: "createAndRegisterMultiTokenKeeper",
-         args: [address as any],
-      })
+      // if (address) {
+      //    const balance: string | number = await dispatch(
+      //       fetchTokenBalance({ tokenAddress: linkTokenAddress, walletAddress: address, decimals: 18 })
+      //    ).unwrap()
+      //    if (parseFloat(balance as string) < 4) {
+      //       setShowInsufficientBalanceModal(true)
+      //       return
+      //    }
+      // }
+      // await write({
+      //    abi: multiTokenKeeperFactoryAbi.abi as any,
+      //    address: multiTokenKeeperFactoryAddress,
+      //    functionName: "createAndRegisterMultiTokenKeeper",
+      //    args: [address as any],
+      // })
    }
 
    const approve = (tokenAddress: string, spenderAddress: any, amount: any) => {
-      return write({
-         abi: erc20Abi,
-         address: tokenAddress,
-         functionName: "approve",
-         args: [spenderAddress, amount],
-      })
+      // return write({
+      //    abi: erc20Abi,
+      //    address: tokenAddress,
+      //    functionName: "approve",
+      //    args: [spenderAddress, amount],
+      // })
    }
 
    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault()
-
-      if (!address) {
-         setWalletConnectModal(true)
-         return
-      }
-
-      if (Number(expectedChainId) !== Number(chainId)) {
-         const targetChain = chains.find(({ id }) => Number(id) === Number(expectedChainId))
-         if (targetChain) {
-            setShowNetworkChangeModal(true)
-            await switchChainAsync({ chainId: targetChain?.id })
-            setShowNetworkChangeModal(false)
-         } else console.error("Target chain not found")
-      }
-
-      if (props.tradeType === "buy") {
-         await buy()
-
-         await fetchUsdtBalance()
-         dispatch(setOrderPlaced(true))
-      } else if (props.tradeType === "sell") {
-         await sell()
-         await fetchSellTokenBalance()
-      }
+      // e.preventDefault()
+      // if (!address) {
+      //    setWalletConnectModal(true)
+      //    return
+      // }
+      // if (Number(expectedChainId) !== Number(chainId)) {
+      //    const targetChain = chains.find(({ id }) => Number(id) === Number(expectedChainId))
+      //    if (targetChain) {
+      //       setShowNetworkChangeModal(true)
+      //       await switchChainAsync({ chainId: targetChain?.id })
+      //       setShowNetworkChangeModal(false)
+      //    } else console.error("Target chain not found")
+      // }
+      // if (props.tradeType === "buy") {
+      //    await buy()
+      //    await fetchUsdtBalance()
+      //    dispatch(setOrderPlaced(true))
+      // } else if (props.tradeType === "sell") {
+      //    await sell()
+      //    await fetchSellTokenBalance()
+      // }
    }
 
    const sell = async () => {
-      if (!address) {
-         setWalletConnectModal(true)
-         return
-      }
-
-      if (!multiTokenKeeper) return
-
-      const allowance = await getTokenAllowance(selectedToken?.address, address, multiTokenKeeper)
-
-      if (allowance < ethers.parseUnits(amount.toString(), usdtToken.decimal)) {
-         setShowCommonAllowanceModal(true)
-         await approve(selectedToken?.address, multiTokenKeeper, defaultApproveAmount)
-
-         setShowCommonAllowanceModal(false)
-      }
-
-      try {
-         if (triggerPrice !== null && amount !== null) setIsLimitModalOpen(true)
-         await write({
-            abi: multiTokenKeeperAbi.abi as any,
-            address: multiTokenKeeper,
-            functionName: "addOrder",
-            args: [
-               selectedToken?.address,
-               triggerToken?.priceAggregator,
-               1,
-               ethers.parseUnits(triggerPrice.toString(), 8),
-               ethers.parseUnits(amount?.toString(), selectedToken?.decimal),
-            ],
-         })
-         setIsLimitModalOpen(true)
-      } catch (error) {
-         console.error("Error executing sell order:", error)
-      }
+      // if (!address) {
+      //    setWalletConnectModal(true)
+      //    return
+      // }
+      // if (!multiTokenKeeper) return
+      // const allowance = await getTokenAllowance(selectedToken?.address, address, multiTokenKeeper)
+      // if (allowance < ethers.parseUnits(amount.toString(), usdtToken.decimal)) {
+      //    setShowCommonAllowanceModal(true)
+      //    await approve(selectedToken?.address, multiTokenKeeper, defaultApproveAmount)
+      //    setShowCommonAllowanceModal(false)
+      // }
+      // try {
+      //    if (triggerPrice !== null && amount !== null) setIsLimitModalOpen(true)
+      //    await write({
+      //       abi: multiTokenKeeperAbi.abi as any,
+      //       address: multiTokenKeeper,
+      //       functionName: "addOrder",
+      //       args: [
+      //          selectedToken?.address,
+      //          triggerToken?.priceAggregator,
+      //          1,
+      //          ethers.parseUnits(triggerPrice.toString(), 8),
+      //          ethers.parseUnits(amount?.toString(), selectedToken?.decimal),
+      //       ],
+      //    })
+      //    setIsLimitModalOpen(true)
+      // } catch (error) {
+      //    console.error("Error executing sell order:", error)
+      // }
    }
 
    // Create a buy function for the contract interaction
    const buy = async () => {
-      if (!address) {
-         setWalletConnectModal(true)
-         return
-      }
-
-      if (!multiTokenKeeper) return
-
-      const allowance = await getTokenAllowance(usdtToken.address, address, multiTokenKeeper)
-
-      if (allowance < ethers.parseUnits(amount.toString(), usdtToken.decimal)) {
-         setShowCommonAllowanceModal(true)
-         await approve(usdtToken.address, multiTokenKeeper, defaultApproveAmount)
-
-         setShowCommonAllowanceModal(false)
-      }
-
-      try {
-         if (triggerPrice !== null && amount !== null) setIsLimitModalOpen(true)
-
-         await write({
-            abi: multiTokenKeeperAbi.abi as any,
-            address: multiTokenKeeper,
-            functionName: "addOrder",
-            args: [
-               selectedToken?.address, // _token (address of the token to buy)
-               triggerToken?.priceAggregator, // _priceFeed (address of the price feed for the trigger token)
-               0, // _orderType (assuming 0 for buy type)
-               ethers.parseUnits(triggerPrice.toString(), 8),
-               ethers.parseUnits(amount?.toString(), selectedToken?.decimal),
-            ],
-         })
-         setIsLimitModalOpen(true)
-      } catch (error) {
-         console.error("Error executing buy order:", error)
-      }
+      // if (!address) {
+      //    setWalletConnectModal(true)
+      //    return
+      // }
+      // if (!multiTokenKeeper) return
+      // const allowance = await getTokenAllowance(usdtToken.address, address, multiTokenKeeper)
+      // if (allowance < ethers.parseUnits(amount.toString(), usdtToken.decimal)) {
+      //    setShowCommonAllowanceModal(true)
+      //    await approve(usdtToken.address, multiTokenKeeper, defaultApproveAmount)
+      //    setShowCommonAllowanceModal(false)
+      // }
+      // try {
+      //    if (triggerPrice !== null && amount !== null) setIsLimitModalOpen(true)
+      //    await write({
+      //       abi: multiTokenKeeperAbi.abi as any,
+      //       address: multiTokenKeeper,
+      //       functionName: "addOrder",
+      //       args: [
+      //          selectedToken?.address, // _token (address of the token to buy)
+      //          triggerToken?.priceAggregator, // _priceFeed (address of the price feed for the trigger token)
+      //          0, // _orderType (assuming 0 for buy type)
+      //          ethers.parseUnits(triggerPrice.toString(), 8),
+      //          ethers.parseUnits(amount?.toString(), selectedToken?.decimal),
+      //       ],
+      //    })
+      //    setIsLimitModalOpen(true)
+      // } catch (error) {
+      //    console.error("Error executing buy order:", error)
+      // }
    }
 
    const fetchSellTokenBalance = async () => {
-      if (selectedToken?.address && address) {
-         const balance: string | number = await dispatch(
-            fetchTokenBalance({ tokenAddress: selectedToken.address, walletAddress: address, decimals: selectedToken.decimal })
-         ).unwrap()
-
-         setSellTokenBalance(Number(balance as string))
-      }
+      // if (selectedToken?.address && address) {
+      //    const balance: string | number = await dispatch(
+      //       fetchTokenBalance({ tokenAddress: selectedToken.address, walletAddress: address, decimals: selectedToken.decimal })
+      //    ).unwrap()
+      //    setSellTokenBalance(Number(balance as string))
+      // }
    }
 
    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value
-
-      // Allow only numbers and one decimal point using regex
-      const regex = /^[0-9]*\.?[0-9]*$/
-
-      // Update the amount only if the value matches the regex (valid decimal number)
-      if (regex.test(value)) {
-         const enteredAmount = parseFloat(value)
-
-         // Check if the entered amount is greater than the available balance
-         if (enteredAmount > usdtBalance && props.tradeType === "buy") {
-            setAmount(usdtBalance.toString()) // Set to max balance
-            // toast.warn(`Amount exceeds balance. Set to max available: ${usdtBalance} USDT.`) // Show warning message
-         } else {
-            setAmount(value) // Set the entered value if it's valid
-         }
-
-         if (props.tradeType === "sell") {
-            console.log(enteredAmount, sellTokenBalance)
-            if (enteredAmount > sellTokenBalance) {
-               setAmount(sellTokenBalance.toString()) // Set to max balance
-               // toast.warn(`Amount exceeds balance. Set to max available: ${sellTokenBalance} ${selectedToken?.symbol}.`) // Show warning message
-            } else {
-               setAmount(value) // Set the entered value if it's valid
-            }
-         }
-      }
+      // const value = e.target.value
+      // // Allow only numbers and one decimal point using regex
+      // const regex = /^[0-9]*\.?[0-9]*$/
+      // // Update the amount only if the value matches the regex (valid decimal number)
+      // if (regex.test(value)) {
+      //    const enteredAmount = parseFloat(value)
+      //    // Check if the entered amount is greater than the available balance
+      //    if (enteredAmount > usdtBalance && props.tradeType === "buy") {
+      //       setAmount(usdtBalance.toString()) // Set to max balance
+      //       // toast.warn(`Amount exceeds balance. Set to max available: ${usdtBalance} USDT.`) // Show warning message
+      //    } else {
+      //       setAmount(value) // Set the entered value if it's valid
+      //    }
+      //    if (props.tradeType === "sell") {
+      //       console.log(enteredAmount, sellTokenBalance)
+      //       if (enteredAmount > sellTokenBalance) {
+      //          setAmount(sellTokenBalance.toString()) // Set to max balance
+      //          // toast.warn(`Amount exceeds balance. Set to max available: ${sellTokenBalance} ${selectedToken?.symbol}.`) // Show warning message
+      //       } else {
+      //          setAmount(value) // Set the entered value if it's valid
+      //       }
+      //    }
+      // }
    }
 
    useEffect(() => {
-      const fetchUsdtBalance = async () => {
-         if (address) {
-            const balance: string | number = await dispatch(
-               fetchTokenBalance({ tokenAddress: usdtToken.address, walletAddress: address, decimals: usdtToken.decimal })
-            ).unwrap()
-            setUsdtBalance(parseFloat(balance as string))
-         }
-      }
-      const fetchSellTokenBalance = async () => {
-         if (selectedToken?.address && address) {
-            const balance: string | number = await dispatch(
-               fetchTokenBalance({ tokenAddress: selectedToken.address, walletAddress: address, decimals: selectedToken.decimal })
-            ).unwrap()
-
-            setSellTokenBalance(parseFloat(balance as string))
-         }
-      }
-
-      if (isConnected && address) {
-         if (props.tradeType === "buy") {
-            fetchUsdtBalance()
-            console.log("clear")
-            setTriggerPrice("")
-            setAmount("")
-         } else {
-            fetchSellTokenBalance()
-            setTriggerPrice("")
-            setAmount("")
-         }
-      }
-   }, [isConnected, address, props.tradeType, selectedToken])
+      // const fetchUsdtBalance = async () => {
+      //    if (address) {
+      //       const balance: string | number = await dispatch(
+      //          fetchTokenBalance({ tokenAddress: usdtToken.address, walletAddress: address, decimals: usdtToken.decimal })
+      //       ).unwrap()
+      //       setUsdtBalance(parseFloat(balance as string))
+      //    }
+      // }
+      // const fetchSellTokenBalance = async () => {
+      //    if (selectedToken?.address && address) {
+      //       const balance: string | number = await dispatch(
+      //          fetchTokenBalance({ tokenAddress: selectedToken.address, walletAddress: address, decimals: selectedToken.decimal })
+      //       ).unwrap()
+      //       setSellTokenBalance(parseFloat(balance as string))
+      //    }
+      // }
+      // if (isConnected && address) {
+      //    if (props.tradeType === "buy") {
+      //       fetchUsdtBalance()
+      //       console.log("clear")
+      //       setTriggerPrice("")
+      //       setAmount("")
+      //    } else {
+      //       fetchSellTokenBalance()
+      //       setTriggerPrice("")
+      //       setAmount("")
+      //    }
+      // }
+   }, [])
 
    useEffect(() => {
-      if (allowance !== undefined && multiTokenKeeper) {
-         console.log(address && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18))
-         if (address && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18)) {
-            setShowMultiTokenKeeperModal(true)
-         }
-         if (address && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && !(allowance > ethers.parseUnits("100000", 18))) {
-            setShowAllowanceModal(true)
-         }
-      }
-   }, [address, multiTokenKeeper, allowance, isConnected])
+      // if (allowance !== undefined && multiTokenKeeper) {
+      //    console.log(address && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18))
+      //    if (address && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && allowance > ethers.parseUnits("10", 18)) {
+      //       setShowMultiTokenKeeperModal(true)
+      //    }
+      //    if (address && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && !(allowance > ethers.parseUnits("100000", 18))) {
+      //       setShowAllowanceModal(true)
+      //    }
+      // }
+   }, [])
 
    useEffect(() => {
-      if (isConfirmed && isLimitModalOpen) setIsLimitModalOpen(false) // Close modal when confirmed
-      if (isConfirmed && showAllowanceModal) setShowAllowanceModal(false) // Close modal when confirmed
-      if (isConfirmed && showMultiTokenKeeperModal) setShowMultiTokenKeeperModal(false) // Close modal when confirmed
-   }, [isConfirmed, isLimitModalOpen, showAllowanceModal, showMultiTokenKeeperModal])
+      // if (isConfirmed && isLimitModalOpen) setIsLimitModalOpen(false) // Close modal when confirmed
+      // if (isConfirmed && showAllowanceModal) setShowAllowanceModal(false) // Close modal when confirmed
+      // if (isConfirmed && showMultiTokenKeeperModal) setShowMultiTokenKeeperModal(false) // Close modal when confirmed
+   }, [])
 
    useEffect(() => {
-      if (isConnected && address) {
-         fetchUsdtBalance()
-      }
-   }, [isConnected, address])
+      // if (isConnected && address) {
+      //    fetchUsdtBalance()
+      // }
+   }, [])
 
    return (
       <Fragment>
@@ -425,10 +401,10 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                type="submit"
                className={`mx-auto block w-full rounded ${props.tradeType === "buy" ? "bg-green" : "bg-red"} py-1.5 text-base font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80`}
             >
-               {isConnected ? (props.tradeType === "buy" ? "Buy" : "Sell") : "Connect Wallet"}
+               {/* {isConnected ? (props.tradeType === "buy" ? "Buy" : "Sell") : "Connect Wallet"} */}
             </motion.button>
          </form>
-         <LimitModal
+         {/* <LimitModal
             isOpen={isLimitModalOpen}
             onClose={() => setIsLimitModalOpen(false)}
             tradeType={props.tradeType}
@@ -438,20 +414,20 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             amount={amount}
             transactionHash={hash}
             tokenSymbol={selectedToken?.symbol}
-         />
+         /> */}
          <WalletConnectModal isOpen={showWalletConnectModal} onClose={() => setWalletConnectModal(false)} />
          {/* transactionHash?: string | null // Add transactionHash prop */}
          <AllowanceModal
             isOpen={showAllowanceModal}
             onApprove={handleApproveForMultiTokenKeeper}
             onClose={() => setShowAllowanceModal(false)}
-            transactionHash={hash}
+            // transactionHash={hash}
          />
          <CreateMultiTokenKeeperModal
             isOpen={showMultiTokenKeeperModal}
             onApprove={createAndRegisterMultiTokenKeeper}
             onClose={() => setShowMultiTokenKeeperModal(false)}
-            transactionHash={hash}
+            // transactionHash={hash}
          />
          <InsufficientBalance isOpen={showInsufficientBalanceModal} onClose={() => setShowInsufficientBalanceModal(false)} />
 

@@ -122,9 +122,54 @@
 // export default MarketForm
 
 import React from "react"
+import { baseSepolia, mainnet } from "thirdweb/chains"
+import { createWallet, inAppWallet, smartWallet } from "thirdweb/wallets"
+import { client, managedAccountFactory } from "../../../../config/thirdweb"
 
+const personalWallet: any = inAppWallet()
 const MarketForm = () => {
-   return <div>MarketForm</div>
+   const connectApp = async () => {
+      console.log("==>")
+
+      const metamask = createWallet("io.metamask")
+
+      const personalAccount = await personalWallet.connect({
+         strategy: "wallet",
+         chain: baseSepolia,
+         wallet: metamask,
+         client: client,
+      })
+
+      console.log(personalAccount)
+
+      const Swallet = smartWallet({
+         chain: baseSepolia,
+         factoryAddress: managedAccountFactory,
+         gasless: true,
+         clientId: "485a0fd95563acb5d9b22ab679e13022",
+      })
+
+      const smartAccount = await Swallet.connect({
+         chain: baseSepolia,
+         client,
+         personalAccount,
+      })
+
+      const tx = await smartAccount.sendTransaction({
+         to: "0x75998e806D0BE5B37c5DE74AcfA0006B3C7DCdfF",
+         value: "10000",
+      })
+
+      console.log(tx)
+
+      console.log(smartAccount)
+   }
+
+   return (
+      <div>
+         <button onClick={connectApp}>Connect Wallet</button>
+      </div>
+   )
 }
 
 export default MarketForm

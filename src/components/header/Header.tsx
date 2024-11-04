@@ -2,17 +2,15 @@ import { ImMenu } from "react-icons/im"
 
 import { WalletOptions } from "./WalletOption"
 
-import React, { useEffect } from "react"
-import { useAccount } from "wagmi"
-import { useDispatch, useSelector } from "react-redux"
-import { AppDispatch, RootState } from "../../store/store"
-import { addWalletAddress } from "../../store/walletSlice"
+import React from "react"
 
 import { SiQuantconnect } from "react-icons/si"
 
 import { motion } from "framer-motion"
 import { btnClick } from "../../animations"
 import WalletOperation from "./WalletOperation"
+import { useSelector } from "react-redux"
+import { RootState } from "../../store/store"
 
 interface IHeaderProps {
    onToggleMenu: () => void
@@ -20,16 +18,18 @@ interface IHeaderProps {
 }
 const Header: React.FC<IHeaderProps> = (props) => {
    const [showDropDown, setShowDropDown] = React.useState<boolean>(false)
-   const { isConnected, address, isConnecting } = useAccount()
 
-   const dispatch = useDispatch<AppDispatch>()
-   const { walletAddress } = useSelector((state: RootState) => state.wallet)
+   const { smartAccount, isConnected } = useSelector((state: RootState) => state.userDetails)
 
-   useEffect(() => {
-      if (address) {
-         dispatch(addWalletAddress(address))
-      }
-   }, [isConnected, address])
+   console.log(isConnected)
+
+   console.log(smartAccount)
+
+   // useEffect(() => {
+   //    if (smartAccount) {
+   //       dispatch(addWalletAddress(smartAccount?.address))
+   //    }
+   // }, [isConnected, address])
 
    const handleCloseDropDown = () => setShowDropDown(!showDropDown)
    return (
@@ -48,7 +48,63 @@ const Header: React.FC<IHeaderProps> = (props) => {
             <aside className="border-1 relative z-50 rounded-3xl border border-gray-800 bg-background-secondary px-3 py-1 text-13px font-normal text-text-primary shadow-md md:px-5 md:text-base 2xl:px-6 2xl:py-1.5 2xl:text-lg 2xl:font-medium">
                {/* show connect button when account not connected */}
                <div>
-                  {isConnecting === true ? (
+                  {isConnected ? (
+                     <motion.button
+                        {...btnClick}
+                        type="button"
+                        onClick={() => setShowDropDown(!showDropDown)}
+                        className="flex items-center gap-2 rounded-md"
+                     >
+                        <h3 className="">{smartAccount?.address !== null && formatWalletAddress(smartAccount?.address as string, 6, 4)}</h3>
+                     </motion.button>
+                  ) : (
+                     <motion.button
+                        {...btnClick}
+                        type="button"
+                        onClick={() => setShowDropDown(!showDropDown)}
+                        className="flex items-center gap-2 rounded-md"
+                     >
+                        <SiQuantconnect className="text-[1.2em] text-yellow" />
+
+                        <h3>Connect</h3>
+                        {/* <ConnectButton client={client} wallets={wallets} /> */}
+                     </motion.button>
+                  )}
+               </div>
+               {/* <ConnectButton client={client} wallets={wallets} /> */}
+               {showDropDown && <Wallet onCloseDropDown={handleCloseDropDown} />}
+            </aside>
+         </nav>
+      </header>
+   )
+}
+
+export default Header
+
+type IWalletProps = {
+   onCloseDropDown: () => void
+   isConnected?: boolean
+}
+
+export function Wallet(props: IWalletProps) {
+   if (props.isConnected) {
+      return <WalletOperation onCloseDropDown={props.onCloseDropDown} />
+   }
+
+   return <WalletOptions onCloseDropDown={props.onCloseDropDown} />
+}
+
+export const formatWalletAddress = (address: string, firstChars: number, lastChars: number): string => {
+   if (!address || address.length < firstChars + lastChars) {
+      throw new Error("Invalid address length")
+   }
+   const start = address.slice(0, firstChars)
+   const end = address.slice(-lastChars)
+   return `${start}...${end}`
+}
+// ;<div>
+{
+   /* {isConnecting === true ? (
                      <div className="flex items-center gap-2 rounded-md">
                         <h3 className="text-yellow">Connecting..</h3>
                      </div>
@@ -72,35 +128,7 @@ const Header: React.FC<IHeaderProps> = (props) => {
 
                         <h3>Connect</h3>
                      </motion.button>
-                  )}
-               </div>
-               {showDropDown && <Wallet isConnected={isConnected} onCloseDropDown={handleCloseDropDown} />}
-            </aside>
-         </nav>
-      </header>
-   )
+                  )} */
 }
-
-export default Header
-
-type IWalletProps = {
-   onCloseDropDown: () => void
-   isConnected: boolean
-}
-
-export function Wallet(props: IWalletProps) {
-   if (props.isConnected) {
-      return <WalletOperation onCloseDropDown={props.onCloseDropDown} />
-   }
-
-   return <WalletOptions onCloseDropDown={props.onCloseDropDown} />
-}
-
-export const formatWalletAddress = (address: string, firstChars: number, lastChars: number): string => {
-   if (!address || address.length < firstChars + lastChars) {
-      throw new Error("Invalid address length")
-   }
-   const start = address.slice(0, firstChars)
-   const end = address.slice(-lastChars)
-   return `${start}...${end}`
-}
+// //{" "}
+// </div>
