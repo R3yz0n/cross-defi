@@ -63,11 +63,9 @@ const Header: React.FC<IHeaderProps> = (props) => {
                         <SiQuantconnect className="text-[1.2em] text-yellow" />
 
                         <h3>{isConnectingPersonalWallet || isConnectingSmartWallet ? "Connecting" : "Connect"}</h3>
-                        {/* <ConnectButton client={client} wallets={wallets} /> */}
                      </motion.button>
                   )}
                </div>
-               {/* <ConnectButton client={client} wallets={wallets} /> */}
                {showDropDown && <Wallet isConnected={smartAccount?.address ? true : false} onCloseDropDown={handleCloseDropDown} />}
             </aside>
          </nav>

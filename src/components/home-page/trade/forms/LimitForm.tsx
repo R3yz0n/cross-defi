@@ -25,6 +25,10 @@ import CreateMultiTokenKeeperModal from "../modals/CreateMultiTokenKeeperModal"
 import InsufficientBalance from "../modals/InsufficientBalance"
 import NetworkChangeModal from "../modals/NetworkChangeModal"
 import { fetchTokenBalance } from "../../../../store/tokenThunk"
+import { getContract } from "thirdweb"
+import { useReadContract } from "thirdweb/react"
+import { baseSepolia } from "thirdweb/chains"
+import { client } from "../../../../config/thirdweb"
 
 interface ILimitFormProps {
    tradeType: string
@@ -72,12 +76,41 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    //    args: isConnected ? [address] : undefined,
    // })
 
+   const { personalAccount, smartAccount, isConnected } = useSelector((state: RootState) => state.userDetails)
+
+   const multiTokenKeeperFactoryContract = getContract({
+      client,
+      address: multiTokenKeeperFactoryAddress,
+      chain: baseSepolia,
+      abi: multiTokenKeeperFactoryAbi.abi as any,
+   })
+
+   console.log(smartAccount)
+   /// TODO fix smartAccount
+   const { data: multiTokenKeeper, isLoading } = useReadContract({
+      contract: multiTokenKeeperFactoryContract,
+      method: "function getMultiTokenKeeper(address userAddress) returns (address)",
+      params: [smartAccount?.address],
+   })
+
+   console.log(`data===========>`, data)
+
+   console.log(isLoading, data)
+
+   // const { data: multiTokenKeeper } = useContractRead({
+   //    address: multiTokenKeeperFactoryAddress,
+   //    abi: multiTokenKeeperFactoryAbi,
+   //    functionName: "getMultiTokenKeeper",
+   //    args: [selectedToken?.address],
+   // })
+
    // const { data: allowance } = useReadContract({
    //    abi: erc20Abi,
    //    address: linkTokenAddress,
    //    functionName: "allowance",
    //    args: isConnected ? [address, multiTokenKeeperFactoryAddress] : undefined,
    // })
+   // wallet Details
 
    // Fetch USDT balance functions
    const fetchUsdtBalance = async () => {
@@ -102,14 +135,14 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const getTokenAllowance = async (tokenAddress: string, walletAddress: string, spenderAddress: any): Promise<bigint> => {
       try {
          // Execute the 'allowance' contract call to check how much the spender is allowed to use
-         const allowance = await readContract(config, {
-            abi: erc20Abi,
-            address: tokenAddress,
-            functionName: "allowance",
-            args: [walletAddress, spenderAddress],
-         })
+         // const allowance = await readContract(config, {
+         //    abi: erc20Abi,
+         //    address: tokenAddress,
+         //    functionName: "allowance",
+         //    args: [walletAddress, spenderAddress],
+         // })
 
-         return allowance
+         return 0 //allowance
 
          // Convert the allowance from its raw format to human-readable format using token decimals
       } catch (error) {
@@ -415,7 +448,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             transactionHash={hash}
             tokenSymbol={selectedToken?.symbol}
          /> */}
-         <WalletConnectModal isOpen={showWalletConnectModal} onClose={() => setWalletConnectModal(false)} />
+         {/* <WalletConnectModal isOpen={showWalletConnectModal} onClose={() => setWalletConnectModal(false)} /> */}
          {/* transactionHash?: string | null // Add transactionHash prop */}
          <AllowanceModal
             isOpen={showAllowanceModal}
