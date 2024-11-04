@@ -1,34 +1,26 @@
-import { readContract } from "@wagmi/core"
 import React, { Fragment, useEffect, useState } from "react"
 // import { useAccount, useChainId, useReadContract, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { ITokenType } from "../../../../store/tokenSlice"
 import TokenDropDown from "../TokenDropDown"
 
 import { motion } from "framer-motion"
-import { erc20Abi } from "viem"
 import { btnClick } from "../../../../animations"
-import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeper"
 import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
-import { findTokenBySymbol, usdtToken } from "../../../../utils/tokens"
-import LimitModal from "../modals/LimitModal"
+import { findTokenBySymbol } from "../../../../utils/tokens"
 
 import { ethers } from "ethers"
 import { useDispatch, useSelector } from "react-redux"
-import { config } from "../../../../config/wallet-config"
-import { linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
+import { getContract } from "thirdweb"
+import { baseSepolia } from "thirdweb/chains"
+import { useReadContract } from "thirdweb/react"
+import { client } from "../../../../config/thirdweb"
+import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
 import { AppDispatch, RootState } from "../../../../store/store"
-import { setOrderPlaced } from "../../../../store/tradeSlice"
-import WalletConnectModal from "../../../WalletConnectModal"
 import AllowanceModal from "../modals/AllowanceModal"
 import CommonAllowanceModal from "../modals/CommonAllowanceModal"
 import CreateMultiTokenKeeperModal from "../modals/CreateMultiTokenKeeperModal"
 import InsufficientBalance from "../modals/InsufficientBalance"
 import NetworkChangeModal from "../modals/NetworkChangeModal"
-import { fetchTokenBalance } from "../../../../store/tokenThunk"
-import { getContract } from "thirdweb"
-import { useReadContract } from "thirdweb/react"
-import { baseSepolia } from "thirdweb/chains"
-import { client } from "../../../../config/thirdweb"
 
 interface ILimitFormProps {
    tradeType: string
@@ -76,7 +68,9 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    //    args: isConnected ? [address] : undefined,
    // })
 
-   const { personalAccount, smartAccount, isConnected } = useSelector((state: RootState) => state.userDetails)
+   const { personalAccount, smartAccount } = useSelector((state: RootState) => state.wallet)
+
+   console.log(smartAccount)
 
    const multiTokenKeeperFactoryContract = getContract({
       client,
@@ -92,10 +86,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       method: "function getMultiTokenKeeper(address userAddress) returns (address)",
       params: [smartAccount?.address],
    })
-
-   console.log(`data===========>`, data)
-
-   console.log(isLoading, data)
 
    // const { data: multiTokenKeeper } = useContractRead({
    //    address: multiTokenKeeperFactoryAddress,
