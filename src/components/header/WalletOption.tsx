@@ -1,9 +1,9 @@
 import { motion } from "framer-motion"
 import { btnClick, pop } from "../../animations"
 import { createWallet } from "thirdweb/wallets"
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch } from "react-redux"
 
-import { AppDispatch, RootState } from "../../store/store"
+import { AppDispatch } from "../../store/store"
 import { connectPersonalWallet, connectSmartWallet } from "../../store/walletThunk"
 
 interface IWalletOption {

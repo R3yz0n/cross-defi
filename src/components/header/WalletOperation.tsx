@@ -1,5 +1,3 @@
-import { useDisconnect } from "wagmi"
-
 import { IoMdLogOut } from "react-icons/io"
 import { IoMdSettings } from "react-icons/io"
 import { motion } from "framer-motion"

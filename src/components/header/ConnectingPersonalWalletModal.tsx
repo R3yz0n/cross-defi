@@ -13,8 +13,13 @@ const ConnectingPersonalWalletModal: React.FC<IConnectingPersonalWalletModal> = 
    return ReactDOM.createPortal(
       <motion.section {...pop} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
          <div className="relative w-[95%] rounded-lg bg-background-secondary p-6 py-10 shadow-lg sm:w-[424px] md:w-[600px] md:p-7 lg:p-8">
-            <h2 className="mb-4 text-lg font-semibold text-text-primary">Connecting Wallet</h2>
-            <p className="text-gray-600">Hi there! Your wallet is being connected.</p>
+            <h2 className="mb-4 text-lg font-semibold text-text-primary">Please Approve From Wallet</h2>
+            <p className="text-gray-600">
+               We're just a moment away from connecting your wallet. This process ensures a secure and seamless experience for your transactions.
+            </p>
+            <p className="mt-2 text-gray-600">
+               Please hold tight as we establish a connection. If you encounter any issues, feel free to reach out for assistance!
+            </p>
          </div>
       </motion.section>,
       document.getElementById("modal-root")!
