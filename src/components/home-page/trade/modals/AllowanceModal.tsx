@@ -16,12 +16,12 @@ const AllowanceModal: React.FC<IAllowanceModal> = ({ isOpen, onApprove, onClose,
    const [isButtonDisabled, setIsButtonDisabled] = useState(false)
 
    const handleApprove = () => {
-      setIsButtonDisabled(true)
+      // setIsButtonDisabled(true)
       onApprove()
 
-      setTimeout(() => {
-         setIsButtonDisabled(false) // Enable the button after 2 seconds
-      }, 4000)
+      // setTimeout(() => {
+      //    setIsButtonDisabled(false) // Enable the button after 2 seconds
+      // }, 4000)
    }
    return (
       <ModalWrapper

@@ -15,14 +15,14 @@ const Home = () => {
    const { walletAddress } = useSelector((state: RootState) => state.wallet)
    const [showInsufficientLinkBalance, setShowInsufficientLinkBalance] = useState<boolean>(false)
    const fetchLinkBalance = async () => {
-      if (walletAddress) {
-         dispatch(fetchTokenBalance({ tokenAddress: linkTokenAddress, walletAddress: walletAddress, decimals: 18 })).then((res) => {
-            let balance: number = Number(res.payload)
-            if (balance < 3) {
-               setShowInsufficientLinkBalance(true)
-            }
-         })
-      }
+      // if (walletAddress) {
+      //    dispatch(fetchTokenBalance({ tokenAddress: linkTokenAddress, walletAddress: walletAddress, decimals: 18 })).then((res) => {
+      //       let balance: number = Number(res.payload)
+      //       if (balance < 3) {
+      //          setShowInsufficientLinkBalance(true)
+      //       }
+      //    })
+      // }
    }
    console.log(client)
 

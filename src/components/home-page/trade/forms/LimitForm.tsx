@@ -10,17 +10,18 @@ import { findTokenBySymbol } from "../../../../utils/tokens"
 
 import { ethers } from "ethers"
 import { useDispatch, useSelector } from "react-redux"
-import { getContract } from "thirdweb"
+import { getContract, prepareContractCall, readContract, sendTransaction } from "thirdweb"
 import { baseSepolia } from "thirdweb/chains"
 import { useReadContract } from "thirdweb/react"
 import { client } from "../../../../config/thirdweb"
-import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
+import { linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
 import { AppDispatch, RootState } from "../../../../store/store"
 import AllowanceModal from "../modals/AllowanceModal"
 import CommonAllowanceModal from "../modals/CommonAllowanceModal"
 import CreateMultiTokenKeeperModal from "../modals/CreateMultiTokenKeeperModal"
 import InsufficientBalance from "../modals/InsufficientBalance"
 import NetworkChangeModal from "../modals/NetworkChangeModal"
+import { erc20Abi } from "viem"
 
 interface ILimitFormProps {
    tradeType: string
@@ -53,21 +54,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    // const { address, isConnected, chainId } = useAccount()
    const { orderType } = useSelector((state: RootState) => state.trade)
 
-   // Contract interaction hooks
-   // const { writeContractAsync: write, data: hash } = useWriteContract()
-   // const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash, confirmations: 6 })
-
-   // Chain-related hooks
-   // const expectedChainId = useChainId()
-   // const { chains, switchChainAsync } = useSwitchChain()
-
-   // const { data: multiTokenKeeper } = useReadContract({
-   //    abi: multiTokenKeeperFactoryAbi.abi as any,
-   //    address: multiTokenKeeperFactoryAddress,
-   //    functionName: "getMultiTokenKeeper",
-   //    args: isConnected ? [address] : undefined,
-   // })
-
    const { personalAccount, smartAccount } = useSelector((state: RootState) => state.wallet)
 
    console.log(smartAccount)
@@ -87,20 +73,20 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       params: [smartAccount?.address],
    })
 
-   // const { data: multiTokenKeeper } = useContractRead({
-   //    address: multiTokenKeeperFactoryAddress,
-   //    abi: multiTokenKeeperFactoryAbi,
-   //    functionName: "getMultiTokenKeeper",
-   //    args: [selectedToken?.address],
-   // })
+   const { data: linkBalanceOnWallet, isLoading: linkBalanceIsLoading } = useReadContract({
+      contract: getContract({
+         client,
+         address: linkTokenAddress,
+         chain: baseSepolia,
+         abi: erc20Abi as any,
+      }),
+      method: "function balanceOf(address walletAddress) returns (uint256)",
+      params: [smartAccount?.address],
+   })
 
-   // const { data: allowance } = useReadContract({
-   //    abi: erc20Abi,
-   //    address: linkTokenAddress,
-   //    functionName: "allowance",
-   //    args: isConnected ? [address, multiTokenKeeperFactoryAddress] : undefined,
-   // })
-   // wallet Details
+   console.log(linkBalanceOnWallet)
+
+   console.log(multiTokenKeeper)
 
    // Fetch USDT balance functions
    const fetchUsdtBalance = async () => {
@@ -120,32 +106,30 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
     * @param tokenAddress - The address of the token (ERC-20).
     * @param walletAddress - The address of the wallet (owner).
     * @param spenderAddress - The address of the spender who is allowed to spend the tokens.
-    * @returns A promise that resolves to the allowance of the spender, formatted with the token's decimals, or null if an error occurs.
+    * @param decimal - The decimal places for formatting the allowance.
+    * @returns A promise that resolves to the allowance of the spender, formatted with the token's decimals.
     */
-   const getTokenAllowance = async (tokenAddress: string, walletAddress: string, spenderAddress: any): Promise<bigint> => {
+   const getTokenAllowance = async (tokenAddress: string, walletAddress: string, spenderAddress: string, decimal: number): Promise<string> => {
       try {
-         // Execute the 'allowance' contract call to check how much the spender is allowed to use
-         // const allowance = await readContract(config, {
-         //    abi: erc20Abi,
-         //    address: tokenAddress,
-         //    functionName: "allowance",
-         //    args: [walletAddress, spenderAddress],
-         // })
-
-         return 0 //allowance
-
-         // Convert the allowance from its raw format to human-readable format using token decimals
+         const contract = getInitializedContract(tokenAddress, erc20Abi)
+         const allowanceInWei: bigint = await readFromContract(contract, "function allowance(address,address) view returns (uint256)", [
+            walletAddress,
+            spenderAddress,
+         ])
+         return ethers.formatUnits(allowanceInWei, decimal)
       } catch (error) {
          console.error("Error fetching token allowance:", error)
-         return 0n
+         return "0"
       }
    }
 
    const handleApproveForMultiTokenKeeper = async () => {
       // if (allowance === null || allowance === undefined || allowance > ethers.parseUnits("100000", 18)) return
-
+      debugger
       try {
-         const amountToApprove = ethers.parseUnits("10000000000000000000000000000000", 18)
+         const allownceAmount = await getTokenAllowance(linkTokenAddress, smartAccount.address, multiTokenKeeperFactoryAddress, 18)
+         debugger
+         // const amountToApprove = ethers.parseUnits("10000000000000000000000000000000", 18)
          // await write({
          //    abi: erc20Abi,
          //    address: linkTokenAddress,
@@ -158,16 +142,51 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    }
 
    const createAndRegisterMultiTokenKeeper = async () => {
-      // const balance = await getTokenBalance(linkTokenAddress, address, 18)
-      // if (address) {
-      //    const balance: string | number = await dispatch(
-      //       fetchTokenBalance({ tokenAddress: linkTokenAddress, walletAddress: address, decimals: 18 })
-      //    ).unwrap()
-      //    if (parseFloat(balance as string) < 4) {
-      //       setShowInsufficientBalanceModal(true)
-      //       return
-      //    }
-      // }
+      const balance = await getTokenBalance(linkTokenAddress, smartAccount.address, "18")
+      console.log(balance)
+
+      if (smartAccount) {
+         // const balance: string | number = await dispatch(
+         //    fetchTokenBalance({ tokenAddress: linkTokenAddress, walletAddress: address, decimals: 18 })
+         // ).unwrap()
+
+         console.log(balance)
+
+         if (parseFloat(balance.toString()) < 4) {
+            setShowInsufficientBalanceModal(true)
+            return
+         }
+      }
+
+      const allownceAmount = await getTokenAllowance(linkTokenAddress, smartAccount.address, multiTokenKeeperFactoryAddress, 18)
+      console.log(`allowance Amount`, allownceAmount)
+
+      if (parseFloat(allownceAmount.toString()) < 4) {
+         const contract = getInitializedContract(linkTokenAddress, erc20Abi)
+         // TODO Add new Model tell we are approviing transcation // message i will take care
+         const transaction = prepareContractCall({
+            contract: contract,
+            method: "approve",
+            params: [multiTokenKeeperFactoryAddress, defaultApproveAmount],
+         })
+
+         let { transactionHas: allowanceTransactionHash } = await sendTransaction({ transaction, account: smartAccount })
+
+         console.log(transactionHash)
+         // return
+      }
+
+      const contract = getInitializedContract(multiTokenKeeperFactoryAddress, multiTokenKeeperFactoryAbi.abi)
+
+      const transaction = prepareContractCall({
+         contract: contract,
+         method: "createAndRegisterMultiTokenKeeper",
+         params: [smartAccount.address],
+      })
+
+      let { transactionHas: allowanceTransactionHash } = await sendTransaction({ transaction, account: smartAccount })
+      // TODO close model
+      debugger
       // await write({
       //    abi: multiTokenKeeperFactoryAbi.abi as any,
       //    address: multiTokenKeeperFactoryAddress,
@@ -177,36 +196,30 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    }
 
    const approve = (tokenAddress: string, spenderAddress: any, amount: any) => {
-      // return write({
-      //    abi: erc20Abi,
-      //    address: tokenAddress,
-      //    functionName: "approve",
-      //    args: [spenderAddress, amount],
-      // })
+      const contract = getInitializedContract(tokenAddress, erc20Abi)
+
+      const transaction = prepareContractCall({
+         contract: contract,
+         method: "approve",
+         params: [spenderAddress, amount],
+      })
    }
 
    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-      // e.preventDefault()
-      // if (!address) {
-      //    setWalletConnectModal(true)
-      //    return
-      // }
-      // if (Number(expectedChainId) !== Number(chainId)) {
-      //    const targetChain = chains.find(({ id }) => Number(id) === Number(expectedChainId))
-      //    if (targetChain) {
-      //       setShowNetworkChangeModal(true)
-      //       await switchChainAsync({ chainId: targetChain?.id })
-      //       setShowNetworkChangeModal(false)
-      //    } else console.error("Target chain not found")
-      // }
-      // if (props.tradeType === "buy") {
-      //    await buy()
-      //    await fetchUsdtBalance()
-      //    dispatch(setOrderPlaced(true))
-      // } else if (props.tradeType === "sell") {
-      //    await sell()
-      //    await fetchSellTokenBalance()
-      // }
+      e.preventDefault()
+      if (!smartAccount?.address) {
+         setWalletConnectModal(true)
+         return
+      }
+
+      if (props.tradeType === "buy") {
+         await buy()
+         await fetchUsdtBalance()
+         // dispatch(setOrderPlaced(true))
+      } else if (props.tradeType === "sell") {
+         await sell()
+         await fetchSellTokenBalance()
+      }
    }
 
    const sell = async () => {
@@ -363,6 +376,49 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       //    fetchUsdtBalance()
       // }
    }, [])
+
+   function getInitializedContract(contractAddress: any, abi: any) {
+      return getContract({
+         client,
+         chain: baseSepolia,
+         address: contractAddress,
+         abi,
+      })
+   }
+
+   // Generic function to read any public method from the contract
+   async function readFromContract(contract: any, method: string, params: any) {
+      const result = await readContract({
+         contract,
+         method,
+         params,
+      })
+      return result
+   }
+
+   const getTokenBalance = async (contractAddress: string, walletAddress: string, decimal: string) => {
+      const contract = getInitializedContract(contractAddress, erc20Abi)
+      const tokenBalanceInWei: string = (
+         await readFromContract(contract, "function balanceOf(address) view returns (uint256)", [walletAddress])
+      ).toString()
+      console.log(tokenBalanceInWei)
+      return ethers.formatUnits(tokenBalanceInWei, 18)
+   }
+
+   useEffect(() => {
+      if (linkBalanceOnWallet) {
+         if (multiTokenKeeper === "0x0000000000000000000000000000000000000000") {
+            const linkBalance = ethers.formatUnits(linkBalanceOnWallet?.toString(), 18)
+
+            if (Number(linkBalance) < 4) {
+               setShowInsufficientBalanceModal(true)
+            } else {
+               setShowMultiTokenKeeperModal(true)
+            }
+            console.log(`Link balance --${linkBalance}`)
+         }
+      }
+   }, [multiTokenKeeper, linkBalanceOnWallet])
 
    return (
       <Fragment>
