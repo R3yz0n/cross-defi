@@ -2,14 +2,16 @@
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { connectPersonalWallet, connectSmartWallet } from "./walletThunk"
+import { Account } from "thirdweb/wallets"
 
 export interface ITokenState {
    walletAddress: string | null
    isConnectingPersonalWallet: boolean
    isConnectingSmartWallet: boolean
-   personalAccount: any | null
-   smartAccount: any | null
+   personalAccount: Account | null
+   smartAccount: Account | null
    connectionError: string | null
+   connectorId: string | null
 }
 
 // Function to load state from localStorage
@@ -17,6 +19,7 @@ const loadStateFromLocalStorage = (): ITokenState => {
    const walletAddress = localStorage.getItem("walletAddress")
    const personalAccount = localStorage.getItem("personalAccount")
    const smartAccount = localStorage.getItem("smartAccount")
+   const connectorId = localStorage.getItem("connectorId")
 
    return {
       walletAddress: walletAddress ? JSON.parse(walletAddress) : null,
@@ -25,6 +28,7 @@ const loadStateFromLocalStorage = (): ITokenState => {
       personalAccount: personalAccount ? JSON.parse(personalAccount) : null,
       smartAccount: smartAccount ? JSON.parse(smartAccount) : null,
       connectionError: null,
+      connectorId: connectorId ? JSON.parse(connectorId) : null,
    }
 }
 
@@ -38,7 +42,6 @@ export const walletSlice = createSlice({
       addWalletAddress: (state, action: PayloadAction<string>) => {
          state.walletAddress = action.payload
 
-         // Persist wallet address to localStorage
          localStorage.setItem("walletAddress", JSON.stringify(action.payload))
       },
       removeWalletAddress: (state) => {
@@ -50,6 +53,11 @@ export const walletSlice = createSlice({
          localStorage.removeItem("walletAddress")
          localStorage.removeItem("personalAccount")
          localStorage.removeItem("smartAccount")
+         localStorage.removeItem("connectorId")
+      },
+      addConnectorId: (state, action: PayloadAction<string>) => {
+         state.connectorId = action.payload
+         localStorage.setItem("connectorId", JSON.stringify(action.payload))
       },
    },
    extraReducers: (builder) => {
@@ -65,7 +73,7 @@ export const walletSlice = createSlice({
             state.isConnectingPersonalWallet = false
 
             // Persist personal account and wallet address
-            localStorage.setItem("walletAddress", JSON.stringify(state.walletAddress))
+
             localStorage.setItem("personalAccount", JSON.stringify(state.personalAccount))
          })
          .addCase(connectPersonalWallet.rejected, (state, action) => {
@@ -84,6 +92,7 @@ export const walletSlice = createSlice({
             state.isConnectingSmartWallet = false
 
             // Persist smart account
+            localStorage.setItem("walletAddress", JSON.stringify(state.walletAddress))
             localStorage.setItem("smartAccount", JSON.stringify(state.smartAccount))
          })
          .addCase(connectSmartWallet.rejected, (state, action) => {
@@ -94,5 +103,5 @@ export const walletSlice = createSlice({
 })
 
 // Export actions and reducer
-export const { addWalletAddress, removeWalletAddress } = walletSlice.actions
+export const { addWalletAddress, removeWalletAddress, addConnectorId } = walletSlice.actions
 export default walletSlice.reducer

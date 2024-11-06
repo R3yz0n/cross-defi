@@ -5,7 +5,6 @@ import PagesRoutes from "./PagesRoutes"
 
 const Layout: React.FC = () => {
    const [showMenu, setShowMenu] = useState<boolean>(window.innerWidth > 1280 ? true : false)
-   console.log(window.innerWidth)
 
    const toggleMenu = () => {
       setShowMenu(!showMenu)

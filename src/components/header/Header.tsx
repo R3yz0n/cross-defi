@@ -1,5 +1,5 @@
 import { ImMenu } from "react-icons/im"
-import { WalletOptions } from "./WalletOption"
+import { supportedWallets, WalletOptions } from "./WalletOption"
 import React, { useEffect } from "react"
 import { SiQuantconnect } from "react-icons/si"
 import { motion } from "framer-motion"
@@ -7,10 +7,14 @@ import { btnClick } from "../../animations"
 import WalletOperation from "./WalletOperation"
 import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "../../store/store"
-import { addWalletAddress } from "../../store/walletSlice"
+import { addConnectorId, addWalletAddress } from "../../store/walletSlice"
 import ConnectingPersonalWalletModal from "./ConnectingPersonalWalletModal"
 
 import ConnectingSmartWalletModal from "./ConnectingSmartWalletModal"
+import { connectPersonalWallet, connectSmartWallet, personalWallet, reHydrating } from "../../store/walletThunk"
+import { useActiveAccount, useActiveWallet, useAutoConnect, useWalletInfo } from "thirdweb/react"
+import { smartWallet } from "thirdweb/wallets"
+import { client } from "../../utils/tokens"
 
 interface IHeaderProps {
    onToggleMenu: () => void
@@ -18,14 +22,25 @@ interface IHeaderProps {
 }
 const Header: React.FC<IHeaderProps> = (props) => {
    const [showDropDown, setShowDropDown] = React.useState<boolean>(false)
+
    const dispatch = useDispatch<AppDispatch>()
-   const { isConnectingPersonalWallet, isConnectingSmartWallet, smartAccount } = useSelector((state: RootState) => state.wallet)
+   const { isConnectingPersonalWallet, isConnectingSmartWallet, smartAccount, walletAddress, connectorId, personalAccount } = useSelector(
+      (state: RootState) => state.wallet
+   )
 
    useEffect(() => {
-      if (smartAccount) {
-         dispatch(addWalletAddress(smartAccount?.address))
-      }
-   }, [smartAccount, isConnectingSmartWallet])
+      // const reHydrateAccounts = async () => {
+      //    console.log("re-hydrate accounts")
+      //    if (connectorId && walletAddress) {
+      //       let getWalletConnector = supportedWallets.find((wallet) => wallet.connector.id === connectorId)
+
+      //       const personalAccount = await dispatch(connectPersonalWallet({ connector: getWalletConnector?.connector })).unwrap()
+      //       await dispatch(connectSmartWallet({ personalAccount })).unwrap()
+      //    }
+      // }
+
+      reHydrateAccounts()
+   }, [])
 
    const handleCloseDropDown = () => setShowDropDown(!showDropDown)
    return (
@@ -44,14 +59,14 @@ const Header: React.FC<IHeaderProps> = (props) => {
             <aside className="border-1 relative z-50 rounded-3xl border border-gray-800 bg-background-secondary px-3 py-1 text-13px font-normal text-text-primary shadow-md md:px-5 md:text-base 2xl:px-6 2xl:py-1.5 2xl:text-lg 2xl:font-medium">
                {/* show connect button when account not connected */}
                <div>
-                  {smartAccount?.address ? (
+                  {walletAddress ? (
                      <motion.button
                         {...btnClick}
                         type="button"
                         onClick={() => setShowDropDown(!showDropDown)}
                         className="flex items-center gap-2 rounded-md"
                      >
-                        <h3 className="">{smartAccount?.address !== null && formatWalletAddress(smartAccount?.address as string, 6, 4)}</h3>
+                        <h3 className="">{walletAddress !== null && formatWalletAddress(walletAddress as string, 6, 4)}</h3>
                      </motion.button>
                   ) : (
                      <motion.button
@@ -66,7 +81,7 @@ const Header: React.FC<IHeaderProps> = (props) => {
                      </motion.button>
                   )}
                </div>
-               {showDropDown && <Wallet isConnected={smartAccount?.address ? true : false} onCloseDropDown={handleCloseDropDown} />}
+               {showDropDown && <Wallet isConnected={walletAddress ? true : false} onCloseDropDown={handleCloseDropDown} />}
             </aside>
          </nav>
          <ConnectingPersonalWalletModal isOpen={isConnectingPersonalWallet} />

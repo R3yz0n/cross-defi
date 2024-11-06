@@ -35,7 +35,7 @@ const AllowanceModal: React.FC<IAllowanceModal> = ({ isOpen, onApprove, onClose,
          <div>By approving, you will grant the necessary allowance for the MultiKeeper Factory contract to create MultiKeeper Contract.</div>
 
          {/* Transaction Hash (conditionally rendered) */}
-         {true && (
+         {transactionHash && (
             <section className="mt-4 w-full">
                <h6 className="text-base font-medium text-text-secondary">Transaction Hash</h6>
                <p className="mt-1 w-full break-all text-13px tracking-wide text-text-primary">{transactionHash}</p>

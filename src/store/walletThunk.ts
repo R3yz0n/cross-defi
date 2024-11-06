@@ -1,10 +1,10 @@
 import { createAsyncThunk } from "@reduxjs/toolkit"
-import { inAppWallet, smartWallet } from "thirdweb/wallets"
+import { inAppWallet, InAppWalletAuth, smartWallet, Wallet } from "thirdweb/wallets"
 import { baseSepolia } from "thirdweb/chains"
 import { client } from "../utils/tokens"
 import { managedAccountFactory } from "../config/thirdweb"
 
-const personalWallet: any = inAppWallet()
+export const personalWallet: Wallet = inAppWallet()
 
 interface ConnectPersonalWalletPayload {
    connector: any
@@ -22,6 +22,7 @@ export const connectPersonalWallet = createAsyncThunk("wallet/connectPersonalWal
       wallet: connector,
       client,
    })
+
    return personalAccount
 })
 
@@ -39,5 +40,6 @@ export const connectSmartWallet = createAsyncThunk("wallet/connectSmartWallet", 
       client,
       personalAccount,
    })
+
    return smartAccount
 })

@@ -24,7 +24,6 @@ const Home = () => {
       //    })
       // }
    }
-   console.log(client)
 
    useEffect(() => {
       const intervalId = setInterval(() => {

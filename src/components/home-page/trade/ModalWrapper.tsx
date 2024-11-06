@@ -13,6 +13,7 @@ interface IModalWrapperProps {
    confirmButtonTitle?: string
    isLoading?: boolean
    isConfirmButtonDisabled?: boolean
+   isCloseButtonDisabled?: boolean
 }
 
 const ModalWrapper: React.FC<IModalWrapperProps> = ({
@@ -23,12 +24,13 @@ const ModalWrapper: React.FC<IModalWrapperProps> = ({
    title,
    isLoading,
    isConfirmButtonDisabled,
+   isCloseButtonDisabled,
 
    confirmButtonTitle,
 }) => {
    if (!isOpen) return null
    return ReactDOM.createPortal(
-      <motion.section {...pop} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <motion.section {...pop} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
          <div className="relative w-[95%] rounded-lg bg-background-secondary p-6 shadow-lg sm:w-[424px] md:w-[600px] md:p-7 lg:p-8">
             {title && <h2 className="flex gap-2 text-lg font-medium text-text-primary md:text-xl"> {title}</h2>}
 
@@ -61,13 +63,15 @@ const ModalWrapper: React.FC<IModalWrapperProps> = ({
                   </span>
                )}
 
-               <motion.button
-                  {...btnClick}
-                  className="rounded border border-yellow px-3 py-1 text-text-primary hover:bg-yellow hover:bg-opacity-10 md:px-4 md:py-1.5"
-                  onClick={onClose}
-               >
-                  Close
-               </motion.button>
+               {!isCloseButtonDisabled && (
+                  <motion.button
+                     {...btnClick}
+                     className="rounded border border-yellow px-3 py-1 text-text-primary hover:bg-yellow hover:bg-opacity-10 md:px-4 md:py-1.5"
+                     onClick={onClose}
+                  >
+                     Close
+                  </motion.button>
+               )}
                {confirmButtonTitle && (
                   <motion.button
                      disabled={isConfirmButtonDisabled}
