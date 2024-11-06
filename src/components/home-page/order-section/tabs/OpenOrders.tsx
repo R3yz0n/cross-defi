@@ -1,77 +1,76 @@
+import { ethers } from "ethers"
 import { motion } from "framer-motion"
 import React, { useEffect } from "react"
-import { btnClick } from "../../../../animations"
-import { findTokenByAddress, findTokenByAggregator, usdtToken } from "../../../../utils/tokens"
-// import { useAccount, useReadContract, useWriteContract } from "wagmi"
-import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
-import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
-// import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeper"
-import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
-import { ethers } from "ethers"
-import { AppDispatch, RootState } from "../../../../store/store"
 import { useDispatch, useSelector } from "react-redux"
+import { getContract, readContract } from "thirdweb"
+import { baseSepolia } from "thirdweb/chains"
+import { useReadContract } from "thirdweb/react"
+import { btnClick } from "../../../../animations"
+import { client } from "../../../../config/thirdweb"
+import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
+import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
+import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
+import { AppDispatch, RootState } from "../../../../store/store"
 import { setOrderPlaced } from "../../../../store/tradeSlice"
+import { findTokenByAddress, findTokenByAggregator, usdtToken } from "../../../../utils/tokens"
 
 const OpenOrders: React.FC = () => {
-   // const { address, isConnected } = useAccount()
    const { isOrderPlaced } = useSelector((state: RootState) => state.trade)
    const dispatch = useDispatch<AppDispatch>()
-   // const { writeContractAsync: write, data: hash } = useWriteContract()
-   // const { data: multiTokenKeeper } = useReadContract({
-   //    abi: multiTokenKeeperFactoryAbi.abi as any,
-   //    address: multiTokenKeeperFactoryAddress,
-   //    functionName: "getMultiTokenKeeper",
-   //    args: isConnected ? [address] : undefined,
-   // })
+   const { walletAddress } = useSelector((state: RootState) => state.wallet)
+   const [orders, setOrders] = React.useState<any[]>([])
 
-   // const { data: orderManager } = useReadContract({
-   //    abi: multiTokenKeeperAbi.abi as any,
-   //    address: multiTokenKeeper,
-   //    functionName: "orderManager",
-   //    args: [],
-   // })
+   const { smartAccount } = useSelector((state: RootState) => state.wallet)
 
-   // const { data: activeOrders, refetch } = useReadContract({
-   //    abi: orderManagerAbi as any,
-   //    address: orderManager,
-   //    functionName: "getActiveOrders",
-   //    args: [],
-   // })
+   const multiTokenKeeperFactoryContract = getContract({
+      client,
+      address: multiTokenKeeperFactoryAddress,
+      chain: baseSepolia,
+      abi: multiTokenKeeperFactoryAbi.abi as any,
+   })
+   const { data: multiTokenKeeper } = useReadContract({
+      contract: multiTokenKeeperFactoryContract,
+      method: "function getMultiTokenKeeper(address userAddress) returns (address)",
+      params: [smartAccount?.address],
+   })
 
-   // Check if activeOrders is loaded and has data
-   // const orders = activeOrders ? (activeOrders as any) : []
+   const fetchActiveOrders = async () => {
+      if (!walletAddress) return
+      console.log("walletAddress", walletAddress)
 
-   const orders = []
+      try {
+         const contract = getContract({
+            client,
+            address: multiTokenKeeper,
+            chain: baseSepolia,
+            abi: orderManagerAbi as any,
+         })
 
-   const refetchActiveOrdres = async () => {
-      // await refetch()
+         const activeOrders = await readContract({
+            contract,
+            method: "function balanceOf(address) view returns (uint256)",
+            params: [],
+         })
+
+         setOrders(activeOrders)
+      } catch (error) {
+         console.error("Error fetching active orders:", error)
+      }
+   }
+
+   const refetchActiveOrders = async () => {
+      await fetchActiveOrders()
       dispatch(setOrderPlaced(false))
    }
 
    // Cancel Order with the id
-   const handleCancelOrder = async (orderId: BigInt) => {
-      // console.log(orders)
-      // console.log(orderId)
-      // try {
-      //    console.log(orderManager)
-      //    debugger
-      //    if (orderManager) {
-      //       await write({
-      //          abi: orderManagerAbi,
-      //          address: orderManager,
-      //          functionName: "cancelOrder",
-      //          args: [orderId.toString()],
-      //       })
-      //    }
-      // } catch (error) {
-      //    console.error("Error during canceling order:", error)
-      // }
-   }
+   const handleCancelOrder = async (orderId: BigInt) => {}
 
    useEffect(() => {
-      // if (isOrderPlaced) {
-      //    refetchActiveOrdres()
-      // }
+      fetchActiveOrders()
+      if (isOrderPlaced) {
+         refetchActiveOrders()
+      }
    }, [dispatch, isOrderPlaced])
 
    return (

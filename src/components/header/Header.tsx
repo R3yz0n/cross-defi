@@ -33,13 +33,11 @@ const Header: React.FC<IHeaderProps> = (props) => {
       //    console.log("re-hydrate accounts")
       //    if (connectorId && walletAddress) {
       //       let getWalletConnector = supportedWallets.find((wallet) => wallet.connector.id === connectorId)
-
       //       const personalAccount = await dispatch(connectPersonalWallet({ connector: getWalletConnector?.connector })).unwrap()
       //       await dispatch(connectSmartWallet({ personalAccount })).unwrap()
       //    }
       // }
-
-      reHydrateAccounts()
+      // reHydrateAccounts()
    }, [])
 
    const handleCloseDropDown = () => setShowDropDown(!showDropDown)

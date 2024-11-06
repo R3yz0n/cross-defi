@@ -1,12 +1,11 @@
 import React, { Fragment, useEffect, useState } from "react"
-// import { useAccount, useChainId, useReadContract, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { ITokenType } from "../../../../store/tokenSlice"
 import TokenDropDown from "../TokenDropDown"
 
 import { motion } from "framer-motion"
 import { btnClick } from "../../../../animations"
 import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
-import { findTokenBySymbol } from "../../../../utils/tokens"
+import { findTokenBySymbol, usdtToken } from "../../../../utils/tokens"
 
 import { ethers } from "ethers"
 import { useDispatch, useSelector } from "react-redux"
@@ -23,6 +22,8 @@ import InsufficientBalance from "../modals/InsufficientBalance"
 import NetworkChangeModal from "../modals/NetworkChangeModal"
 import { erc20Abi } from "viem"
 import TransactionApprovingModal from "../modals/TransactionApprovingModal"
+import LimitModal from "../modals/LimitModal"
+import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
 
 interface ILimitFormProps {
    tradeType: string
@@ -42,6 +43,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const [triggerPrice, setTriggerPrice] = useState<string>("")
    const [amount, setAmount] = useState<string>("")
    const { walletAddress } = useSelector((state: RootState) => state.wallet)
+   const [buyOrSellHash, setbuyOrSellHash] = useState<null | string>(null)
 
    // Modal visibility states
    const [showWalletConnectModal, setWalletConnectModal] = useState<boolean>(false)
@@ -86,12 +88,9 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
    // Fetch USDT balance functions
    const fetchUsdtBalance = async () => {
-      if (walletAddress) {
-         const balance: string | number = await dispatch(
-            fetchTokenBalance({ tokenAddress: usdtToken.address, walletAddress: address, decimals: usdtToken.decimal })
-         )
-            .unwrap()
-            .catch()
+      if (walletAddress && smartAccount) {
+         const balance: string | number = await getTokenBalance(usdtToken.address, walletAddress, "18")
+
          setUsdtBalance(parseFloat(balance as string))
       }
    }
@@ -182,14 +181,20 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       setShowMultiTokenKeeperModal(false)
    }
 
-   const approve = (tokenAddress: string, spenderAddress: any, amount: any) => {
+   const approve = async (tokenAddress: string, spenderAddress: any, amount: any) => {
       const contract = getInitializedContract(tokenAddress, erc20Abi)
 
-      const transaction = prepareContractCall({
+      const transaction = await prepareContractCall({
          contract: contract,
          method: "approve",
          params: [spenderAddress, amount],
       })
+
+      if (smartAccount) {
+         let { transactionHash: allowanceTransactionHash } = await sendTransaction({ transaction, account: smartAccount })
+      }
+
+      // return data
    }
 
    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -210,103 +215,135 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    }
 
    const sell = async () => {
-      // if (!address) {
-      //    setWalletConnectModal(true)
-      //    return
-      // }
-      // if (!multiTokenKeeper) return
-      // const allowance = await getTokenAllowance(selectedToken?.address, address, multiTokenKeeper)
-      // if (allowance < ethers.parseUnits(amount.toString(), usdtToken.decimal)) {
-      //    setShowCommonAllowanceModal(true)
-      //    await approve(selectedToken?.address, multiTokenKeeper, defaultApproveAmount)
-      //    setShowCommonAllowanceModal(false)
-      // }
-      // try {
-      //    if (triggerPrice !== null && amount !== null) setIsLimitModalOpen(true)
-      //    await write({
-      //       abi: multiTokenKeeperAbi.abi as any,
-      //       address: multiTokenKeeper,
-      //       functionName: "addOrder",
-      //       args: [
-      //          selectedToken?.address,
-      //          triggerToken?.priceAggregator,
-      //          1,
-      //          ethers.parseUnits(triggerPrice.toString(), 8),
-      //          ethers.parseUnits(amount?.toString(), selectedToken?.decimal),
-      //       ],
-      //    })
-      //    setIsLimitModalOpen(true)
-      // } catch (error) {
-      //    console.error("Error executing sell order:", error)
-      // }
+      if (!walletAddress) {
+         setWalletConnectModal(true)
+         return
+      }
+      if (!multiTokenKeeper) return
+
+      const allowance = await getTokenAllowance(selectedToken?.address, walletAddress, multiTokenKeeper, 18)
+
+      if (Number(allowance) < ethers.parseUnits(amount.toString(), usdtToken.decimal)) {
+         //TODO bujena
+         setShowCommonAllowanceModal(true)
+         await approve(selectedToken?.address, multiTokenKeeper, defaultApproveAmount)
+         setShowCommonAllowanceModal(false)
+      }
+
+      try {
+         if (triggerPrice !== null && amount !== null) setIsLimitModalOpen(true)
+
+         setIsLimitModalOpen(true)
+
+         const contract = getInitializedContract(multiTokenKeeper, orderManagerAbi)
+         const transaction = await prepareContractCall({
+            contract: contract,
+
+            method: "addOrder",
+            params: [
+               selectedToken?.address,
+               triggerToken?.priceAggregator,
+               1,
+               ethers.parseUnits(triggerPrice.toString(), 8),
+               ethers.parseUnits(amount?.toString(), selectedToken?.decimal),
+            ],
+         })
+
+         if (smartAccount) {
+            const { transactionHash } = await sendTransaction({ transaction, account: smartAccount })
+            setbuyOrSellHash(transactionHash)
+
+            setTimeout(() => {
+               setIsLimitModalOpen(false)
+               setbuyOrSellHash(null)
+            }, 2000)
+         }
+      } catch (error) {
+         console.error("Error executing sell order:", error)
+      }
    }
 
    // Create a buy function for the contract interaction
    const buy = async () => {
-      // if (!address) {
-      //    setWalletConnectModal(true)
-      //    return
-      // }
-      // if (!multiTokenKeeper) return
-      // const allowance = await getTokenAllowance(usdtToken.address, address, multiTokenKeeper)
-      // if (allowance < ethers.parseUnits(amount.toString(), usdtToken.decimal)) {
-      //    setShowCommonAllowanceModal(true)
-      //    await approve(usdtToken.address, multiTokenKeeper, defaultApproveAmount)
-      //    setShowCommonAllowanceModal(false)
-      // }
-      // try {
-      //    if (triggerPrice !== null && amount !== null) setIsLimitModalOpen(true)
-      //    await write({
-      //       abi: multiTokenKeeperAbi.abi as any,
-      //       address: multiTokenKeeper,
-      //       functionName: "addOrder",
-      //       args: [
-      //          selectedToken?.address, // _token (address of the token to buy)
-      //          triggerToken?.priceAggregator, // _priceFeed (address of the price feed for the trigger token)
-      //          0, // _orderType (assuming 0 for buy type)
-      //          ethers.parseUnits(triggerPrice.toString(), 8),
-      //          ethers.parseUnits(amount?.toString(), selectedToken?.decimal),
-      //       ],
-      //    })
-      //    setIsLimitModalOpen(true)
-      // } catch (error) {
-      //    console.error("Error executing buy order:", error)
-      // }
+      if (!walletAddress && smartAccount) {
+         setWalletConnectModal(true)
+         return
+      }
+      if (!multiTokenKeeper) return
+      const allowance = await getTokenAllowance(usdtToken.address, walletAddress, multiTokenKeeper, 18)
+      if (Number(allowance) < ethers.parseUnits(amount.toString(), usdtToken.decimal)) {
+         //TODO bujena
+         setShowCommonAllowanceModal(true)
+         await approve(usdtToken.address, multiTokenKeeper, defaultApproveAmount)
+         setShowCommonAllowanceModal(false)
+      }
+      try {
+         console.log(triggerPrice, amount)
+         if (triggerPrice !== null && amount !== null) setIsLimitModalOpen(true)
+         else {
+            return
+         }
+
+         const contract = getInitializedContract(multiTokenKeeper, orderManagerAbi)
+         const transaction = await prepareContractCall({
+            contract: contract,
+
+            method: "addOrder",
+            params: [
+               selectedToken?.address,
+               triggerToken?.priceAggregator,
+               0,
+               ethers.parseUnits(triggerPrice.toString(), 8),
+               ethers.parseUnits(amount?.toString(), selectedToken?.decimal),
+            ],
+         })
+
+         if (smartAccount) {
+            const { transactionHash } = await sendTransaction({ transaction, account: smartAccount })
+            setbuyOrSellHash(transactionHash)
+
+            setTimeout(() => {
+               setIsLimitModalOpen(false)
+               setbuyOrSellHash(null)
+            }, 2000)
+         }
+      } catch (error) {
+         console.error("Error executing buy order:", error)
+      }
    }
 
    const fetchSellTokenBalance = async () => {
-      // if (selectedToken?.address && address) {
-      //    const balance: string | number = await dispatch(
-      //       fetchTokenBalance({ tokenAddress: selectedToken.address, walletAddress: address, decimals: selectedToken.decimal })
-      //    ).unwrap()
-      //    setSellTokenBalance(Number(balance as string))
-      // }
+      if (selectedToken?.address && walletAddress && smartAccount) {
+         const balance: string | number = await getTokenBalance(selectedToken.address, walletAddress, "18")
+
+         setSellTokenBalance(Number(balance as string))
+      }
    }
 
    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      // const value = e.target.value
-      // // Allow only numbers and one decimal point using regex
-      // const regex = /^[0-9]*\.?[0-9]*$/
-      // // Update the amount only if the value matches the regex (valid decimal number)
-      // if (regex.test(value)) {
-      //    const enteredAmount = parseFloat(value)
-      //    // Check if the entered amount is greater than the available balance
-      //    if (enteredAmount > usdtBalance && props.tradeType === "buy") {
-      //       setAmount(usdtBalance.toString()) // Set to max balance
-      //       // toast.warn(`Amount exceeds balance. Set to max available: ${usdtBalance} USDT.`) // Show warning message
-      //    } else {
-      //       setAmount(value) // Set the entered value if it's valid
-      //    }
-      //    if (props.tradeType === "sell") {
-      //       console.log(enteredAmount, sellTokenBalance)
-      //       if (enteredAmount > sellTokenBalance) {
-      //          setAmount(sellTokenBalance.toString()) // Set to max balance
-      //          // toast.warn(`Amount exceeds balance. Set to max available: ${sellTokenBalance} ${selectedToken?.symbol}.`) // Show warning message
-      //       } else {
-      //          setAmount(value) // Set the entered value if it's valid
-      //       }
-      //    }
-      // }
+      const value = e.target.value
+      // Allow only numbers and one decimal point using regex
+      const regex = /^[0-9]*\.?[0-9]*$/
+      // Update the amount only if the value matches the regex (valid decimal number)
+      if (regex.test(value)) {
+         const enteredAmount = parseFloat(value)
+         // Check if the entered amount is greater than the available balance
+         if (enteredAmount > usdtBalance && props.tradeType === "buy") {
+            setAmount(usdtBalance.toString()) // Set to max balance
+            // toast.warn(`Amount exceeds balance. Set to max available: ${usdtBalance} USDT.`) // Show warning message
+         } else {
+            setAmount(value) // Set the entered value if it's valid
+         }
+         if (props.tradeType === "sell") {
+            console.log(enteredAmount, sellTokenBalance)
+            if (enteredAmount > sellTokenBalance) {
+               setAmount(sellTokenBalance.toString()) // Set to max balance
+               // toast.warn(`Amount exceeds balance. Set to max available: ${sellTokenBalance} ${selectedToken?.symbol}.`) // Show warning message
+            } else {
+               setAmount(value) // Set the entered value if it's valid
+            }
+         }
+      }
    }
 
    useEffect(() => {
@@ -371,7 +408,10 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
       if (walletAddress) {
          fetchUsdtBalance()
       }
-   }, [])
+      if (selectedToken?.address && walletAddress && props.tradeType === "sell") {
+         fetchSellTokenBalance()
+      }
+   }, [props.tradeType])
 
    function getInitializedContract(contractAddress: any, abi: any) {
       return getContract({
@@ -480,7 +520,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                {walletAddress ? (props.tradeType === "buy" ? "Buy" : "Sell") : "Connect Wallet"}
             </motion.button>
          </form>
-         {/* <LimitModal
+         <LimitModal
             isOpen={isLimitModalOpen}
             onClose={() => setIsLimitModalOpen(false)}
             tradeType={props.tradeType}
@@ -488,9 +528,9 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
             selectedToken={selectedToken}
             triggerPrice={triggerPrice}
             amount={amount}
-            transactionHash={hash}
+            transactionHash={buyOrSellHash ? buyOrSellHash : ""}
             tokenSymbol={selectedToken?.symbol}
-         /> */}
+         />
          {/* <WalletConnectModal isOpen={showWalletConnectModal} onClose={() => setWalletConnectModal(false)} /> */}
          {/* transactionHash?: string | null // Add transactionHash prop */}
          <AllowanceModal

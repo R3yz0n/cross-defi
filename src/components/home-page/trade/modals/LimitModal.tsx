@@ -16,8 +16,8 @@ interface ILimitModalProps {
    tradeType: string
    triggerToken: ITokenType | null
    selectedToken: ITokenType | null
-   triggerPrice: number
-   amount: number
+   triggerPrice: string
+   amount: string
    transactionHash?: string
    tokenSymbol: string
 }
