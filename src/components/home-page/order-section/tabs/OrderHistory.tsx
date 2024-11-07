@@ -1,8 +1,7 @@
 import { motion } from "framer-motion"
 import React, { useEffect } from "react"
 import { btnClick } from "../../../../animations"
-import { findTokenByAddress, findTokenByAggregator, usdtToken } from "../../../../utils/tokens"
-import { useAccount, useReadContract } from "wagmi"
+import { client, findTokenByAddress, findTokenByAggregator, usdtToken } from "../../../../utils/tokens"
 import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
 import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
 import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeper"
@@ -11,45 +10,80 @@ import { ethers } from "ethers"
 import { AppDispatch, RootState } from "../../../../store/store"
 import { useDispatch, useSelector } from "react-redux"
 import { setOrderPlaced } from "../../../../store/tradeSlice"
+import { getContract, readContract } from "thirdweb"
+import { baseSepolia } from "thirdweb/chains"
+import multiTokenKeeper from "../../../../services/blockchain/abis/multiTokenKeeper"
+import { useReadContract } from "thirdweb/react"
 
 const OrderHistory: React.FC = () => {
-   const { address, isConnected } = useAccount()
    const { isOrderPlaced } = useSelector((state: RootState) => state.trade)
    const dispatch = useDispatch<AppDispatch>()
+   const { walletAddress } = useSelector((state: RootState) => state.wallet)
+   const [orders, setOrders] = React.useState<any[]>([])
 
-   const { data: multiTokenKeeper } = useReadContract({
-      abi: multiTokenKeeperFactoryAbi.abi as any,
+   const { smartAccount } = useSelector((state: RootState) => state.wallet)
+
+   const multiTokenKeeperFactoryContract = getContract({
+      client,
       address: multiTokenKeeperFactoryAddress,
-      functionName: "getMultiTokenKeeper",
-      args: isConnected ? [address] : undefined,
+      chain: baseSepolia,
+      abi: multiTokenKeeperFactoryAbi.abi as any,
    })
 
-   const { data: orderManager } = useReadContract({
-      abi: multiTokenKeeperAbi.abi as any,
-      address: multiTokenKeeper,
-      functionName: "orderManager",
-      args: [],
+   const { data: multiKeeperContractAddress } = useReadContract({
+      contract: multiTokenKeeperFactoryContract,
+      method: "function getMultiTokenKeeper(address userAddress) returns (address)",
+      params: [smartAccount?.address],
    })
 
-   const { data: fullFilledOrders, refetch } = useReadContract({
-      abi: orderManagerAbi as any,
-      address: orderManager,
-      functionName: "getFulfilledOrders",
-      args: [],
-   })
+   const fetchFullfilledOrders = async () => {
+      if (!walletAddress || !multiKeeperContractAddress) return
 
-   // Check if fullFilledOrders is loaded and has data
-   const orders = fullFilledOrders ? (fullFilledOrders as any) : []
+      // internalType: "contract OrderManager",
+      try {
+         const multiKeeperContract = await getContract({
+            client,
+            address: multiKeeperContractAddress,
+            chain: baseSepolia,
+            abi: multiTokenKeeper.abi as any,
+         })
 
-   const refetchFullFilledOrders = async () => {
-      await refetch()
+         const managerAddress = await readContract({
+            contract: multiKeeperContract,
+            method: "orderManager",
+            params: [],
+         })
+
+         const orderManagerContract = await getContract({
+            client,
+            address: managerAddress,
+            chain: baseSepolia,
+            abi: orderManagerAbi as any,
+         })
+
+         const fullFilledOrder = await readContract({
+            contract: orderManagerContract,
+            method: "getFulfilledOrders",
+            params: [],
+         })
+
+         setOrders(fullFilledOrder)
+      } catch (error) {
+         console.error("Error fetching active orders:", error)
+      }
+   }
+
+   const refetchFullfilledOrders = async () => {
+      await fetchFullfilledOrders()
       dispatch(setOrderPlaced(false))
    }
+
    useEffect(() => {
+      fetchFullfilledOrders()
       if (isOrderPlaced) {
-         refetchFullFilledOrders()
+         refetchFullfilledOrders()
       }
-   }, [dispatch, isOrderPlaced])
+   }, [dispatch, isOrderPlaced, walletAddress])
 
    return (
       <section className="min-w-full max-w-[98%] overflow-y-scroll px-2 md:w-full md:px-0 md:pl-5">

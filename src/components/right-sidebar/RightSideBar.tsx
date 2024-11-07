@@ -10,7 +10,7 @@ interface IRightSideBarProps {
 
 const RightSideBar: React.FC<IRightSideBarProps> = (props) => {
    return (
-      <section className="h-full w-56 bg-background-primary px-1 py-0.5 md:w-60 xl:block xl:py-0 2xl:w-[316px] 2xl:px-3">
+      <section className="h-full w-56 bg-background-primary px-2 py-0.5 md:w-60 xl:block xl:py-0 2xl:w-[316px] 2xl:px-3">
          <ul className="mt-2 flex h-[70vh] flex-col gap-3 overflow-y-auto text-text-primary md:mt-5 xl:h-[90vh] 2xl:gap-4">
             <motion.button
                {...btnClick}

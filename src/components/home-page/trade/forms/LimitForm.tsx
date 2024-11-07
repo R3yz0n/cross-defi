@@ -24,6 +24,7 @@ import { erc20Abi } from "viem"
 import TransactionApprovingModal from "../modals/TransactionApprovingModal"
 import LimitModal from "../modals/LimitModal"
 import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
+import { setOrderPlaced } from "../../../../store/tradeSlice"
 
 interface ILimitFormProps {
    tradeType: string
@@ -121,10 +122,10 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const handleApproveForMultiTokenKeeper = async () => {
       let allowance = await getTokenAllowance(linkTokenAddress, walletAddress, multiTokenKeeperFactoryAddress, 18)
       if (allowance === null || allowance === undefined || allowance > ethers.parseUnits("100000", 18)) return
-      debugger
+
       try {
          const allownceAmount = await getTokenAllowance(linkTokenAddress, smartAccount.address, multiTokenKeeperFactoryAddress, 18)
-         debugger
+
          // const amountToApprove = ethers.parseUnits("10000000000000000000000000000000", 18)
          // await write({
          //    abi: erc20Abi,
@@ -206,10 +207,12 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
 
       if (props.tradeType === "buy") {
          await buy()
+         dispatch(setOrderPlaced(true))
          await fetchUsdtBalance()
          // dispatch(setOrderPlaced(true))
       } else if (props.tradeType === "sell") {
          await sell()
+         dispatch(setOrderPlaced(true))
          await fetchSellTokenBalance()
       }
    }
@@ -497,7 +500,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                <label htmlFor="amount" className="flex select-none justify-between pr-4 text-xs font-medium text-text-primary sm:text-sm">
                   Amount
                   <p className="text-xs font-normal text-yellow">
-                     Max: {props.tradeType === "buy" && `${usdtBalance} USDT`}
+                     Max: {props.tradeType === "buy" && `${usdtBalance.toFixed(2)} USDT`}
                      {props.tradeType === "sell" && `${sellTokenBalance} ${selectedToken?.symbol}`}
                   </p>
                </label>
@@ -512,13 +515,23 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                />
             </section>
 
-            <motion.button
-               {...btnClick}
-               type="submit"
-               className={`mx-auto block w-full rounded ${props.tradeType === "buy" ? "bg-green" : "bg-red"} py-1.5 text-base font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80`}
-            >
-               {walletAddress ? (props.tradeType === "buy" ? "Buy" : "Sell") : "Connect Wallet"}
-            </motion.button>
+            {walletAddress ? (
+               <motion.button
+                  {...btnClick}
+                  type="submit"
+                  className={`mx-auto block w-full rounded ${props.tradeType === "buy" ? "bg-green" : "bg-red"} py-1.5 text-base font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80`}
+               >
+                  {props.tradeType === "buy" ? "Buy" : "Sell"}
+               </motion.button>
+            ) : (
+               <motion.button
+                  {...btnClick}
+                  type="button"
+                  className={`mx-auto block w-full rounded ${props.tradeType === "buy" ? "bg-green" : "bg-red"} py-1.5 text-base font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80`}
+               >
+                  Connect wallet
+               </motion.button>
+            )}
          </form>
          <LimitModal
             isOpen={isLimitModalOpen}

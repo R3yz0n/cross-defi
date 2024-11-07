@@ -9,10 +9,12 @@ import { btnClick } from "../../../../animations"
 import { client } from "../../../../config/thirdweb"
 import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
 import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
-import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
 import { AppDispatch, RootState } from "../../../../store/store"
 import { setOrderPlaced } from "../../../../store/tradeSlice"
 import { findTokenByAddress, findTokenByAggregator, usdtToken } from "../../../../utils/tokens"
+import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
+import multiTokenKeeper from "../../../../services/blockchain/abis/multiTokenKeeper"
+// import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeper"
 
 const OpenOrders: React.FC = () => {
    const { isOrderPlaced } = useSelector((state: RootState) => state.trade)
@@ -28,27 +30,41 @@ const OpenOrders: React.FC = () => {
       chain: baseSepolia,
       abi: multiTokenKeeperFactoryAbi.abi as any,
    })
-   const { data: multiTokenKeeper } = useReadContract({
+
+   const { data: multiKeeperContractAddress } = useReadContract({
       contract: multiTokenKeeperFactoryContract,
       method: "function getMultiTokenKeeper(address userAddress) returns (address)",
       params: [smartAccount?.address],
    })
 
    const fetchActiveOrders = async () => {
-      if (!walletAddress) return
-      console.log("walletAddress", walletAddress)
+      if (!walletAddress || !multiKeeperContractAddress) return
 
+      // internalType: "contract OrderManager",
       try {
-         const contract = getContract({
+         const multiKeeperContract = await getContract({
             client,
-            address: multiTokenKeeper,
+            address: multiKeeperContractAddress,
+            chain: baseSepolia,
+            abi: multiTokenKeeper.abi as any,
+         })
+
+         const managerAddress = await readContract({
+            contract: multiKeeperContract,
+            method: "orderManager",
+            params: [],
+         })
+
+         const orderManagerContract = await getContract({
+            client,
+            address: managerAddress,
             chain: baseSepolia,
             abi: orderManagerAbi as any,
          })
 
          const activeOrders = await readContract({
-            contract,
-            method: "function balanceOf(address) view returns (uint256)",
+            contract: orderManagerContract,
+            method: "getActiveOrders",
             params: [],
          })
 
@@ -71,7 +87,7 @@ const OpenOrders: React.FC = () => {
       if (isOrderPlaced) {
          refetchActiveOrders()
       }
-   }, [dispatch, isOrderPlaced])
+   }, [dispatch, isOrderPlaced, walletAddress])
 
    return (
       <section className="min-w-full max-w-[98%] overflow-y-scroll px-2 md:w-full md:px-0 md:pl-5">
