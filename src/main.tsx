@@ -17,7 +17,6 @@ const queryClient = new QueryClient()
 
 createRoot(document.getElementById("root")!).render(
    <Provider store={store}>
-      {/* <WagmiProvider config={config}> */}
       <QueryClientProvider client={queryClient}>
          <BrowserRouter>
             <AnimatePresence>
@@ -25,9 +24,20 @@ createRoot(document.getElementById("root")!).render(
                   <App />
                </ThirdwebProvider>
             </AnimatePresence>
-            <ToastContainer />
+            <ToastContainer
+               style={{ marginTop: 64 }}
+               position="top-right"
+               autoClose={4000}
+               hideProgressBar={false}
+               newestOnTop={false}
+               closeOnClick
+               rtl={false}
+               pauseOnFocusLoss
+               draggable
+               pauseOnHover
+               theme="dark"
+            />
          </BrowserRouter>
       </QueryClientProvider>
-      {/* </WagmiProvider> */}
    </Provider>
 )

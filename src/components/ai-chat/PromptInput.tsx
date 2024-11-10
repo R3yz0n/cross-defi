@@ -1,27 +1,27 @@
-import axios, { AxiosError } from "axios"
-import { motion } from "framer-motion"
-import React, { useEffect, useRef } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import { FaArrowUp } from "react-icons/fa"
-import { toast } from "react-toastify"
+import { motion } from "framer-motion"
 import { btnClick } from "../../animations"
+import axios, { AxiosError } from "axios"
+import { toast } from "react-toastify"
 
 interface IPromptInputProps {
-   setImageUrl: React.Dispatch<React.SetStateAction<string | null>>
+   setResponse: React.Dispatch<React.SetStateAction<string | null>>
    setInputValue: React.Dispatch<React.SetStateAction<string>>
    setLoading: React.Dispatch<React.SetStateAction<boolean>>
    inputValue: string
    loading: boolean
 }
-const PromptInput: React.FC<IPromptInputProps> = ({ setImageUrl, setInputValue, inputValue, setLoading, loading }) => {
+const PromptInput: React.FC<IPromptInputProps> = ({ setResponse, setInputValue, inputValue, setLoading, loading }) => {
    const textareaRef = useRef<HTMLTextAreaElement>(null)
 
    const apiUrl = import.meta.env.VITE_API_URL
 
    const handleInput = () => {
       if (textareaRef.current) {
-         textareaRef.current.style.height = "auto" // Reset height first to recalculate
+         textareaRef.current.style.height = "auto"
          const scrollHeight = textareaRef.current.scrollHeight
-         textareaRef.current.style.height = `${Math.min(scrollHeight, 150)}px` // Set a max height of 150px
+         textareaRef.current.style.height = `${Math.min(scrollHeight, 150)}px`
       }
    }
 
@@ -29,25 +29,20 @@ const PromptInput: React.FC<IPromptInputProps> = ({ setImageUrl, setInputValue, 
       e.preventDefault()
       setLoading(true)
       try {
-         console.log("Input value:", inputValue)
-
          const reqBody = {
             prompt: inputValue,
-            model: "black-forest-labs/flux-schnell",
-            aiModelType: "image",
+            model: "meta/textgen",
+            aiModelType: "text",
          }
 
-         const promptRes = await axios.post(apiUrl, reqBody, { responseType: "blob" })
+         const promptRes = await axios.post(apiUrl, reqBody, { responseType: "stream" })
+         console.log(promptRes)
 
-         if (promptRes && promptRes.data instanceof Blob) {
-            const imageBlob = promptRes.data
-            const image = URL.createObjectURL(imageBlob)
-
-            setImageUrl(image)
+         if (promptRes) {
+            setResponse(promptRes.data)
             setLoading(false)
             setInputValue("")
          } else {
-            throw new Error("Invalid response data: Not a Blob")
          }
       } catch (error) {
          if (error instanceof AxiosError) {
