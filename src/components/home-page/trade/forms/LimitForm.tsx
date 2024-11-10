@@ -105,7 +105,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
     * @param decimal - The decimal places for formatting the allowance.
     * @returns A promise that resolves to the allowance of the spender, formatted with the token's decimals.
     */
-   const getTokenAllowance = async (tokenAddress: string, walletAddress: string, spenderAddress: string, decimal: number): Promise<string> => {
+   const getTokenAllowance = async (tokenAddress: string, walletAddress: string, spenderAddress: string, decimal: number): string => {
       try {
          const contract = getInitializedContract(tokenAddress, erc20Abi)
          const allowanceInWei: bigint = await readFromContract(contract, "function allowance(address,address) view returns (uint256)", [
@@ -141,7 +141,6 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    const createAndRegisterMultiTokenKeeper = async () => {
       if (smartAccount && walletAddress) {
          const balance = await getTokenBalance(linkTokenAddress, walletAddress, "18")
-         debugger
 
          if (parseFloat(balance.toString()) < 4) {
             setShowInsufficientBalanceModal(true)
