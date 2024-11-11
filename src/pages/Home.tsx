@@ -3,32 +3,52 @@ import TradingChart from "../components/home-page/chart/TradingChart"
 import Order from "../components/home-page/order-section/Order"
 import Trade from "../components/home-page/trade/Trade"
 import { linkTokenAddress } from "../constants/blockchain"
-import { fetchTokenBalance } from "../store/tokenThunk"
 import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "../store/store"
 import InsufficientBalance from "../components/home-page/trade/modals/InsufficientBalance"
+
+import { reHydrateAccounts } from "../store/walletThunk"
+import { getContract } from "thirdweb"
+import { baseSepolia } from "thirdweb/chains"
+import { erc20Abi } from "viem"
 import { client } from "../config/thirdweb"
-import { inAppWallet } from "thirdweb/wallets"
+import { ethers } from "ethers"
+import { useReadContract } from "thirdweb/react"
 
 const Home = () => {
    const dispatch = useDispatch<AppDispatch>()
    const { walletAddress } = useSelector((state: RootState) => state.wallet)
    const [showInsufficientLinkBalance, setShowInsufficientLinkBalance] = useState<boolean>(false)
-   const fetchLinkBalance = async () => {
-      // if (walletAddress) {
-      //    dispatch(fetchTokenBalance({ tokenAddress: linkTokenAddress, walletAddress: walletAddress, decimals: 18 })).then((res) => {
-      //       let balance: number = Number(res.payload)
-      //       if (balance < 3) {
-      //          setShowInsufficientLinkBalance(true)
-      //       }
-      //    })
-      // }
-   }
+   const { smartAccount } = useSelector((state: RootState) => state.wallet)
+
+   const {
+      data: linkBalanceOnWallet,
+      isLoading: linkBalanceIsLoading,
+      refetch,
+   } = useReadContract({
+      contract: getContract({
+         client,
+         address: linkTokenAddress,
+         chain: baseSepolia,
+         abi: erc20Abi as any,
+      }),
+      method: "function balanceOf(address walletAddress) returns (uint256)",
+      params: [smartAccount?.address],
+   })
 
    useEffect(() => {
+      if (walletAddress) dispatch(reHydrateAccounts())
+   }, [])
+   useEffect(() => {
       const intervalId = setInterval(() => {
-         fetchLinkBalance()
-      }, 20000)
+         refetch()
+
+         const linkBalance = ethers.formatUnits(linkBalanceOnWallet?.toString(), 18)
+
+         if (Number(linkBalance) < 4) {
+            setShowInsufficientLinkBalance(true)
+         }
+      }, 2000)
 
       return () => clearInterval(intervalId)
    }, [walletAddress, dispatch])

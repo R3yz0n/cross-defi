@@ -2,7 +2,7 @@
 
 import { ethers } from "ethers"
 
-export const multiTokenKeeperFactoryAddress = "0xAf55874F541c646a8Bf90A08400Ed758010DA6BB"
+export const multiTokenKeeperFactoryAddress = "0x2fCF821e39FBD22151648756E2a7522759b5a3C2"
 export const linkTokenAddress: string = "0xE4aB69C077896252FAFBD49EFD26B5D171A32410"
 export const defaultTriggerPrice = 40000
 export const defaultAmount = 1000

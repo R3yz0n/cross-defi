@@ -32,7 +32,7 @@ export const connectSmartWallet = createAsyncThunk("wallet/connectSmartWallet", 
       chain: baseSepolia,
       factoryAddress: managedAccountFactory,
       gasless: true,
-      clientId: "485a0fd95563acb5d9b22ab679e13022",
+      clientId: "8ca2b38bb95e11e361cd5c813ffcfcf5",
    })
 
    const smartAccount = await Swallet.connect({
@@ -42,4 +42,24 @@ export const connectSmartWallet = createAsyncThunk("wallet/connectSmartWallet", 
    })
 
    return smartAccount
+})
+
+// Thunk for connecting to the smart wallet
+export const reHydrateAccounts = createAsyncThunk("wallet/rehydration", async () => {
+   const personalAccount = await personalWallet.autoConnect({ client, chain: baseSepolia })
+
+   const Swallet = smartWallet({
+      chain: baseSepolia,
+      factoryAddress: managedAccountFactory,
+      gasless: true,
+      clientId: "8ca2b38bb95e11e361cd5c813ffcfcf5",
+   })
+
+   const smartAccount = await Swallet.connect({
+      chain: baseSepolia,
+      client,
+      personalAccount,
+   })
+
+   return { personalAccount, smartAccount }
 })

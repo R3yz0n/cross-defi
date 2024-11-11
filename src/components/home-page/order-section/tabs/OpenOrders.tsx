@@ -14,7 +14,6 @@ import { setOrderPlaced } from "../../../../store/tradeSlice"
 import { findTokenByAddress, findTokenByAggregator, usdtToken } from "../../../../utils/tokens"
 import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
 import multiTokenKeeper from "../../../../services/blockchain/abis/multiTokenKeeper"
-// import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeper"
 
 const OpenOrders: React.FC = () => {
    const { isOrderPlaced } = useSelector((state: RootState) => state.trade)
@@ -65,7 +64,7 @@ const OpenOrders: React.FC = () => {
          const activeOrders = await readContract({
             contract: orderManagerContract,
             method: "getActiveOrders",
-            params: [],
+            params: [1, 2],
          })
 
          setOrders(activeOrders)

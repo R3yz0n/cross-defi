@@ -64,7 +64,7 @@ const OrderHistory: React.FC = () => {
          const fullFilledOrder = await readContract({
             contract: orderManagerContract,
             method: "getFulfilledOrders",
-            params: [],
+            params: [1, 2],
          })
 
          setOrders(fullFilledOrder)

@@ -1,46 +1,31 @@
-import { ImMenu } from "react-icons/im"
-import { supportedWallets, WalletOptions } from "./WalletOption"
-import React, { useEffect } from "react"
-import { SiQuantconnect } from "react-icons/si"
 import { motion } from "framer-motion"
-import { btnClick } from "../../animations"
-import WalletOperation from "./WalletOperation"
-import { useDispatch, useSelector } from "react-redux"
-import { AppDispatch, RootState } from "../../store/store"
-import { addConnectorId, addWalletAddress } from "../../store/walletSlice"
+import React, { useState } from "react"
+import { ImMenu } from "react-icons/im"
+import { SiQuantconnect } from "react-icons/si"
+import QRCode from "react-qr-code"
+import { useSelector } from "react-redux"
+import { btnClick, slideTop } from "../../animations"
+import { RootState } from "../../store/store"
 import ConnectingPersonalWalletModal from "./ConnectingPersonalWalletModal"
-
 import ConnectingSmartWalletModal from "./ConnectingSmartWalletModal"
-import { connectPersonalWallet, connectSmartWallet, personalWallet, reHydrating } from "../../store/walletThunk"
-import { useActiveAccount, useActiveWallet, useAutoConnect, useWalletInfo } from "thirdweb/react"
-import { smartWallet } from "thirdweb/wallets"
-import { client } from "../../utils/tokens"
+import WalletOperation from "./WalletOperation"
+import { WalletOptions } from "./WalletOption"
+import { RiFolderDownloadLine } from "react-icons/ri"
+import { MdContentCopy } from "react-icons/md"
 
 interface IHeaderProps {
    onToggleMenu: () => void
    showMenu: boolean
 }
 const Header: React.FC<IHeaderProps> = (props) => {
-   const [showDropDown, setShowDropDown] = React.useState<boolean>(false)
+   const [showDropDown, setShowDropDown] = useState<boolean>(false)
+   const [showQRCode, setShowQRCode] = useState<boolean>(false) // State for QR code modal
 
-   const dispatch = useDispatch<AppDispatch>()
-   const { isConnectingPersonalWallet, isConnectingSmartWallet, smartAccount, walletAddress, connectorId, personalAccount } = useSelector(
-      (state: RootState) => state.wallet
-   )
-
-   useEffect(() => {
-      // const reHydrateAccounts = async () => {
-      //    console.log("re-hydrate accounts")
-      //    if (connectorId && walletAddress) {
-      //       let getWalletConnector = supportedWallets.find((wallet) => wallet.connector.id === connectorId)
-      //       const personalAccount = await dispatch(connectPersonalWallet({ connector: getWalletConnector?.connector })).unwrap()
-      //       await dispatch(connectSmartWallet({ personalAccount })).unwrap()
-      //    }
-      // }
-      // reHydrateAccounts()
-   }, [])
+   const { isConnectingPersonalWallet, isConnectingSmartWallet, walletAddress } = useSelector((state: RootState) => state.wallet)
 
    const handleCloseDropDown = () => setShowDropDown(!showDropDown)
+   const handleDepositClick = () => setShowQRCode(!showQRCode) // Show QR code modal when "Deposit" is clicked
+
    return (
       <header>
          <nav className="col-span-2 flex h-16 w-full items-center justify-between border-b-4 border-b-black px-4 pt-2 font-semibold text-text-primary md:h-[70px] md:border-b-8 md:px-6 2xl:h-20">
@@ -53,9 +38,20 @@ const Header: React.FC<IHeaderProps> = (props) => {
                   <span className="ml-2 text-[1.1em] text-yellow">AI </span>
                </h3>
             </aside>
-
+            {walletAddress && (
+               <div className="bb relative mx-auto mr-2 sm:mr-5">
+                  <motion.button
+                     {...btnClick}
+                     onClick={handleDepositClick}
+                     className="border-1 relative z-50 flex items-center gap-1.5 rounded-md border border-gray-800 bg-background-secondary px-2 py-1 text-13px font-normal text-text-primary shadow-md md:px-5 md:text-base 2xl:px-6 2xl:py-1.5 2xl:text-lg 2xl:font-medium"
+                  >
+                     <RiFolderDownloadLine size={20} />
+                     Deposit
+                  </motion.button>
+                  {walletAddress && showQRCode && <DepositQRCodeModal walletAddress={walletAddress} />}
+               </div>
+            )}
             <aside className="border-1 relative z-50 rounded-3xl border border-gray-800 bg-background-secondary px-3 py-1 text-13px font-normal text-text-primary shadow-md md:px-5 md:text-base 2xl:px-6 2xl:py-1.5 2xl:text-lg 2xl:font-medium">
-               {/* show connect button when account not connected */}
                <div>
                   {walletAddress ? (
                      <motion.button
@@ -82,6 +78,7 @@ const Header: React.FC<IHeaderProps> = (props) => {
                {showDropDown && <Wallet isConnected={walletAddress ? true : false} onCloseDropDown={handleCloseDropDown} />}
             </aside>
          </nav>
+
          <ConnectingPersonalWalletModal isOpen={isConnectingPersonalWallet} />
          <ConnectingSmartWalletModal isOpen={isConnectingSmartWallet} />
       </header>
@@ -110,4 +107,55 @@ export const formatWalletAddress = (address: string, firstChars: number, lastCha
    const start = address.slice(0, firstChars)
    const end = address.slice(-lastChars)
    return `${start}...${end}`
+}
+
+interface IDepositQRCodeModalProps {
+   walletAddress: string
+}
+
+const DepositQRCodeModal: React.FC<IDepositQRCodeModalProps> = ({ walletAddress }) => {
+   const [hoverText, setHoverText] = useState<string>(formatWalletAddress(walletAddress, 10, 6))
+
+   const handleMouseEnter = () => {
+      if (window.innerWidth < 640) {
+         setHoverText("Copy  address")
+      } else {
+         setHoverText("Copy wallet address")
+      }
+   }
+   const handleCopyClick = async () => {
+      try {
+         await navigator.clipboard.writeText(walletAddress)
+         setHoverText("Copied!")
+         setTimeout(() => setHoverText(formatWalletAddress(walletAddress, 10, 6)), 1500)
+      } catch (error) {
+         console.error("Failed to copy address:", error)
+      }
+   }
+   const handleMouseLeave = () => setHoverText(formatWalletAddress(walletAddress, 10, 6))
+   if (!walletAddress) return null
+   return (
+      <motion.div {...slideTop} className="absolute -right-10 top-10 z-40 md:right-0 2xl:top-14">
+         <div className="z-50 w-56 rounded-lg bg-background-secondary p-6 py-8 text-center shadow-lg md:w-64">
+            <QRCode
+               size={256}
+               style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+               className=""
+               value={walletAddress}
+               viewBox={`0 0 256 256`}
+            />
+            <motion.button
+               onClick={handleCopyClick}
+               type="button"
+               {...btnClick}
+               onMouseEnter={handleMouseEnter}
+               onMouseLeave={handleMouseLeave}
+               className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl px-1 py-1 text-base font-medium text-text-secondary hover:bg-background-primary"
+            >
+               <p className="">{hoverText}</p>
+               <MdContentCopy className="text-text-primary" size={18} />
+            </motion.button>
+         </div>
+      </motion.div>
+   )
 }

@@ -142,11 +142,13 @@ const MarketForm = () => {
 
       console.log(personalAccount)
 
+      debugger
+
       const Swallet = smartWallet({
          chain: baseSepolia,
          factoryAddress: managedAccountFactory,
          gasless: true,
-         clientId: "485a0fd95563acb5d9b22ab679e13022",
+         clientId: "8ca2b38bb95e11e361cd5c813ffcfcf5",
       })
 
       const smartAccount = await Swallet.connect({

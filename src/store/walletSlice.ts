@@ -1,8 +1,19 @@
 // src/store/slices/walletSlice.ts
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
-import { connectPersonalWallet, connectSmartWallet } from "./walletThunk"
-import { Account } from "thirdweb/wallets"
+import { connectPersonalWallet, connectSmartWallet, reHydrateAccounts } from "./walletThunk"
+import { Account, inAppWallet, smartWallet } from "thirdweb/wallets"
+import { baseSepolia } from "thirdweb/chains"
+
+import { createThirdwebClient, ThirdwebClient } from "thirdweb"
+import { managedAccountFactory } from "../config/thirdweb"
+
+export const client: ThirdwebClient = createThirdwebClient({
+   clientId: import.meta.env.VITE_THIRD_WEB_CLIENT_ID,
+   //    secretKey: import.meta.env.VITE_SECRET_KEY,
+})
+
+export const personalWallet = inAppWallet()
 
 export interface ITokenState {
    walletAddress: string | null
@@ -34,7 +45,6 @@ const loadStateFromLocalStorage = (): ITokenState => {
 
 const initialState: ITokenState = loadStateFromLocalStorage()
 
-// Create the walletSlice
 export const walletSlice = createSlice({
    name: "wallet",
    initialState,
@@ -69,7 +79,7 @@ export const walletSlice = createSlice({
          })
          .addCase(connectPersonalWallet.fulfilled, (state, action) => {
             state.personalAccount = action.payload
-            state.walletAddress = action.payload.address // Assuming personalAccount has an `address` property
+            state.walletAddress = action.payload.address
             state.isConnectingPersonalWallet = false
 
             // Persist personal account and wallet address
@@ -99,9 +109,25 @@ export const walletSlice = createSlice({
             state.isConnectingSmartWallet = false
             state.connectionError = action.error.message || "Failed to connect smart wallet"
          })
+
+      builder
+         .addCase(reHydrateAccounts.pending, (state) => {
+            state.connectionError = null
+         })
+         .addCase(reHydrateAccounts.fulfilled, (state, action) => {
+            state.smartAccount = action.payload.smartAccount
+            state.personalAccount = action.payload.personalAccount
+            state.isConnectingSmartWallet = false
+
+            localStorage.setItem("walletAddress", JSON.stringify(state.walletAddress))
+            localStorage.setItem("smartAccount", JSON.stringify(state.smartAccount))
+         })
+         .addCase(reHydrateAccounts.rejected, (state, action) => {
+            state.isConnectingSmartWallet = false
+            state.connectionError = action.error.message || "Failed to connect smart wallet"
+         })
    },
 })
 
-// Export actions and reducer
 export const { addWalletAddress, removeWalletAddress, addConnectorId } = walletSlice.actions
 export default walletSlice.reducer

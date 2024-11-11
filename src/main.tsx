@@ -25,8 +25,9 @@ createRoot(document.getElementById("root")!).render(
                </ThirdwebProvider>
             </AnimatePresence>
             <ToastContainer
-               style={{ marginTop: 64 }}
+
                position="top-right"
+
                autoClose={4000}
                hideProgressBar={false}
                newestOnTop={false}

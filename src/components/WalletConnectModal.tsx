@@ -2,20 +2,29 @@ import React from "react"
 import ReactDOM from "react-dom"
 import { motion } from "framer-motion"
 import { pop, btnClick } from "../animations"
-import { useConnect } from "wagmi"
+import { addWalletAddress } from "../store/walletSlice"
+import { connectPersonalWallet, connectSmartWallet } from "../store/walletThunk"
+import { useDispatch } from "react-redux"
+import { supportedWallets } from "./header/WalletOption"
+import { AppDispatch } from "../store/store"
 
 interface IWalletConnectModalProps {
    isOpen: boolean
    onClose: () => void
 }
-const imgs: string[] = ["WalletConnect.png", "MetaMask.png"]
 
 const WalletConnectModal: React.FC<IWalletConnectModalProps> = ({ isOpen, onClose }) => {
-   const { connectors, connect } = useConnect()
-
-   const handleConnect = async (connector: any) => {
-      connect({ connector })
-      onClose()
+   const dispatch = useDispatch<AppDispatch>()
+   const handleConnect = async (wallet: any) => {
+      try {
+         onClose()
+         const personalAccount = await dispatch(connectPersonalWallet({ connector: wallet.connector })).unwrap()
+         const smartAccount = await dispatch(connectSmartWallet({ personalAccount })).unwrap()
+         dispatch(addWalletAddress(smartAccount.address))
+         console.log("Wallets connected successfully")
+      } catch (error) {
+         console.error("Failed to connect wallets:", error)
+      }
    }
    if (!isOpen) return null
 
@@ -35,11 +44,11 @@ const WalletConnectModal: React.FC<IWalletConnectModalProps> = ({ isOpen, onClos
                   <h4>Wallet not connected. Continue with </h4>
                </div>
 
-               {connectors.map((connector, index) => (
-                  <button className="w-full" key={connector.id} onClick={() => handleConnect(connector)}>
-                     <motion.h3 {...btnClick} className="flex items-center gap-3 rounded-md px-2 py-1.5 hover:bg-background-primary">
-                        <img className="h-8 w-8 2xl:h-10 2xl:w-10" src={imgs[index]} alt="icon" />
-                        {connector.name}
+               {supportedWallets.map((wallet, index) => (
+                  <button className="w-full" key={index} onClick={() => handleConnect(wallet)}>
+                     <motion.h3 {...btnClick} className="flex items-center gap-3 rounded-md px-3 py-1.5 hover:bg-background-primary">
+                        <img className="h-8 w-8 2xl:h-10 2xl:w-10" src={wallet.image} alt="icon" />
+                        {wallet.name}
                      </motion.h3>
                   </button>
                ))}
