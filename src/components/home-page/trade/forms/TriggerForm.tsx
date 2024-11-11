@@ -13,7 +13,6 @@ import { toast } from "react-toastify"
 import { getContract, prepareContractCall, readContract, sendTransaction } from "thirdweb"
 import { baseSepolia } from "thirdweb/chains"
 import { useReadContract } from "thirdweb/react"
-import { createWallet } from "thirdweb/wallets"
 import { erc20Abi } from "viem"
 import { client } from "../../../../config/thirdweb"
 import { linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
@@ -25,17 +24,17 @@ import AllowanceModal from "../modals/AllowanceModal"
 import CommonAllowanceModal from "../modals/CommonAllowanceModal"
 import CreateMultiTokenKeeperModal from "../modals/CreateMultiTokenKeeperModal"
 import InsufficientBalance from "../modals/InsufficientBalance"
-import LimitModal from "../modals/LimitModal"
 import NetworkChangeModal from "../modals/NetworkChangeModal"
 import TransactionApprovingModal from "../modals/TransactionApprovingModal"
+import TriggerModal from "../modals/LimitModal"
 
-interface ILimitFormProps {
+interface ITriggerFormProps {
    tradeType: string
 }
 
 const defaultApproveAmount = ethers.parseUnits("10000000000000000000000000000000", 18)
 
-const LimitForm: React.FC<ILimitFormProps> = (props) => {
+const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
    const dispatch = useDispatch<AppDispatch>()
 
    const [triggerToken, setTriggerToken] = useState<ITokenType | null>(findTokenBySymbol("BTC"))
@@ -522,7 +521,7 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
                </motion.button>
             )}
          </form>
-         <LimitModal
+         <TriggerModal
             isOpen={isLimitModalOpen}
             onClose={() => setIsLimitModalOpen(false)}
             tradeType={props.tradeType}
@@ -560,4 +559,4 @@ const LimitForm: React.FC<ILimitFormProps> = (props) => {
    )
 }
 
-export default LimitForm
+export default TriggerForm

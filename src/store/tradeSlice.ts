@@ -1,7 +1,7 @@
 // store/slices/tradeSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 
-export type TradeType = "market" | "limit" | "trigger"
+export type TradeType = "market" | "trigger" | "meme"
 export type OrderType = "buy" | "sell"
 
 interface OrderState {
@@ -11,7 +11,7 @@ interface OrderState {
 }
 
 const initialState: OrderState = {
-   selectedTrade: "limit",
+   selectedTrade: "trigger",
    orderType: "buy",
    isOrderPlaced: false,
 }

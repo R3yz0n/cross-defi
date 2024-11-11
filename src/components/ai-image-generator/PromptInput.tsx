@@ -1,9 +1,12 @@
 import axios, { AxiosError } from "axios"
 import { motion } from "framer-motion"
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { FaArrowUp } from "react-icons/fa"
 import { toast } from "react-toastify"
 import { btnClick } from "../../animations"
+import { useSelector } from "react-redux"
+import { RootState } from "../../store/store"
+import WalletConnectModal from "../WalletConnectModal"
 
 interface IPromptInputProps {
    setImageUrl: React.Dispatch<React.SetStateAction<string | null>>
@@ -14,7 +17,8 @@ interface IPromptInputProps {
 }
 const PromptInput: React.FC<IPromptInputProps> = ({ setImageUrl, setInputValue, inputValue, setLoading, loading }) => {
    const textareaRef = useRef<HTMLTextAreaElement>(null)
-
+   const { walletAddress } = useSelector((state: RootState) => state.wallet)
+   const [showWalletConnectModal, setShowWalletConnectModal] = useState<boolean>(false)
    const apiUrl = import.meta.env.VITE_API_URL
 
    const handleInput = () => {
@@ -27,6 +31,17 @@ const PromptInput: React.FC<IPromptInputProps> = ({ setImageUrl, setInputValue, 
 
    const handlePromptSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
+
+      if (!walletAddress) {
+         setShowWalletConnectModal(true)
+         return
+      }
+      if (inputValue.trim() === "") {
+         toast.info("Please enter a prompt.", {
+            position: "top-right",
+         })
+         return
+      }
       setLoading(true)
       try {
          console.log("Input value:", inputValue)
@@ -94,6 +109,7 @@ const PromptInput: React.FC<IPromptInputProps> = ({ setImageUrl, setInputValue, 
             className={`flex h-auto max-h-[200px] w-full resize-none overflow-y-auto rounded-lg border border-gray-900 bg-background-secondary ${loading ? "bg-opacity-75 text-gray-500" : "bg-opacity-90 text-gray-300"} p-3.5 text-gray-300 shadow-md focus:outline-none md:px-5 md:py-4`}
             rows={1}
          />
+         <WalletConnectModal isOpen={showWalletConnectModal} onClose={() => setShowWalletConnectModal(false)} />
       </form>
    )
 }

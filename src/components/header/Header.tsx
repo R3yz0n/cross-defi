@@ -12,6 +12,8 @@ import WalletOperation from "./WalletOperation"
 import { WalletOptions } from "./WalletOption"
 import { RiFolderDownloadLine } from "react-icons/ri"
 import { MdContentCopy } from "react-icons/md"
+import { createPortal } from "react-dom"
+import { IoMdCloseCircleOutline } from "react-icons/io"
 
 interface IHeaderProps {
    onToggleMenu: () => void
@@ -24,7 +26,7 @@ const Header: React.FC<IHeaderProps> = (props) => {
    const { isConnectingPersonalWallet, isConnectingSmartWallet, walletAddress } = useSelector((state: RootState) => state.wallet)
 
    const handleCloseDropDown = () => setShowDropDown(!showDropDown)
-   const handleDepositClick = () => setShowQRCode(!showQRCode) // Show QR code modal when "Deposit" is clicked
+   const handleDepositClick = () => setShowQRCode(!showQRCode)
 
    return (
       <header>
@@ -43,15 +45,15 @@ const Header: React.FC<IHeaderProps> = (props) => {
                   <motion.button
                      {...btnClick}
                      onClick={handleDepositClick}
-                     className="border-1 relative z-50 flex items-center gap-1.5 rounded-md border border-gray-800 bg-background-secondary px-2 py-1 text-13px font-normal text-text-primary shadow-md md:px-5 md:text-base 2xl:px-6 2xl:py-1.5 2xl:text-lg 2xl:font-medium"
+                     className="border-1 relative z-40 flex items-center gap-1.5 rounded-md border border-gray-800 bg-background-secondary px-2 py-1 text-13px font-normal text-text-primary shadow-md md:px-5 md:text-base 2xl:px-6 2xl:py-1.5 2xl:text-lg 2xl:font-medium"
                   >
                      <RiFolderDownloadLine size={20} />
                      Deposit
                   </motion.button>
-                  {walletAddress && showQRCode && <DepositQRCodeModal walletAddress={walletAddress} />}
+                  {walletAddress && showQRCode && <DepositQRCodeModal onClose={() => setShowQRCode(false)} walletAddress={walletAddress} />}
                </div>
             )}
-            <aside className="border-1 relative z-50 rounded-3xl border border-gray-800 bg-background-secondary px-3 py-1 text-13px font-normal text-text-primary shadow-md md:px-5 md:text-base 2xl:px-6 2xl:py-1.5 2xl:text-lg 2xl:font-medium">
+            <aside className="border-1 relative z-40 rounded-3xl border border-gray-800 bg-background-secondary px-3 py-1 text-13px font-normal text-text-primary shadow-md md:px-5 md:text-base 2xl:px-6 2xl:py-1.5 2xl:text-lg 2xl:font-medium">
                <div>
                   {walletAddress ? (
                      <motion.button
@@ -111,9 +113,10 @@ export const formatWalletAddress = (address: string, firstChars: number, lastCha
 
 interface IDepositQRCodeModalProps {
    walletAddress: string
+   onClose: () => void
 }
 
-const DepositQRCodeModal: React.FC<IDepositQRCodeModalProps> = ({ walletAddress }) => {
+const DepositQRCodeModal: React.FC<IDepositQRCodeModalProps> = ({ walletAddress, onClose }) => {
    const [hoverText, setHoverText] = useState<string>(formatWalletAddress(walletAddress, 10, 6))
 
    const handleMouseEnter = () => {
@@ -134,15 +137,19 @@ const DepositQRCodeModal: React.FC<IDepositQRCodeModalProps> = ({ walletAddress 
    }
    const handleMouseLeave = () => setHoverText(formatWalletAddress(walletAddress, 10, 6))
    if (!walletAddress) return null
-   return (
-      <motion.div {...slideTop} className="absolute -right-10 top-10 z-40 md:right-0 2xl:top-14">
-         <div className="z-50 w-56 rounded-lg bg-background-secondary p-6 py-8 text-center shadow-lg md:w-64">
+   return createPortal(
+      <motion.div {...slideTop} className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-70">
+         <div className="relative z-50 w-72 rounded-lg bg-background-secondary p-6 pt-8 text-center shadow-lg 2xl:w-80">
+            <motion.button onClick={onClose} className="absolute right-1 top-1" {...btnClick} type="button">
+               <IoMdCloseCircleOutline size={28} className="cursor-pointer text-red brightness-90 hover:brightness-75" />
+            </motion.button>
+
             <QRCode
                size={256}
+               className="mt-2"
                style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-               className=""
                value={walletAddress}
-               viewBox={`0 0 256 256`}
+               viewBox="0 0 256 256"
             />
             <motion.button
                onClick={handleCopyClick}
@@ -152,10 +159,11 @@ const DepositQRCodeModal: React.FC<IDepositQRCodeModalProps> = ({ walletAddress 
                onMouseLeave={handleMouseLeave}
                className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl px-1 py-1 text-base font-medium text-text-secondary hover:bg-background-primary"
             >
-               <p className="">{hoverText}</p>
+               <p>{hoverText}</p>
                <MdContentCopy className="text-text-primary" size={18} />
             </motion.button>
          </div>
-      </motion.div>
+      </motion.div>,
+      document.getElementById("modal-root") as HTMLElement
    )
 }

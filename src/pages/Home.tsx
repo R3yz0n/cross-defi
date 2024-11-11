@@ -43,10 +43,12 @@ const Home = () => {
       const intervalId = setInterval(() => {
          refetch()
 
-         const linkBalance = ethers.formatUnits(linkBalanceOnWallet?.toString(), 18)
+         if (linkBalanceOnWallet) {
+            const linkBalance = ethers.formatUnits(linkBalanceOnWallet?.toString(), 18)
 
-         if (Number(linkBalance) < 4) {
-            setShowInsufficientLinkBalance(true)
+            if (Number(linkBalance) < 4) {
+               setShowInsufficientLinkBalance(true)
+            }
          }
       }, 2000)
 

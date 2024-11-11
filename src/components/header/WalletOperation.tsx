@@ -5,6 +5,8 @@ import { btnClick, pop } from "../../animations"
 import { useDispatch } from "react-redux"
 import { AppDispatch } from "../../store/store"
 import { removeWalletAddress } from "../../store/walletSlice"
+import { FaRegListAlt } from "react-icons/fa"
+import { RiFileHistoryFill } from "react-icons/ri"
 
 interface IWalletOperation {
    onCloseDropDown: () => void
@@ -26,14 +28,14 @@ const WalletOperation: React.FC<IWalletOperation> = (props) => {
 
          <motion.button onClick={() => props.onCloseDropDown} {...btnClick} type="button">
             <h3 className="flex items-center gap-3 rounded-md px-3.5 py-1.5 hover:bg-background-primary">
-               <IoMdSettings className="text-[1.2em]" />
+               <FaRegListAlt className="text-[1.2em]" />
                Order History
             </h3>
          </motion.button>
 
          <motion.button onClick={() => props.onCloseDropDown} {...btnClick} type="button">
             <h3 className="flex items-center gap-3 rounded-md px-3.5 py-1.5 hover:bg-background-primary">
-               <IoMdSettings className="text-[1.2em]" />
+               <RiFileHistoryFill className="text-[1.2em]" />
                Trade History
             </h3>
          </motion.button>

@@ -9,7 +9,7 @@ import { RootState } from "../../../../store/store"
 
 export const etherscanBaseUrl = import.meta.env.VITE_MODE === "production" ? "https://basescan.org/tx/" : `https://sepolia.basescan.org/tx/`
 
-interface ILimitModalProps {
+interface ITriggerModalProps {
    isOpen: boolean
    onClose: () => void
    onConfirm: () => void
@@ -22,7 +22,7 @@ interface ILimitModalProps {
    tokenSymbol: string
 }
 
-const LimitModal: React.FC<ILimitModalProps> = ({
+const TriggerModal: React.FC<ITriggerModalProps> = ({
    isOpen,
    onClose,
    onConfirm,
@@ -97,4 +97,4 @@ const LimitModal: React.FC<ILimitModalProps> = ({
    )
 }
 
-export default LimitModal
+export default TriggerModal

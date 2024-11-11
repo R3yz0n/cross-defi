@@ -14,14 +14,14 @@ const TradeTabSelector: React.FC = () => {
    }
    return (
       <section className="flex gap-5 px-2 text-text-secondary">
+         <motion.button {...btnClick} onClick={() => handleTabClick("trigger")} className={`${selectedTrade === "trigger" ? "text-yellow" : ""}`}>
+            Trigger
+         </motion.button>
          <motion.button {...btnClick} onClick={() => handleTabClick("market")} className={`${selectedTrade === "market" ? "text-yellow" : ""}`}>
             Market
          </motion.button>
-         <motion.button {...btnClick} onClick={() => handleTabClick("limit")} className={`${selectedTrade === "limit" ? "text-yellow" : ""}`}>
-            Limit
-         </motion.button>
-         <motion.button {...btnClick} onClick={() => handleTabClick("trigger")} className={`${selectedTrade === "trigger" ? "text-yellow" : ""}`}>
-            Trigger
+         <motion.button {...btnClick} onClick={() => handleTabClick("meme")} className={`${selectedTrade === "meme" ? "text-yellow" : ""}`}>
+            Meme
          </motion.button>
       </section>
    )

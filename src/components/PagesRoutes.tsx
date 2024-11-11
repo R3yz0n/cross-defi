@@ -7,7 +7,8 @@ import { FaWallet, FaExchangeAlt, FaChartLine } from "react-icons/fa"
 import { IoMdTimer } from "react-icons/io"
 import { MdOutlineArticle } from "react-icons/md"
 import AIImageGenerator from "../pages/AIImageGenerator"
-import ChatWithAI from "../pages/ChatWithAi"
+import ChatWithAI from "../pages/ChatWithAI"
+import Wallet from "../pages/Wallet"
 
 const PagesRoutes: React.FC = () => {
    return (
@@ -15,7 +16,7 @@ const PagesRoutes: React.FC = () => {
          <Route path="/" element={<Home />} />
          <Route path="/ai-image-generator" element={<AIImageGenerator />} />
          <Route path="/ai-chat" element={<ChatWithAI />} />
-         <Route path="/test" element={<TradingAI />} />
+         <Route path="/wallet" element={<Wallet />} />
          <Route path="/test" element={<TradingAI />} />
          <Route path="/test" element={<TradingAI />} />
          <Route path="/test" element={<TradingAI />} />
