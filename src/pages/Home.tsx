@@ -69,7 +69,7 @@ const Home = () => {
                <Order />
             </div>
          </aside>
-         <InsufficientBalance isOpen={showInsufficientLinkBalance} onClose={() => setShowInsufficientLinkBalance(false)} />
+         {/* <InsufficientBalance isOpen={showInsufficientLinkBalance} onClose={() => setShowInsufficientLinkBalance(false)} /> */}
       </div>
    )
 }

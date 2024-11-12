@@ -15,7 +15,7 @@ import { baseSepolia } from "thirdweb/chains"
 import { useReadContract } from "thirdweb/react"
 import { erc20Abi } from "viem"
 import { client } from "../../../../config/thirdweb"
-import { linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
+import { defaultApproveAmount, linkToken, linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
 import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
 import { AppDispatch, RootState } from "../../../../store/store"
 import { setOrderPlaced } from "../../../../store/tradeSlice"
@@ -27,12 +27,11 @@ import InsufficientBalance from "../modals/InsufficientBalance"
 import NetworkChangeModal from "../modals/NetworkChangeModal"
 import TransactionApprovingModal from "../modals/TransactionApprovingModal"
 import TriggerModal from "../modals/TriggerModal"
+import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeperAbi"
 
 interface ITriggerFormProps {
    tradeType: string
 }
-
-const defaultApproveAmount = ethers.parseUnits("10000000000000000000000000000000", 18)
 
 const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
    const dispatch = useDispatch<AppDispatch>()
@@ -68,7 +67,11 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
    })
 
    /// TODO fix smartAccount
-   const { data: multiTokenKeeper, isLoading } = useReadContract({
+   const {
+      data: multiTokenKeeper,
+      isLoading,
+      refetch: multiTokenRefetch,
+   } = useReadContract({
       contract: multiTokenKeeperFactoryContract,
       method: "function getMultiTokenKeeper(address userAddress) returns (address)",
       params: [smartAccount?.address],
@@ -138,9 +141,10 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
    }
 
    const createAndRegisterMultiTokenKeeper = async () => {
+      debugger
       if (!walletAddress) return
       if (smartAccount) {
-         const balance = await getTokenBalance(linkTokenAddress, walletAddress, "18")
+         const balance = await getTokenBalance(linkToken.address, walletAddress, linkToken.decimal)
 
          if (parseFloat(balance.toString()) < 4) {
             setShowInsufficientBalanceModal(true)
@@ -157,6 +161,7 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
 
          setShowMultiTokenKeeperModal(false)
          setShowMultiTokenKeeperApprovalModal(true)
+
          const transaction = prepareContractCall({
             contract: contract,
             method: "approve",
@@ -168,13 +173,18 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
 
       const contract = getInitializedContract(multiTokenKeeperFactoryAddress, multiTokenKeeperFactoryAbi.abi)
 
+      debugger
       const transaction = prepareContractCall({
          contract: contract,
          method: "createAndRegisterMultiTokenKeeper",
          params: [smartAccount?.address],
       })
 
+      debugger
+
       let { transactionHash: allowanceTransactionHash } = smartAccount && (await sendTransaction({ transaction, account: smartAccount }))
+
+      await multiTokenRefetch()
       // TODO close model
       setShowMultiTokenKeeperApprovalModal(false)
       setShowMultiTokenKeeperModal(false)
@@ -300,7 +310,7 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
             return
          }
 
-         const contract = getInitializedContract(multiTokenKeeper, orderManagerAbi)
+         const contract = getInitializedContract(multiTokenKeeper, multiTokenKeeperAbi.abi)
          const transaction = await prepareContractCall({
             contract: contract,
 
