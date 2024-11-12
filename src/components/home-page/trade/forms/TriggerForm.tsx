@@ -53,7 +53,7 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
 
    // Modal visibility states
    const [showWalletConnectModal, setWalletConnectModal] = useState<boolean>(false)
-   const [showAllowanceModal, setShowAllowanceModal] = useState<boolean>(false)
+   // const [showAllowanceModal, setShowAllowanceModal] = useState<boolean>(false)
    const [showMultiTokenKeeperModal, setShowMultiTokenKeeperModal] = useState<boolean>(false)
    const [showInsufficientBalanceModal, setShowInsufficientBalanceModal] = useState<boolean>(false)
    const [showCommonAllowanceModal, setShowCommonAllowanceModal] = useState<boolean>(false)
@@ -374,9 +374,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
             if (walletAddress && multiTokenKeeper === nullMultiTokenKeeperAddress && Number(allowance) < 4) {
                setShowMultiTokenKeeperModal(true)
             }
-            if (walletAddress && multiTokenKeeper === nullMultiTokenKeeperAddress && !(Number(allowance) > ethers.parseUnits("100000", 18))) {
-               setShowAllowanceModal(true)
-            }
          }
       })
    }, [smartAccount])
@@ -535,12 +532,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
          />
          <WalletConnectModal isOpen={showWalletConnectModal} onClose={() => setWalletConnectModal(false)} />
 
-         <AllowanceModal
-            isOpen={showAllowanceModal}
-            onApprove={handleApproveForMultiTokenKeeper}
-            onClose={() => setShowAllowanceModal(false)}
-            // transactionHash={hash}
-         />
          <CreateMultiTokenKeeperModal
             isOpen={showMultiTokenKeeperModal}
             onApprove={createAndRegisterMultiTokenKeeper}
