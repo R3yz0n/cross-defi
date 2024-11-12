@@ -19,7 +19,6 @@ const RightSideBar: React.FC<IRightSideBarProps> = (props) => {
                onClick={props.onToggleMenu}
             >
                <IoMdClose className="text-xl md:text-2xl 2xl:text-3xl" />
-               {/* <span className="text-lg font-medium 2xl:text-xl"> Menu</span> */}
             </motion.button>
 
             {sidebarItems.map((item) => (

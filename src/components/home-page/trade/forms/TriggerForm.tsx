@@ -26,7 +26,7 @@ import CreateMultiTokenKeeperModal from "../modals/CreateMultiTokenKeeperModal"
 import InsufficientBalance from "../modals/InsufficientBalance"
 import NetworkChangeModal from "../modals/NetworkChangeModal"
 import TransactionApprovingModal from "../modals/TransactionApprovingModal"
-import TriggerModal from "../modals/LimitModal"
+import TriggerModal from "../modals/TriggerModal"
 
 interface ITriggerFormProps {
    tradeType: string

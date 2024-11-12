@@ -3,7 +3,7 @@ import ModalWrapper from "../ModalWrapper"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { btnClick } from "../../../../animations"
-import { etherscanBaseUrl } from "./LimitModal"
+import { etherscanBaseUrl } from "./TriggerModal"
 
 interface ICreateMultiTokenKeeperModal {
    isOpen: boolean

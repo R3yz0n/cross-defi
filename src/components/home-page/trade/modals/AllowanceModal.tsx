@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import ModalWrapper from "../ModalWrapper"
 import { motion } from "framer-motion"
 import { btnClick } from "../../../../animations"
-import { etherscanBaseUrl } from "./LimitModal"
+import { etherscanBaseUrl } from "./TriggerModal"
 import { Link } from "react-router-dom"
 
 interface IAllowanceModal {
