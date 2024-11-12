@@ -29,7 +29,7 @@ const WalletConnectModal: React.FC<IWalletConnectModalProps> = ({ isOpen, onClos
    if (!isOpen) return null
 
    return ReactDOM.createPortal(
-      <motion.section {...pop} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <motion.section {...pop} className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
          <div className="relative w-[85%] rounded-lg bg-background-secondary p-6 shadow-lg sm:w-[424px] md:w-[450px] md:p-7 lg:py-8">
             <motion.button
                {...btnClick}

@@ -107,6 +107,7 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
     * @returns A promise that resolves to the allowance of the spender, formatted with the token's decimals.
     */
    const getTokenAllowance = async (tokenAddress: string, walletAddress: string, spenderAddress: string, decimal: number): string => {
+      if (!walletAddress) return
       try {
          const contract = getInitializedContract(tokenAddress, erc20Abi)
          const allowanceInWei: bigint = await readFromContract(contract, "function allowance(address,address) view returns (uint256)", [
@@ -141,7 +142,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
    }
 
    const createAndRegisterMultiTokenKeeper = async () => {
-      debugger
       if (!walletAddress) return
       if (smartAccount) {
          const balance = await getTokenBalance(linkToken.address, walletAddress, linkToken.decimal)
@@ -154,7 +154,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
 
       const allownceAmount = await getTokenAllowance(linkTokenAddress, walletAddress, multiTokenKeeperFactoryAddress, 18)
       console.log(`allowance Amount`, allownceAmount)
-
       if (parseFloat(allownceAmount.toString()) < 4) {
          const contract = getInitializedContract(linkTokenAddress, erc20Abi)
          // TODO Add new Model tell we are approviing transcation // message i will take care
@@ -173,14 +172,11 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
 
       const contract = getInitializedContract(multiTokenKeeperFactoryAddress, multiTokenKeeperFactoryAbi.abi)
 
-      debugger
       const transaction = prepareContractCall({
          contract: contract,
          method: "createAndRegisterMultiTokenKeeper",
          params: [smartAccount?.address],
       })
-
-      debugger
 
       let { transactionHash: allowanceTransactionHash } = smartAccount && (await sendTransaction({ transaction, account: smartAccount }))
 
@@ -478,7 +474,7 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
                   type="text"
                   id="triggerPrice"
                   className="w-full rounded border border-gray-700 bg-background-secondary p-2 text-xs text-text-primary focus:border-yellow focus:outline-none"
-                  placeholder="Enter target buy price"
+                  placeholder={props.tradeType === "buy" ? "Enter target buy price" : "Enter target sell price"}
                   value={triggerPrice}
                   onChange={(e) => {
                      const value = e.target.value
@@ -498,7 +494,7 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
                   Amount
                   <p className="text-xs font-normal text-yellow">
                      Max: {props.tradeType === "buy" && `${usdtBalance.toFixed(2)} USDT`}
-                     {props.tradeType === "sell" && `${sellTokenBalance} ${selectedToken?.symbol}`}
+                     {props.tradeType === "sell" && `${sellTokenBalance.toFixed(6)} ${selectedToken?.symbol}`}
                   </p>
                </label>
                <input

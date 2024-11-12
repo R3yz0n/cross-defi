@@ -22,28 +22,36 @@ export interface ITokenState {
    personalAccount: Account | null
    smartAccount: Account | null
    connectionError: string | null
-   connectorId: string | null
+   isLoadingHydration: boolean
 }
 
-// Function to load state from localStorage
-const loadStateFromLocalStorage = (): ITokenState => {
-   const walletAddress = localStorage.getItem("walletAddress")
-   const personalAccount = localStorage.getItem("personalAccount")
-   const smartAccount = localStorage.getItem("smartAccount")
-   const connectorId = localStorage.getItem("connectorId")
+// // Function to load state from localStorage
+// const loadStateFromLocalStorage = (): ITokenState => {
+//    const walletAddress = localStorage.getItem("walletAddress")
+//    const personalAccount = localStorage.getItem("personalAccount")
+//    const smartAccount = localStorage.getItem("smartAccount")
+//    const connectorId = localStorage.getItem("connectorId")
 
-   return {
-      walletAddress: walletAddress ? JSON.parse(walletAddress) : null,
-      isConnectingPersonalWallet: false,
-      isConnectingSmartWallet: false,
-      personalAccount: personalAccount ? JSON.parse(personalAccount) : null,
-      smartAccount: smartAccount ? JSON.parse(smartAccount) : null,
-      connectionError: null,
-      connectorId: connectorId ? JSON.parse(connectorId) : null,
-   }
+//    return {
+//       walletAddress: walletAddress ? JSON.parse(walletAddress) : null,
+//       isConnectingPersonalWallet: false,
+//       isConnectingSmartWallet: false,
+//       personalAccount: personalAccount ? JSON.parse(personalAccount) : null,
+//       smartAccount: smartAccount ? JSON.parse(smartAccount) : null,
+//       connectionError: null,
+//       connectorId: connectorId ? JSON.parse(connectorId) : null,
+//    }
+// }
+
+const initialState: ITokenState = {
+   walletAddress: null,
+   isConnectingPersonalWallet: false,
+   isConnectingSmartWallet: false,
+   personalAccount: null,
+   smartAccount: null,
+   connectionError: null,
+   isLoadingHydration: false,
 }
-
-const initialState: ITokenState = loadStateFromLocalStorage()
 
 export const walletSlice = createSlice({
    name: "wallet",
@@ -63,11 +71,8 @@ export const walletSlice = createSlice({
          localStorage.removeItem("walletAddress")
          localStorage.removeItem("personalAccount")
          localStorage.removeItem("smartAccount")
-         localStorage.removeItem("connectorId")
-      },
-      addConnectorId: (state, action: PayloadAction<string>) => {
-         state.connectorId = action.payload
-         localStorage.setItem("connectorId", JSON.stringify(action.payload))
+
+         localStorage.removeItem("walletToken-8ca2b38bb95e11e361cd5c813ffcfcf5")
       },
    },
    extraReducers: (builder) => {
@@ -100,6 +105,7 @@ export const walletSlice = createSlice({
          .addCase(connectSmartWallet.fulfilled, (state, action) => {
             state.smartAccount = action.payload
             state.isConnectingSmartWallet = false
+            state.walletAddress = action.payload.address
 
             // Persist smart account
             localStorage.setItem("walletAddress", JSON.stringify(state.walletAddress))
@@ -113,21 +119,25 @@ export const walletSlice = createSlice({
       builder
          .addCase(reHydrateAccounts.pending, (state) => {
             state.connectionError = null
+            state.isLoadingHydration = true
          })
          .addCase(reHydrateAccounts.fulfilled, (state, action) => {
             state.smartAccount = action.payload.smartAccount
             state.personalAccount = action.payload.personalAccount
             state.isConnectingSmartWallet = false
+            state.isLoadingHydration = false
+            state.walletAddress = action.payload.smartAccount.address
 
             localStorage.setItem("walletAddress", JSON.stringify(state.walletAddress))
             localStorage.setItem("smartAccount", JSON.stringify(state.smartAccount))
          })
          .addCase(reHydrateAccounts.rejected, (state, action) => {
             state.isConnectingSmartWallet = false
+            state.isLoadingHydration = false
             state.connectionError = action.error.message || "Failed to connect smart wallet"
          })
    },
 })
 
-export const { addWalletAddress, removeWalletAddress, addConnectorId } = walletSlice.actions
+export const { addWalletAddress, removeWalletAddress } = walletSlice.actions
 export default walletSlice.reducer
