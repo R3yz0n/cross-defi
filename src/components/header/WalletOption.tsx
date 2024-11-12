@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux"
 
 import { AppDispatch } from "../../store/store"
 import { connectPersonalWallet, connectSmartWallet } from "../../store/walletThunk"
-import { addConnectorId, addWalletAddress } from "../../store/walletSlice"
+import { addWalletAddress } from "../../store/walletSlice"
 
 interface IWalletOption {
    onCloseDropDown: () => void
@@ -18,7 +18,6 @@ export function WalletOptions(props: IWalletOption) {
       props.onCloseDropDown()
 
       try {
-         dispatch(addConnectorId(wallet.connector.id))
          const personalAccount = await dispatch(connectPersonalWallet({ connector: wallet.connector })).unwrap()
 
          const smartAccount = await dispatch(connectSmartWallet({ personalAccount })).unwrap()

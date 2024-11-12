@@ -9,8 +9,11 @@ interface ITransactionApprovingModal {
 
 const TransactionApprovingModal: React.FC<ITransactionApprovingModal> = ({ isOpen, onClose, message }) => {
    return (
-      <ModalWrapper isCloseButtonDisabled={true} onClose={onClose} isOpen={isOpen} title="">
-         <div>{message}</div>
+      <ModalWrapper isCloseButtonDisabled={true} onClose={onClose} isOpen={isOpen} title="Token Approval">
+         <div>
+            We are currently approving your token. Once this approval is completed, it will automatically create a multi-token keeper. This approval
+            is only required one time, and subsequent transactions will proceed smoothly without needing this approval step again.
+         </div>
       </ModalWrapper>
    )
 }

@@ -13,7 +13,7 @@ import { baseSepolia } from "thirdweb/chains"
 import { erc20Abi } from "viem"
 import { client } from "../config/thirdweb"
 import { ethers } from "ethers"
-import { useReadContract } from "thirdweb/react"
+import { useDisconnect, useReadContract } from "thirdweb/react"
 
 const Home = () => {
    const dispatch = useDispatch<AppDispatch>()
@@ -37,8 +37,10 @@ const Home = () => {
    })
 
    useEffect(() => {
-      if (walletAddress) dispatch(reHydrateAccounts())
+      dispatch(reHydrateAccounts())
    }, [])
+
+   // Check the link balance timely
    useEffect(() => {
       const intervalId = setInterval(() => {
          refetch()
@@ -69,7 +71,7 @@ const Home = () => {
                <Order />
             </div>
          </aside>
-         <InsufficientBalance isOpen={showInsufficientLinkBalance} onClose={() => setShowInsufficientLinkBalance(false)} />
+         {/* <InsufficientBalance isOpen={showInsufficientLinkBalance} onClose={() => setShowInsufficientLinkBalance(false)} /> */}
       </div>
    )
 }

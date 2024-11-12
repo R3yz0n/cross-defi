@@ -23,7 +23,7 @@ const Header: React.FC<IHeaderProps> = (props) => {
    const [showDropDown, setShowDropDown] = useState<boolean>(false)
    const [showQRCode, setShowQRCode] = useState<boolean>(false) // State for QR code modal
 
-   const { isConnectingPersonalWallet, isConnectingSmartWallet, walletAddress } = useSelector((state: RootState) => state.wallet)
+   const { isConnectingPersonalWallet, isConnectingSmartWallet, walletAddress, isLoadingHydration } = useSelector((state: RootState) => state.wallet)
 
    const handleCloseDropDown = () => setShowDropDown(!showDropDown)
    const handleDepositClick = () => setShowQRCode(!showQRCode)
@@ -73,7 +73,7 @@ const Header: React.FC<IHeaderProps> = (props) => {
                      >
                         <SiQuantconnect className="text-[1.2em] text-yellow" />
 
-                        <h3>{isConnectingPersonalWallet || isConnectingSmartWallet ? "Connecting" : "Connect"}</h3>
+                        <h3>{isConnectingPersonalWallet || isConnectingSmartWallet || isLoadingHydration ? "Connecting" : "Connect"}</h3>
                      </motion.button>
                   )}
                </div>
@@ -95,7 +95,6 @@ type IWalletProps = {
 }
 
 export function Wallet(props: IWalletProps) {
-   console.log(props.isConnected)
    if (props.isConnected) {
       return <WalletOperation onCloseDropDown={props.onCloseDropDown} />
    }

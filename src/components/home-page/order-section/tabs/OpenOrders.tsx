@@ -13,7 +13,7 @@ import { AppDispatch, RootState } from "../../../../store/store"
 import { setOrderPlaced } from "../../../../store/tradeSlice"
 import { findTokenByAddress, findTokenByAggregator, usdtToken } from "../../../../utils/tokens"
 import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
-import multiTokenKeeper from "../../../../services/blockchain/abis/multiTokenKeeper"
+import multiTokenKeeper from "../../../../services/blockchain/abis/multiTokenKeeperAbi"
 
 const OpenOrders: React.FC = () => {
    const { isOrderPlaced } = useSelector((state: RootState) => state.trade)
