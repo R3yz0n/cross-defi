@@ -1,12 +1,10 @@
 // src/store/slices/walletSlice.ts
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
+import { Account, inAppWallet } from "thirdweb/wallets"
 import { connectPersonalWallet, connectSmartWallet, reHydrateAccounts } from "./walletThunk"
-import { Account, inAppWallet, smartWallet } from "thirdweb/wallets"
-import { baseSepolia } from "thirdweb/chains"
 
 import { createThirdwebClient, ThirdwebClient } from "thirdweb"
-import { managedAccountFactory } from "../config/thirdweb"
 
 export const client: ThirdwebClient = createThirdwebClient({
    clientId: import.meta.env.VITE_THIRD_WEB_CLIENT_ID,
@@ -24,24 +22,6 @@ export interface ITokenState {
    connectionError: string | null
    isLoadingHydration: boolean
 }
-
-// // Function to load state from localStorage
-// const loadStateFromLocalStorage = (): ITokenState => {
-//    const walletAddress = localStorage.getItem("walletAddress")
-//    const personalAccount = localStorage.getItem("personalAccount")
-//    const smartAccount = localStorage.getItem("smartAccount")
-//    const connectorId = localStorage.getItem("connectorId")
-
-//    return {
-//       walletAddress: walletAddress ? JSON.parse(walletAddress) : null,
-//       isConnectingPersonalWallet: false,
-//       isConnectingSmartWallet: false,
-//       personalAccount: personalAccount ? JSON.parse(personalAccount) : null,
-//       smartAccount: smartAccount ? JSON.parse(smartAccount) : null,
-//       connectionError: null,
-//       connectorId: connectorId ? JSON.parse(connectorId) : null,
-//    }
-// }
 
 const initialState: ITokenState = {
    walletAddress: null,

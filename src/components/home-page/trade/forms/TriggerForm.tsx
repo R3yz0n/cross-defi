@@ -15,7 +15,13 @@ import { baseSepolia } from "thirdweb/chains"
 import { useReadContract } from "thirdweb/react"
 import { erc20Abi } from "viem"
 import { client } from "../../../../config/thirdweb"
-import { defaultApproveAmount, linkToken, linkTokenAddress, multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
+import {
+   defaultApproveAmount,
+   linkToken,
+   linkTokenAddress,
+   multiTokenKeeperFactoryAddress,
+   nullMultiTokenKeeperAddress,
+} from "../../../../constants/blockchain"
 import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
 import { AppDispatch, RootState } from "../../../../store/store"
 import { setOrderPlaced } from "../../../../store/tradeSlice"
@@ -128,14 +134,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
 
       try {
          const allownceAmount = await getTokenAllowance(linkTokenAddress, smartAccount.address, multiTokenKeeperFactoryAddress, 18)
-
-         // const amountToApprove = ethers.parseUnits("10000000000000000000000000000000", 18)
-         // await write({
-         //    abi: erc20Abi,
-         //    address: linkTokenAddress,
-         //    functionName: "approve",
-         //    args: [multiTokenKeeperFactoryAddress, amountToApprove],
-         // })
       } catch (error) {
          console.error("Error during approval:", error)
       }
@@ -373,14 +371,10 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
    useEffect(() => {
       getTokenAllowance(linkTokenAddress, walletAddress, multiTokenKeeperFactoryAddress, 18).then((allowance) => {
          if (allowance !== undefined && multiTokenKeeper) {
-            if (walletAddress && multiTokenKeeper === "0x0000000000000000000000000000000000000000" && Number(allowance) < 4) {
+            if (walletAddress && multiTokenKeeper === nullMultiTokenKeeperAddress && Number(allowance) < 4) {
                setShowMultiTokenKeeperModal(true)
             }
-            if (
-               walletAddress &&
-               multiTokenKeeper === "0x0000000000000000000000000000000000000000" &&
-               !(Number(allowance) > ethers.parseUnits("100000", 18))
-            ) {
+            if (walletAddress && multiTokenKeeper === nullMultiTokenKeeperAddress && !(Number(allowance) > ethers.parseUnits("100000", 18))) {
                setShowAllowanceModal(true)
             }
          }
@@ -441,7 +435,7 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
 
    useEffect(() => {
       if (linkBalanceOnWallet) {
-         if (multiTokenKeeper === "0x0000000000000000000000000000000000000000") {
+         if (multiTokenKeeper === nullMultiTokenKeeperAddress) {
             const linkBalance = ethers.formatUnits(linkBalanceOnWallet?.toString(), 18)
 
             if (Number(linkBalance) < 4) {
@@ -537,9 +531,10 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
             amount={amount}
             transactionHash={buyOrSellHash ? buyOrSellHash : ""}
             tokenSymbol={selectedToken?.symbol}
+            onConfirm={() => {}}
          />
          <WalletConnectModal isOpen={showWalletConnectModal} onClose={() => setWalletConnectModal(false)} />
-         {/* transactionHash?: string | null // Add transactionHash prop */}
+
          <AllowanceModal
             isOpen={showAllowanceModal}
             onApprove={handleApproveForMultiTokenKeeper}

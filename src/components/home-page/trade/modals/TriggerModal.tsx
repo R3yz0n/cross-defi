@@ -19,7 +19,7 @@ interface ITriggerModalProps {
    triggerPrice: string
    amount: string
    transactionHash?: string
-   tokenSymbol: string
+   tokenSymbol?: string
 }
 
 const TriggerModal: React.FC<ITriggerModalProps> = ({

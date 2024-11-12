@@ -1,19 +1,18 @@
 import { useEffect, useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
 import TradingChart from "../components/home-page/chart/TradingChart"
 import Order from "../components/home-page/order-section/Order"
 import Trade from "../components/home-page/trade/Trade"
 import { linkTokenAddress } from "../constants/blockchain"
-import { useDispatch, useSelector } from "react-redux"
 import { AppDispatch, RootState } from "../store/store"
-import InsufficientBalance from "../components/home-page/trade/modals/InsufficientBalance"
 
-import { reHydrateAccounts } from "../store/walletThunk"
+import { ethers } from "ethers"
 import { getContract } from "thirdweb"
 import { baseSepolia } from "thirdweb/chains"
+import { useReadContract } from "thirdweb/react"
 import { erc20Abi } from "viem"
 import { client } from "../config/thirdweb"
-import { ethers } from "ethers"
-import { useDisconnect, useReadContract } from "thirdweb/react"
+import { reHydrateAccounts } from "../store/walletThunk"
 
 const Home = () => {
    const dispatch = useDispatch<AppDispatch>()
