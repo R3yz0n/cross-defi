@@ -47,7 +47,8 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
    const [sellTokenBalance, setSellTokenBalance] = useState<number>(0)
    const [triggerPrice, setTriggerPrice] = useState<string>("")
    const [amount, setAmount] = useState<string>("")
-   const { walletAddress } = useSelector((state: RootState) => state.wallet)
+   const { walletAddress, isLoadingHydration, isConnectingPersonalWallet, isConnectingSmartWallet } = useSelector((state: RootState) => state.wallet)
+   const genralWalletLoading = isLoadingHydration || isConnectingPersonalWallet || isConnectingSmartWallet
    const [buyOrSellHash, setbuyOrSellHash] = useState<null | string>(null)
 
    // Modal visibility states
@@ -74,11 +75,12 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
    const {
       data: multiTokenKeeper,
       isLoading,
+      isFetching,
       refetch: multiTokenRefetch,
    } = useReadContract({
       contract: multiTokenKeeperFactoryContract,
       method: "function getMultiTokenKeeper(address userAddress) returns (address)",
-      params: [smartAccount?.address],
+      params: [walletAddress!!],
    })
 
    const { data: linkBalanceOnWallet, isLoading: linkBalanceIsLoading } = useReadContract({
@@ -89,8 +91,9 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
          abi: erc20Abi as any,
       }),
       method: "function balanceOf(address walletAddress) returns (uint256)",
-      params: [smartAccount?.address],
+      params: [walletAddress!!],
    })
+   // console.log(linkBalanceOnWallet)
 
    // Fetch USDT balance functions
    const fetchUsdtBalance = async () => {
@@ -110,8 +113,7 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
     * @param decimal - The decimal places for formatting the allowance.
     * @returns A promise that resolves to the allowance of the spender, formatted with the token's decimals.
     */
-   const getTokenAllowance = async (tokenAddress: string, walletAddress: string, spenderAddress: string, decimal: number): string => {
-      if (!walletAddress) return
+   const getTokenAllowance = async (tokenAddress: string, walletAddress: string, spenderAddress: string, decimal: number): Promise<string> => {
       try {
          const contract = getInitializedContract(tokenAddress, erc20Abi)
          const allowanceInWei: bigint = await readFromContract(contract, "function allowance(address,address) view returns (uint256)", [
@@ -216,8 +218,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
          await fetchUsdtBalance()
          // dispatch(setOrderPlaced(true))
       } else if (props.tradeType === "sell") {
-         console.log(sellTokenBalance)
-         debugger
          if (sellTokenBalance === 0) {
             toast.error("Insufficient " + selectedToken?.symbol + " balance")
             return
@@ -367,17 +367,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
    }
 
    useEffect(() => {
-      getTokenAllowance(linkTokenAddress, walletAddress, multiTokenKeeperFactoryAddress, 18).then((allowance) => {
-         if (allowance !== undefined && multiTokenKeeper) {
-            if (walletAddress && multiTokenKeeper === nullMultiTokenKeeperAddress && Number(allowance) < 4) {
-               setShowMultiTokenKeeperModal(true)
-            }
-         }
-      })
-   }, [smartAccount])
-
-   useEffect(() => {
-      console.log("walletAddress", walletAddress)
       if (walletAddress) {
          fetchUsdtBalance()
          setTriggerPrice("")
@@ -442,7 +431,20 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
             }
          }
       }
-   }, [multiTokenKeeper, linkBalanceOnWallet])
+   }, [multiTokenKeeper, linkBalanceOnWallet, walletAddress])
+
+   // useEffect(() => {
+   //    if (walletAddress && !isLoadingHydration && !isFetching && !isLoading) {
+   //       getTokenAllowance(linkTokenAddress, walletAddress, multiTokenKeeperFactoryAddress, 18).then((allowance) => {
+   //          if (allowance !== undefined && multiTokenKeeper) {
+   //             if (multiTokenKeeper === nullMultiTokenKeeperAddress && Number(allowance) < 4) {
+   //                debugger
+   //                setShowMultiTokenKeeperModal(true)
+   //             }
+   //          }
+   //       })
+   //    }
+   // }, [smartAccount, walletAddress, multiTokenKeeper])
 
    return (
       <Fragment>
@@ -514,7 +516,7 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
                   type="button"
                   className={`mx-auto block w-full cursor-pointer rounded ${props.tradeType === "buy" ? "bg-green" : "bg-red"} py-1.5 text-base font-semibold tracking-wide text-gray-800 transition-all duration-200 hover:opacity-80`}
                >
-                  Connect wallet
+                  {genralWalletLoading ? "Connecting..." : "Connect Wallet"}
                </motion.button>
             )}
          </form>

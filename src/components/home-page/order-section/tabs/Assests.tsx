@@ -25,7 +25,6 @@ const Assests: React.FC = () => {
                <tbody className="overflow-y-auto">
                   {assets.map((asset, index) => (
                      <tr key={index} className="whitespace-nowrap text-xs text-text-primary sm:text-sm 2xl:text-15px">
-                        {/* Asset with icon */}
                         <td className="px-2 py-3">
                            <div className="flex items-center gap-2">
                               <img className="h-5 w-5 sm:h-6 sm:w-6" src={findTokenBySymbol(asset?.symbol)?.logo_url} alt={asset.symbol} />
@@ -33,16 +32,12 @@ const Assests: React.FC = () => {
                            </div>
                         </td>
 
-                        {/* Equity with icon */}
                         <td className="px-2 py-3">{asset?.equity === null ? <>N/A</> : <>{asset.equity.toLocaleString()}</>}</td>
 
-                        {/* Available */}
                         <td className="px-2 py-3"> {asset?.available.toLocaleString()}</td>
 
-                        {/* In use */}
                         <td className="px-2 py-3">{asset?.inuse?.toLocaleString()}</td>
 
-                        {/* Action */}
                         <td className="px-2 py-3">Action</td>
                      </tr>
                   ))}
@@ -67,35 +62,5 @@ const assets: IAssests[] = [
       equity: 5.0,
       available: 3.0,
       inuse: 2.0,
-   },
-   {
-      symbol: "ADA",
-      equity: null,
-      available: 1000,
-      inuse: 500,
-   },
-   {
-      symbol: "BNB",
-      equity: 10.0,
-      available: 6.0,
-      inuse: 4.0,
-   },
-   {
-      symbol: "SOL",
-      equity: 20.0,
-      available: 12.0,
-      inuse: 8.0,
-   },
-   {
-      symbol: "XRP",
-      equity: null,
-      available: 500,
-      inuse: 300,
-   },
-   {
-      symbol: "USDT",
-      equity: null,
-      available: 12345678,
-      inuse: 300,
    },
 ]

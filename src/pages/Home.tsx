@@ -1,60 +1,8 @@
-import { useEffect, useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
 import TradingChart from "../components/home-page/chart/TradingChart"
 import Order from "../components/home-page/order-section/Order"
 import Trade from "../components/home-page/trade/Trade"
-import { linkTokenAddress } from "../constants/blockchain"
-import { AppDispatch, RootState } from "../store/store"
-
-import { ethers } from "ethers"
-import { getContract } from "thirdweb"
-import { baseSepolia } from "thirdweb/chains"
-import { useReadContract } from "thirdweb/react"
-import { erc20Abi } from "viem"
-import { client } from "../config/thirdweb"
-import { reHydrateAccounts } from "../store/walletThunk"
 
 const Home = () => {
-   const dispatch = useDispatch<AppDispatch>()
-   const { walletAddress } = useSelector((state: RootState) => state.wallet)
-   const [showInsufficientLinkBalance, setShowInsufficientLinkBalance] = useState<boolean>(false)
-   const { smartAccount } = useSelector((state: RootState) => state.wallet)
-
-   const {
-      data: linkBalanceOnWallet,
-      isLoading: linkBalanceIsLoading,
-      refetch,
-   } = useReadContract({
-      contract: getContract({
-         client,
-         address: linkTokenAddress,
-         chain: baseSepolia,
-         abi: erc20Abi as any,
-      }),
-      method: "function balanceOf(address walletAddress) returns (uint256)",
-      params: [smartAccount?.address],
-   })
-
-   useEffect(() => {
-      dispatch(reHydrateAccounts())
-   }, [])
-
-   // Check the link balance timely
-   useEffect(() => {
-      const intervalId = setInterval(() => {
-         refetch()
-
-         if (linkBalanceOnWallet) {
-            const linkBalance = ethers.formatUnits(linkBalanceOnWallet?.toString(), 18)
-
-            if (Number(linkBalance) < 4) {
-               setShowInsufficientLinkBalance(true)
-            }
-         }
-      }, 2000)
-
-      return () => clearInterval(intervalId)
-   }, [walletAddress, dispatch])
    return (
       <div className="w-full">
          <aside className="grid w-full grid-cols-1 lg:grid-cols-4">
@@ -70,7 +18,6 @@ const Home = () => {
                <Order />
             </div>
          </aside>
-         {/* <InsufficientBalance isOpen={showInsufficientLinkBalance} onClose={() => setShowInsufficientLinkBalance(false)} /> */}
       </div>
    )
 }

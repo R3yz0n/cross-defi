@@ -68,7 +68,9 @@ const Header: React.FC<IHeaderProps> = (props) => {
                      <motion.button
                         {...btnClick}
                         type="button"
-                        onClick={() => setShowDropDown(!showDropDown)}
+                        onClick={() => {
+                           if (!isLoadingHydration) setShowDropDown(!showDropDown)
+                        }}
                         className="flex items-center gap-2 rounded-md"
                      >
                         <SiQuantconnect className="text-[1.2em] text-yellow" />

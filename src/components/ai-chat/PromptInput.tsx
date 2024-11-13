@@ -19,6 +19,7 @@ const PromptInput: React.FC<IPromptInputProps> = ({ setResponse, setInputValue, 
    const { walletAddress } = useSelector((state: RootState) => state.wallet)
    const [showWalletConnectModal, setShowWalletConnectModal] = useState<boolean>(false)
    const textareaRef = useRef<HTMLTextAreaElement>(null)
+   const { isLoadingHydration } = useSelector((state: RootState) => state.wallet)
    const apiUrl = import.meta.env.VITE_API_URL
    const handleInput = () => {
       if (textareaRef.current) {
@@ -104,7 +105,7 @@ const PromptInput: React.FC<IPromptInputProps> = ({ setResponse, setInputValue, 
             disabled={loading}
             {...btnClick}
             type="submit"
-            className={`absolute bottom-3 right-3 flex h-7 w-7 items-center justify-center rounded-full ${loading ? "bg-gray-700 text-gray-400" : "cursor-pointer bg-gray-600 text-text-primary hover:bg-gray-500"} p-2 text-2xl shadow-md md:h-8 md:w-8`}
+            className={`absolute bottom-3 right-3 flex h-7 w-7 items-center justify-center rounded-full ${loading || isLoadingHydration ? "bg-gray-700 text-gray-400" : "cursor-pointer bg-gray-600 text-text-primary hover:bg-gray-500"} p-2 text-2xl shadow-md md:h-8 md:w-8`}
          >
             <FaArrowUp />
          </motion.button>
@@ -116,8 +117,8 @@ const PromptInput: React.FC<IPromptInputProps> = ({ setResponse, setInputValue, 
             onChange={(e) => setInputValue(e.target.value)}
             onInput={handleInput}
             placeholder={"Enter your prompt here..."}
-            disabled={loading}
-            className={`flex h-auto max-h-[200px] w-full resize-none overflow-y-auto rounded-lg border border-gray-900 bg-background-secondary ${loading ? "bg-opacity-75 text-gray-500" : "bg-opacity-90 text-gray-300"} p-3.5 text-gray-300 shadow-md focus:outline-none md:px-5 md:py-4`}
+            disabled={loading || isLoadingHydration}
+            className={`flex h-auto max-h-[200px] w-full resize-none overflow-y-auto rounded-lg border border-gray-900 bg-background-secondary ${loading || isLoadingHydration ? "bg-opacity-75 text-gray-500" : "bg-opacity-90 text-gray-300"} p-3.5 text-gray-300 shadow-md focus:outline-none md:px-5 md:py-4`}
             rows={1}
          />
          <WalletConnectModal isOpen={showWalletConnectModal} onClose={() => setShowWalletConnectModal(false)} />

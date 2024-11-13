@@ -1,13 +1,13 @@
 import { ethers } from "ethers"
 import { motion } from "framer-motion"
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { getContract, readContract } from "thirdweb"
 import { baseSepolia } from "thirdweb/chains"
 import { useReadContract } from "thirdweb/react"
 import { btnClick } from "../../../../animations"
 import { client } from "../../../../config/thirdweb"
-import { multiTokenKeeperFactoryAddress } from "../../../../constants/blockchain"
+import { multiTokenKeeperFactoryAddress, nullMultiTokenKeeperAddress } from "../../../../constants/blockchain"
 import multiTokenKeeperFactoryAbi from "../../../../services/blockchain/abis/multiTokenKeeperFactoryAbi"
 import { AppDispatch, RootState } from "../../../../store/store"
 import { setOrderPlaced } from "../../../../store/tradeSlice"
@@ -20,6 +20,7 @@ const OpenOrders: React.FC = () => {
    const dispatch = useDispatch<AppDispatch>()
    const { walletAddress } = useSelector((state: RootState) => state.wallet)
    const [orders, setOrders] = React.useState<any[]>([])
+   const [loading, setLoading] = useState<boolean>(false)
 
    const { smartAccount } = useSelector((state: RootState) => state.wallet)
 
@@ -38,9 +39,11 @@ const OpenOrders: React.FC = () => {
 
    const fetchActiveOrders = async () => {
       if (!walletAddress || !multiKeeperContractAddress) return
+      // debugger
 
       // internalType: "contract OrderManager",
       try {
+         setLoading(true)
          const multiKeeperContract = await getContract({
             client,
             address: multiKeeperContractAddress,
@@ -68,7 +71,9 @@ const OpenOrders: React.FC = () => {
          })
 
          setOrders(activeOrders)
+         setLoading(false)
       } catch (error) {
+         setLoading(false)
          console.error("Error fetching active orders:", error)
       }
    }
@@ -82,11 +87,18 @@ const OpenOrders: React.FC = () => {
    const handleCancelOrder = async (orderId: BigInt) => {}
 
    useEffect(() => {
-      fetchActiveOrders()
-      if (isOrderPlaced) {
+      console.log(multiKeeperContractAddress)
+      if (walletAddress && multiKeeperContractAddress !== nullMultiTokenKeeperAddress && multiKeeperContractAddress !== undefined) {
+         fetchActiveOrders()
+      }
+      if (
+         isOrderPlaced &&
+         walletAddress &&
+         (multiKeeperContractAddress !== nullMultiTokenKeeperAddress || multiKeeperContractAddress !== undefined)
+      ) {
          refetchActiveOrders()
       }
-   }, [dispatch, isOrderPlaced, walletAddress])
+   }, [dispatch, isOrderPlaced, walletAddress, multiKeeperContractAddress])
 
    return (
       <section className="min-w-full max-w-[98%] overflow-y-scroll px-2 md:w-full md:px-0 md:pl-5">
@@ -107,61 +119,64 @@ const OpenOrders: React.FC = () => {
                   </tr>
                </thead>
                <tbody className="overflow-y-auto">
-                  {orders.map((openOrder, index) => (
-                     <tr key={index} className="whitespace-nowrap text-xs text-text-primary sm:text-sm 2xl:text-15px">
-                        {/* Trigger Token with icon */}
-                        <td className="px-2 py-3">
-                           <div className="flex items-center gap-2">
-                              <img
-                                 className="h-5 w-5 sm:h-6 sm:w-6"
-                                 src={findTokenByAggregator(openOrder?.priceFeed)?.logo_url}
-                                 alt={openOrder.triggerToken}
-                              />
-                              {findTokenByAggregator(openOrder?.priceFeed)?.name}
-                           </div>
-                        </td>
+                  {loading ? (
+                     <OpenOrdersSkeletons count={7} />
+                  ) : (
+                     orders.map((openOrder, index) => (
+                        <tr key={index} className="whitespace-nowrap text-xs text-text-primary sm:text-sm 2xl:text-15px">
+                           <td className="px-2 py-3">
+                              <div className="flex items-center gap-2">
+                                 <img
+                                    className="h-5 w-5 sm:h-6 sm:w-6"
+                                    src={findTokenByAggregator(openOrder?.priceFeed)?.logo_url}
+                                    alt={openOrder.triggerToken}
+                                 />
+                                 {findTokenByAggregator(openOrder?.priceFeed)?.name}
+                              </div>
+                           </td>
 
-                        {/* Token to Buy with icon */}
-                        <td className="px-2 py-3">
-                           <div className="flex items-center gap-2">
-                              <img
-                                 className="h-5 w-5 sm:h-6 sm:w-6"
-                                 src={findTokenByAddress(openOrder?.token)?.logo_url}
-                                 alt={openOrder.tokenToBuy}
-                              />
-                              {findTokenByAddress(openOrder?.token)?.name}
-                           </div>
-                        </td>
+                           {/* Token to Buy with icon */}
+                           <td className="px-2 py-3">
+                              <div className="flex items-center gap-2">
+                                 <img
+                                    className="h-5 w-5 sm:h-6 sm:w-6"
+                                    src={findTokenByAddress(openOrder?.token)?.logo_url}
+                                    alt={openOrder.tokenToBuy}
+                                 />
+                                 {findTokenByAddress(openOrder?.token)?.name}
+                              </div>
+                           </td>
 
-                        {/* Side */}
-                        <td className="px-2 py-3">
-                           {openOrder?.orderType == 0 ? <span className="text-green">Buy</span> : <span className="text-red">Sell</span>}
-                        </td>
+                           {/* Side */}
+                           <td className="px-2 py-3">
+                              {openOrder?.orderType == 0 ? <span className="text-green">Buy</span> : <span className="text-red">Sell</span>}
+                           </td>
 
-                        {/* Avg. Fill */}
-                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">
-                           ${ethers.formatUnits(openOrder?.priceThreshold.toString(), 8).toString()}
-                        </td>
+                           {/* Avg. Fill */}
+                           <td className="px-2 py-3 text-[0.9em] text-text-secondary">
+                              ${ethers.formatUnits(openOrder?.priceThreshold.toString(), 8).toString()}
+                           </td>
 
-                        {/* Order Amount */}
-                        <td className="px-2 py-3 text-[0.9em] text-text-secondary">
-                           {openOrder?.orderType == 0
-                              ? `${ethers.formatUnits(openOrder?.amount.toString(), usdtToken.decimal)} USDT`
-                              : `${ethers.formatUnits(openOrder?.amount.toString(), findTokenByAddress(openOrder?.token)?.decimal)} ${findTokenByAddress(openOrder?.token)?.symbol}`}
-                        </td>
+                           {/* Order Amount */}
+                           <td className="px-2 py-3 text-[0.9em] text-text-secondary">
+                              {openOrder?.orderType == 0
+                                 ? `${ethers.formatUnits(openOrder?.amount.toString(), usdtToken.decimal)} USDT`
+                                 : `${ethers.formatUnits(openOrder?.amount.toString(), findTokenByAddress(openOrder?.token)?.decimal)} ${findTokenByAddress(openOrder?.token)?.symbol}`}
+                           </td>
 
-                        {/* Cancel button */}
-                        <td className="px-2 py-3">
-                           <motion.button
-                              {...btnClick}
-                              onClick={() => handleCancelOrder(openOrder?.id)}
-                              className="text-red-500 rounded bg-background-secondary px-3 py-0.5 text-[0.9em] shadow-md hover:bg-red"
-                           >
-                              Cancel
-                           </motion.button>
-                        </td>
-                     </tr>
-                  ))}
+                           {/* Cancel button */}
+                           <td className="px-2 py-3">
+                              <motion.button
+                                 {...btnClick}
+                                 onClick={() => handleCancelOrder(openOrder?.id)}
+                                 className="text-red-500 rounded bg-background-secondary px-3 py-0.5 text-[0.9em] shadow-md hover:bg-red"
+                              >
+                                 Cancel
+                              </motion.button>
+                           </td>
+                        </tr>
+                     ))
+                  )}
                </tbody>
             </table>
          </div>
@@ -170,3 +185,47 @@ const OpenOrders: React.FC = () => {
 }
 
 export default OpenOrders
+
+interface IOpenOrdersSkeletonsProps {
+   count: number
+}
+
+const OpenOrdersSkeletons: React.FC<IOpenOrdersSkeletonsProps> = ({ count }) => {
+   return (
+      <>
+         {[...Array(count)].map((_, index) => (
+            <tr key={index}>
+               <td className="px-2 py-3">
+                  <div className="flex items-center gap-2">
+                     <div className="h-5 w-5 animate-pulse rounded-full bg-background-secondary brightness-200 sm:h-6 sm:w-6"></div>
+                     <div className="h-4 w-16 animate-pulse rounded bg-background-secondary brightness-200"></div>
+                  </div>
+               </td>
+
+               <td className="px-2 py-3">
+                  <div className="flex items-center gap-2">
+                     <div className="h-5 w-5 animate-pulse rounded-full bg-background-secondary brightness-200 sm:h-6 sm:w-6"></div>
+                     <div className="h-4 w-16 animate-pulse rounded bg-background-secondary brightness-200"></div>
+                  </div>
+               </td>
+
+               <td className="px-2 py-3">
+                  <div className="h-4 w-8 animate-pulse rounded bg-background-secondary brightness-200"></div>
+               </td>
+
+               <td className="px-2 py-3">
+                  <div className="h-4 w-12 animate-pulse rounded bg-background-secondary brightness-200"></div>
+               </td>
+
+               <td className="px-2 py-3">
+                  <div className="h-4 w-16 animate-pulse rounded bg-background-secondary brightness-200"></div>
+               </td>
+
+               <td className="px-2 py-3">
+                  <motion.div className="h-5 w-12 animate-pulse rounded bg-background-secondary brightness-200"></motion.div>
+               </td>
+            </tr>
+         ))}
+      </>
+   )
+}
