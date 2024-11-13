@@ -4,13 +4,12 @@ import ModalWrapper from "../ModalWrapper"
 interface InsufficientBalance {
    isOpen: boolean
    onClose: () => void
-   transactionHash?: string | null // Add transactionHash prop
 }
 
-const InsufficientBalance: React.FC<InsufficientBalance> = ({ isOpen, onClose, transactionHash }) => {
+const InsufficientBalance: React.FC<InsufficientBalance> = ({ isOpen, onClose }) => {
    return (
-      <ModalWrapper onClose={onClose} isOpen={isOpen} title="Insufficient Balance">
-         <div className="text-sm text-text-secondary">
+      <ModalWrapper onClose={onClose} isOpen={isOpen} isCloseButtonDisabled={true} title="Insufficient Balance">
+         <div className="text-sm text-text-primary">
             <p>
                It appears that you don’t have enough Chainlink tokens (LINK) to proceed. You need to deposit 3 LINK tokens to create your MultiToken
                Keeper.

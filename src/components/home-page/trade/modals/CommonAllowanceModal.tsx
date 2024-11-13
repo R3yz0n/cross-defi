@@ -21,7 +21,7 @@ const CommonAllowanceModal: React.FC<ICommonAllowanceModal> = ({ isOpen, transac
 
    return (
       <ModalWrapper onClose={onClose} isCloseButtonDisabled={true} isOpen={isOpen} title="Grant Allowance" isConfirmButtonDisabled={isButtonDisabled}>
-         <div>
+         <div className="text-text-primary">
             Approving this transaction will allow the necessary permissions to proceed. You can review the transaction hash for details once the
             transaction is completed.
             {transactionHash && (

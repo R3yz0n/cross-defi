@@ -22,18 +22,17 @@ import {
    multiTokenKeeperFactoryAddress,
    nullMultiTokenKeeperAddress,
 } from "../../../../constants/blockchain"
+import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeperAbi"
 import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
 import { AppDispatch, RootState } from "../../../../store/store"
 import { setOrderPlaced } from "../../../../store/tradeSlice"
 import WalletConnectModal from "../../../WalletConnectModal"
-import AllowanceModal from "../modals/AllowanceModal"
 import CommonAllowanceModal from "../modals/CommonAllowanceModal"
 import CreateMultiTokenKeeperModal from "../modals/CreateMultiTokenKeeperModal"
 import InsufficientBalance from "../modals/InsufficientBalance"
 import NetworkChangeModal from "../modals/NetworkChangeModal"
 import TransactionApprovingModal from "../modals/TransactionApprovingModal"
 import TriggerModal from "../modals/TriggerModal"
-import multiTokenKeeperAbi from "../../../../services/blockchain/abis/multiTokenKeeperAbi"
 
 interface ITriggerFormProps {
    tradeType: string
@@ -53,7 +52,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
 
    // Modal visibility states
    const [showWalletConnectModal, setWalletConnectModal] = useState<boolean>(false)
-   // const [showAllowanceModal, setShowAllowanceModal] = useState<boolean>(false)
    const [showMultiTokenKeeperModal, setShowMultiTokenKeeperModal] = useState<boolean>(false)
    const [showInsufficientBalanceModal, setShowInsufficientBalanceModal] = useState<boolean>(false)
    const [showCommonAllowanceModal, setShowCommonAllowanceModal] = useState<boolean>(false)
@@ -433,12 +431,14 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
    useEffect(() => {
       if (linkBalanceOnWallet) {
          if (multiTokenKeeper === nullMultiTokenKeeperAddress) {
-            const linkBalance = ethers.formatUnits(linkBalanceOnWallet?.toString(), 18)
+            if (multiTokenKeeper === nullMultiTokenKeeperAddress) {
+               const linkBalance = ethers.formatUnits(linkBalanceOnWallet?.toString(), 18)
 
-            if (Number(linkBalance) < 4) {
-               setShowInsufficientBalanceModal(true)
-            } else {
-               setShowMultiTokenKeeperModal(true)
+               if (Number(linkBalance) < 4) {
+                  setShowInsufficientBalanceModal(true)
+               } else {
+                  setShowMultiTokenKeeperModal(true)
+               }
             }
          }
       }
@@ -536,17 +536,12 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
             isOpen={showMultiTokenKeeperModal}
             onApprove={createAndRegisterMultiTokenKeeper}
             onClose={() => setShowMultiTokenKeeperModal(false)}
-            // transactionHash={hash}
          />
          <InsufficientBalance isOpen={showInsufficientBalanceModal} onClose={() => setShowInsufficientBalanceModal(false)} />
 
          <CommonAllowanceModal isOpen={showCommonAllowanceModal} onClose={() => setShowCommonAllowanceModal(false)} />
          <NetworkChangeModal isOpen={showNetworkChangeModal} onClose={() => setShowNetworkChangeModal(false)} />
-         <TransactionApprovingModal
-            isOpen={showMultiTokenKeeperApprovalModal}
-            onClose={() => setShowMultiTokenKeeperApprovalModal(false)}
-            message="We are approving transcation"
-         />
+         <TransactionApprovingModal isOpen={showMultiTokenKeeperApprovalModal} onClose={() => setShowMultiTokenKeeperApprovalModal(false)} />
       </Fragment>
    )
 }
