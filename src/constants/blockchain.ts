@@ -11,8 +11,8 @@ export const defaultApproveAmount = ethers.parseUnits("1000000000000000000000000
 
 export const nullMultiTokenKeeperAddress = import.meta.env.VITE_NULL_MULTITOKENKEEPER_ADDRESS
 
-export const stringifiedJsonToken = import.meta.env.VITE_LINK_TOKEN
+export const stringifiedLinkToken = import.meta.env.VITE_LINK_TOKEN
 
-export const linkToken: LinkToken = JSON.parse(stringifiedJsonToken)
+export const linkToken: LinkToken = JSON.parse(stringifiedLinkToken)
 
 export const linkTokenAddress: string = linkToken.address

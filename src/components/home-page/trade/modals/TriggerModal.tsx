@@ -7,7 +7,7 @@ import { btnClick } from "../../../../animations"
 import { useSelector } from "react-redux"
 import { RootState } from "../../../../store/store"
 
-export const etherscanBaseUrl = import.meta.env.VITE_MODE === "production" ? "https://basescan.org/tx/" : `https://sepolia.basescan.org/tx/`
+export const etherscanBaseUrl = import.meta.env.MODE === "production" ? "https://basescan.org/tx/" : `https://sepolia.basescan.org/tx/`
 
 interface ITriggerModalProps {
    isOpen: boolean

@@ -26,7 +26,7 @@ const App: React.FC = () => {
          abi: erc20Abi as any,
       }),
       method: "function balanceOf(address walletAddress) returns (uint256)",
-      params: [smartAccount?.address],
+      params: [smartAccount?.address!!],
    })
 
    useEffect(() => {
