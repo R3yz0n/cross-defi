@@ -412,7 +412,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
       const tokenBalanceInWei: string = (
          await readFromContract(contract, "function balanceOf(address) view returns (uint256)", [walletAddress])
       ).toString()
-      console.log(tokenBalanceInWei)
 
       return ethers.formatUnits(tokenBalanceInWei, 18)
    }

@@ -14,6 +14,7 @@ import { setOrderPlaced } from "../../../../store/tradeSlice"
 import { findTokenByAddress, findTokenByAggregator, usdtToken } from "../../../../utils/tokens"
 import { orderManagerAbi } from "../../../../services/blockchain/abis/orderManagerAbi"
 import multiTokenKeeper from "../../../../services/blockchain/abis/multiTokenKeeperAbi"
+import OrderCancellationModal from "../../trade/modals/OrderCancellationModal"
 
 const OpenOrders: React.FC = () => {
    const { isOrderPlaced } = useSelector((state: RootState) => state.trade)
@@ -21,8 +22,11 @@ const OpenOrders: React.FC = () => {
    const { walletAddress } = useSelector((state: RootState) => state.wallet)
    const [orders, setOrders] = React.useState<any[]>([])
    const [loading, setLoading] = useState<boolean>(false)
-
+   const [showCancellationModal, setShowCancellationModal] = useState<boolean>(false)
    const { smartAccount } = useSelector((state: RootState) => state.wallet)
+   const [orderIds, setOrderIds] = useState<number[]>([])
+   const [orderId, setOrderId] = useState<number | null>(null)
+   const [singleOrMultipleCancellation, setSingleOrMultipleCancellation] = useState<"single" | "multiple" | undefined>(undefined)
 
    const multiTokenKeeperFactoryContract = getContract({
       client,
@@ -83,11 +87,26 @@ const OpenOrders: React.FC = () => {
       dispatch(setOrderPlaced(false))
    }
 
-   // Cancel Order with the id
-   const handleCancelOrder = async (orderId: BigInt) => {}
+   const handleCancelSingleOrder = async () => {
+      console.log(orderId)
+      console.log("single order")
+   }
+
+   const handleCancelMultipleOrder = async () => {
+      console.log(orderIds)
+   }
+
+   const handleInputChange = (orderId: number) => {
+      setOrderIds((prevOrderIds) => {
+         if (prevOrderIds.includes(orderId)) {
+            return prevOrderIds.filter((id) => id !== orderId)
+         } else {
+            return [...prevOrderIds, orderId]
+         }
+      })
+   }
 
    useEffect(() => {
-      console.log(multiKeeperContractAddress)
       if (walletAddress && multiKeeperContractAddress !== nullMultiTokenKeeperAddress && multiKeeperContractAddress !== undefined) {
          fetchActiveOrders()
       }
@@ -112,7 +131,14 @@ const OpenOrders: React.FC = () => {
                      <th className="w-1/6 px-2 py-3">Trigger Price</th>
                      <th className="w-1/6 px-2 py-3">Order Amount</th>
                      <th className="w-[5%] px-2 py-3">
-                        <motion.button {...btnClick} className="text-yellow hover:text-red">
+                        <motion.button
+                           onClick={() => {
+                              setShowCancellationModal(true)
+                              setSingleOrMultipleCancellation("multiple")
+                           }}
+                           {...btnClick}
+                           className="text-yellow hover:text-red"
+                        >
                            Cancel all
                         </motion.button>
                      </th>
@@ -165,11 +191,21 @@ const OpenOrders: React.FC = () => {
                            </td>
 
                            {/* Cancel button */}
-                           <td className="px-2 py-3">
+                           <td className="flex items-center gap-2 px-2 py-3">
+                              <input
+                                 type="checkbox"
+                                 checked={orderIds.includes(openOrder?.id)}
+                                 onChange={() => handleInputChange(openOrder?.id)}
+                                 className="accent-yellow"
+                              />
                               <motion.button
                                  {...btnClick}
-                                 onClick={() => handleCancelOrder(openOrder?.id)}
-                                 className="text-red-500 rounded bg-background-secondary px-3 py-0.5 text-[0.9em] shadow-md hover:bg-red"
+                                 onClick={() => {
+                                    setOrderId(openOrder?.id)
+                                    setShowCancellationModal(true)
+                                    setSingleOrMultipleCancellation("single")
+                                 }}
+                                 className="text-red-500 rounded bg-background-secondary px-3 py-0.5 text-[0.8em] shadow-md hover:bg-red"
                               >
                                  Cancel
                               </motion.button>
@@ -180,6 +216,12 @@ const OpenOrders: React.FC = () => {
                </tbody>
             </table>
          </div>
+         <OrderCancellationModal
+            message={`${singleOrMultipleCancellation === "single" ? "You want to cancel this order because you cannot revert it." : "You want to cancel all of the selected order because you cannot revert it."}`}
+            isOpen={showCancellationModal}
+            onConfirm={singleOrMultipleCancellation === "single" ? handleCancelSingleOrder : handleCancelMultipleOrder}
+            onClose={() => setShowCancellationModal(false)}
+         />
       </section>
    )
 }

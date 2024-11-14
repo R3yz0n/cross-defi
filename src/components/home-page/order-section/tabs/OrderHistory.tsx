@@ -120,57 +120,55 @@ const OrderHistory: React.FC = () => {
                      <OpenOrdersSkeletons count={7} />
                   ) : (
                      orders.map((orderHistory, index) => (
-                        <>
-                           <tr key={index} className="whitespace-nowrap text-xs text-text-primary sm:text-sm 2xl:text-15px">
-                              <td className="px-2 py-3">
-                                 <div className="flex items-center gap-2">
-                                    <img
-                                       className="h-5 w-5 sm:h-6 sm:w-6"
-                                       src={findTokenByAggregator(orderHistory?.priceFeed)?.logo_url}
-                                       alt={orderHistory.triggerToken}
-                                    />
-                                    {findTokenByAggregator(orderHistory?.priceFeed)?.name}
-                                 </div>
-                              </td>
+                        <tr key={index} className="whitespace-nowrap text-xs text-text-primary sm:text-sm 2xl:text-15px">
+                           <td className="px-2 py-3">
+                              <div className="flex items-center gap-2">
+                                 <img
+                                    className="h-5 w-5 sm:h-6 sm:w-6"
+                                    src={findTokenByAggregator(orderHistory?.priceFeed)?.logo_url}
+                                    alt={orderHistory.triggerToken}
+                                 />
+                                 {findTokenByAggregator(orderHistory?.priceFeed)?.name}
+                              </div>
+                           </td>
 
-                              {/* Token to Buy with icon */}
-                              <td className="px-2 py-3">
-                                 <div className="flex items-center gap-2">
-                                    <img
-                                       className="h-5 w-5 sm:h-6 sm:w-6"
-                                       src={findTokenByAddress(orderHistory?.token)?.logo_url}
-                                       alt={orderHistory.tokenToBuy}
-                                    />
-                                    {findTokenByAddress(orderHistory?.token)?.name}
-                                 </div>
-                              </td>
+                           {/* Token to Buy with icon */}
+                           <td className="px-2 py-3">
+                              <div className="flex items-center gap-2">
+                                 <img
+                                    className="h-5 w-5 sm:h-6 sm:w-6"
+                                    src={findTokenByAddress(orderHistory?.token)?.logo_url}
+                                    alt={orderHistory.tokenToBuy}
+                                 />
+                                 {findTokenByAddress(orderHistory?.token)?.name}
+                              </div>
+                           </td>
 
-                              {/* Side */}
-                              <td className="px-2 py-3">
-                                 {orderHistory?.orderType == 0 ? <span className="text-green">Buy</span> : <span className="text-red">Sell</span>}
-                              </td>
+                           {/* Side */}
+                           <td className="px-2 py-3">
+                              {orderHistory?.orderType == 0 ? <span className="text-green">Buy</span> : <span className="text-red">Sell</span>}
+                           </td>
 
-                              {/* Avg. Fill */}
-                              <td className="px-2 py-3 text-[0.9em] text-text-secondary">
-                                 ${ethers.formatUnits(orderHistory?.priceThreshold.toString(), 8).toString()}
-                              </td>
+                           {/* Avg. Fill */}
+                           <td className="px-2 py-3 text-[0.9em] text-text-secondary">
+                              ${ethers.formatUnits(orderHistory?.priceThreshold.toString(), 8).toString()}
+                           </td>
 
-                              {/* Order Amount */}
-                              <td className="px-2 py-3 text-[0.9em] text-text-secondary">
-                                 {orderHistory?.orderType == 0
-                                    ? `${ethers.formatUnits(orderHistory?.amount.toString(), usdtToken.decimal)} USDT`
-                                    : `${ethers.formatUnits(orderHistory?.amount.toString(), findTokenByAddress(orderHistory?.token)?.decimal)} ${findTokenByAddress(orderHistory?.token)?.symbol}`}
-                              </td>
+                           {/* Order Amount */}
+                           <td className="px-2 py-3 text-[0.9em] text-text-secondary">
+                              {orderHistory?.orderType == 0
+                                 ? `${ethers.formatUnits(orderHistory?.amount.toString(), usdtToken.decimal)} USDT`
+                                 : `${ethers.formatUnits(orderHistory?.amount.toString(), findTokenByAddress(orderHistory?.token)?.decimal)} ${findTokenByAddress(orderHistory?.token)?.symbol}`}
+                           </td>
 
-                              {/* filled or cancell status */}
-                              <td className="px-2 py-3 text-[0.8em]">
-                                 {true && <span className="rounded-sm bg-green bg-opacity-10 px-2 py-1 text-green">Filled</span>}
-                                 {orderHistory?.status === "cancelled" && (
-                                    <span className="rounded-sm bg-red bg-opacity-10 px-2 py-1 text-red">Cancelled</span>
-                                 )}
-                              </td>
-                           </tr>
-                        </>
+                           {/* filled or cancell status */}
+                           <td className="px-2 py-3 text-[0.8em]">
+                              {true && <span className="rounded-sm bg-green bg-opacity-10 px-2 py-1 text-green">Filled</span>}
+                              {orderHistory?.status === "cancelled" && (
+                                 <span className="rounded-sm bg-red bg-opacity-10 px-2 py-1 text-red">Cancelled</span>
+                              )}
+                           </td>
+                        </tr>
                      ))
                   )}
                </tbody>
