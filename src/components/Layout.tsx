@@ -20,7 +20,9 @@ const Layout: React.FC = () => {
          <section className="w-full grid-cols-2 md:px-1 lg:px-0 xl:border-l-8 xl:border-l-black">
             <Header onToggleMenu={toggleMenu} showMenu={showMenu} />
 
-            <PagesRoutes />
+            <div className="overflow-hidden">
+               <PagesRoutes />
+            </div>
          </section>
       </React.Fragment>
    )
