@@ -68,5 +68,5 @@ export const usdtToken: ITokenType = {
 
 // Replace 'your_client_id_here' with your actual Thirdweb client ID
 export const client = createThirdwebClient({
-   clientId: "8ca2b38bb95e11e361cd5c813ffcfcf5",
+   clientId: import.meta.env.VITE_THIRD_WEB_CLIENT_ID,
 })

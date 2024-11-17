@@ -2,10 +2,6 @@ import { Tooltip as ReactTooltip } from "react-tooltip"
 
 import "react-tooltip/dist/react-tooltip.css"
 
-// type IToolTipProps = {
-//   title: string;
-// };
-
 const ToolTip = () => {
    return (
       <div>

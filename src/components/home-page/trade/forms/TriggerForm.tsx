@@ -71,19 +71,13 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
       abi: multiTokenKeeperFactoryAbi.abi as any,
    })
 
-   /// TODO fix smartAccount
-   const {
-      data: multiTokenKeeper,
-      isLoading,
-      isFetching,
-      refetch: multiTokenRefetch,
-   } = useReadContract({
+   const { data: multiTokenKeeper, refetch: multiTokenRefetch } = useReadContract({
       contract: multiTokenKeeperFactoryContract,
       method: "function getMultiTokenKeeper(address userAddress) returns (address)",
       params: [walletAddress!!],
    })
 
-   const { data: linkBalanceOnWallet, isLoading: linkBalanceIsLoading } = useReadContract({
+   const { data: linkBalanceOnWallet } = useReadContract({
       contract: getContract({
          client,
          address: linkTokenAddress,
@@ -93,7 +87,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
       method: "function balanceOf(address walletAddress) returns (uint256)",
       params: [walletAddress!!],
    })
-   // console.log(linkBalanceOnWallet)
 
    // Fetch USDT balance functions
    const fetchUsdtBalance = async () => {
@@ -127,18 +120,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
       }
    }
 
-   const handleApproveForMultiTokenKeeper = async () => {
-      if (!walletAddress) return
-      let allowance = await getTokenAllowance(linkTokenAddress, walletAddress, multiTokenKeeperFactoryAddress, 18)
-      if (allowance === null || allowance === undefined || allowance > ethers.parseUnits("100000", 18)) return
-
-      try {
-         const allownceAmount = await getTokenAllowance(linkTokenAddress, smartAccount.address, multiTokenKeeperFactoryAddress, 18)
-      } catch (error) {
-         console.error("Error during approval:", error)
-      }
-   }
-
    const createAndRegisterMultiTokenKeeper = async () => {
       if (!walletAddress) return
       if (smartAccount) {
@@ -154,7 +135,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
       console.log(`allowance Amount`, allownceAmount)
       if (parseFloat(allownceAmount.toString()) < 4) {
          const contract = getInitializedContract(linkTokenAddress, erc20Abi)
-         // TODO Add new Model tell we are approviing transcation // message i will take care
 
          setShowMultiTokenKeeperModal(false)
          setShowMultiTokenKeeperApprovalModal(true)
@@ -196,8 +176,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
       if (smartAccount) {
          let { transactionHash: allowanceTransactionHash } = await sendTransaction({ transaction, account: smartAccount })
       }
-
-      // return data
    }
 
    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -216,7 +194,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
          await buy()
          dispatch(setOrderPlaced(true))
          await fetchUsdtBalance()
-         // dispatch(setOrderPlaced(true))
       } else if (props.tradeType === "sell") {
          if (sellTokenBalance === 0) {
             toast.error("Insufficient " + selectedToken?.symbol + " balance")
@@ -239,7 +216,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
       const allowance = await getTokenAllowance(selectedToken?.address, walletAddress, multiTokenKeeper, 18)
 
       if (Number(allowance) < ethers.parseUnits(amount.toString(), usdtToken.decimal)) {
-         //TODO bujena
          setShowCommonAllowanceModal(true)
          await approve(selectedToken?.address, multiTokenKeeper, defaultApproveAmount)
          setShowCommonAllowanceModal(false)
@@ -431,19 +407,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
          }
       }
    }, [multiTokenKeeper, linkBalanceOnWallet, walletAddress])
-
-   // useEffect(() => {
-   //    if (walletAddress && !isLoadingHydration && !isFetching && !isLoading) {
-   //       getTokenAllowance(linkTokenAddress, walletAddress, multiTokenKeeperFactoryAddress, 18).then((allowance) => {
-   //          if (allowance !== undefined && multiTokenKeeper) {
-   //             if (multiTokenKeeper === nullMultiTokenKeeperAddress && Number(allowance) < 4) {
-   //                debugger
-   //                setShowMultiTokenKeeperModal(true)
-   //             }
-   //          }
-   //       })
-   //    }
-   // }, [smartAccount, walletAddress, multiTokenKeeper])
 
    return (
       <Fragment>
