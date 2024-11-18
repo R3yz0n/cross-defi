@@ -25,7 +25,7 @@ const ChatWithAI: React.FC = () => {
       a: ({ node, ...props }) => <a className="text-blue-500 hover:underline" {...props} />,
       ul: ({ node, ...props }) => <ul className="my-6 list-inside list-disc" {...props} />,
       ol: ({ node, ...props }) => <ol className="my-6 list-inside list-decimal" {...props} />,
-      li: ({ node, ...props }) => <li className="my- pl-3 md:pl-5" {...props} />,
+      li: ({ node, ...props }) => <li className="my-3 pl-3 text-[0.95em] md:pl-5" {...props} />,
       strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
       em: ({ node, ...props }) => <em className="italic" {...props} />,
       blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-gray-300 pl-4 italic text-gray-600" {...props} />,
