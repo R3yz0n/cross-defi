@@ -12,10 +12,12 @@ interface IPromptInputProps {
    setResponse: React.Dispatch<React.SetStateAction<string | null>>
    setInputValue: React.Dispatch<React.SetStateAction<string>>
    setLoading: React.Dispatch<React.SetStateAction<boolean>>
+   setPrompt: React.Dispatch<React.SetStateAction<{ msg: string; isAvailable: boolean }>>
+
    inputValue: string
    loading: boolean
 }
-const PromptInput: React.FC<IPromptInputProps> = ({ setResponse, setInputValue, inputValue, setLoading, loading }) => {
+const PromptInput: React.FC<IPromptInputProps> = ({ setResponse, setInputValue, inputValue, setLoading, loading, setPrompt }) => {
    const { walletAddress } = useSelector((state: RootState) => state.wallet)
    const [showWalletConnectModal, setShowWalletConnectModal] = useState<boolean>(false)
    const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -41,6 +43,8 @@ const PromptInput: React.FC<IPromptInputProps> = ({ setResponse, setInputValue, 
          })
          return
       }
+
+      setPrompt({ isAvailable: true, msg: inputValue })
       setLoading(true)
       setResponse("")
 
