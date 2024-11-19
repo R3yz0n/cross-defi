@@ -47,11 +47,11 @@ export const walletSlice = createSlice({
          state.personalAccount = null
          state.smartAccount = null
 
-         // Clear wallet data from localStorage
          localStorage.removeItem("walletAddress")
          localStorage.removeItem("personalAccount")
          localStorage.removeItem("smartAccount")
 
+         // VITE_THIRD_WEB_MANAGED_ACCOUNT_FACTORY
          localStorage.removeItem("walletToken-8ca2b38bb95e11e361cd5c813ffcfcf5")
       },
    },

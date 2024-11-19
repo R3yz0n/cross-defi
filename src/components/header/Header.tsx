@@ -117,7 +117,7 @@ interface IDepositQRCodeModalProps {
    onClose: () => void
 }
 
-const DepositQRCodeModal: React.FC<IDepositQRCodeModalProps> = ({ walletAddress, onClose }) => {
+export const DepositQRCodeModal: React.FC<IDepositQRCodeModalProps> = ({ walletAddress, onClose }) => {
    const [hoverText, setHoverText] = useState<string>(formatWalletAddress(walletAddress, 10, 6))
 
    const handleMouseEnter = () => {

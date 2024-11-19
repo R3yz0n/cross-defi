@@ -1,9 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit"
-import { inAppWallet, InAppWalletAuth, smartWallet, Wallet } from "thirdweb/wallets"
 import { baseSepolia } from "thirdweb/chains"
-import { client } from "../utils/tokens"
-import { multiTokenKeeperFactoryAddress } from "../constants/blockchain"
+import { inAppWallet, smartWallet, Wallet } from "thirdweb/wallets"
 import { managedAccountFactory } from "../config/thirdweb"
+import { client } from "../utils/tokens"
 
 export const personalWallet: Wallet = inAppWallet()
 
@@ -48,12 +47,13 @@ export const connectSmartWallet = createAsyncThunk("wallet/connectSmartWallet", 
 // Thunk for connecting to the smart wallet
 export const reHydrateAccounts = createAsyncThunk("wallet/rehydration", async () => {
    const personalAccount = await personalWallet.autoConnect({ client, chain: baseSepolia })
+   console.log(personalAccount)
 
    const Swallet = smartWallet({
       chain: baseSepolia,
       factoryAddress: managedAccountFactory,
       gasless: true,
-      clientId: import.meta.env.VITE_THIRD_WEB_CLIENT_ID,
+      clientId: import.meta.env.fVITE_THIRD_WEB_CLIENT_ID,
    })
 
    const smartAccount = await Swallet.connect({
@@ -61,6 +61,5 @@ export const reHydrateAccounts = createAsyncThunk("wallet/rehydration", async ()
       client,
       personalAccount,
    })
-
    return { personalAccount, smartAccount }
 })

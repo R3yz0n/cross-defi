@@ -33,6 +33,7 @@ import InsufficientBalance from "../modals/InsufficientBalance"
 import NetworkChangeModal from "../modals/NetworkChangeModal"
 import TransactionApprovingModal from "../modals/TransactionApprovingModal"
 import TriggerModal from "../modals/TriggerModal"
+import { DepositQRCodeModal } from "../../../header/Header"
 
 interface ITriggerFormProps {
    tradeType: string
@@ -53,6 +54,7 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
 
    // Modal visibility states
    const [showWalletConnectModal, setWalletConnectModal] = useState<boolean>(false)
+   const [showQRModal, setShowQRModal] = useState<boolean>(false)
    const [showMultiTokenKeeperModal, setShowMultiTokenKeeperModal] = useState<boolean>(false)
    const [showInsufficientBalanceModal, setShowInsufficientBalanceModal] = useState<boolean>(false)
    const [showCommonAllowanceModal, setShowCommonAllowanceModal] = useState<boolean>(false)
@@ -87,7 +89,7 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
       method: "function balanceOf(address walletAddress) returns (uint256)",
       params: [walletAddress!!],
    })
-
+   console.log(linkBalanceOnWallet)
    // Fetch USDT balance functions
    const fetchUsdtBalance = async () => {
       if (walletAddress && smartAccount) {
@@ -121,6 +123,7 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
    }
 
    const createAndRegisterMultiTokenKeeper = async () => {
+      console.log("createAndRegisterMultiTokenKeeper")
       if (!walletAddress) return
       if (smartAccount) {
          const balance = await getTokenBalance(linkToken.address, walletAddress, linkToken.decimal)
@@ -155,6 +158,8 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
          method: "createAndRegisterMultiTokenKeeper",
          params: [smartAccount?.address],
       })
+
+      debugger
 
       let { transactionHash: allowanceTransactionHash } = smartAccount && (await sendTransaction({ transaction, account: smartAccount }))
 
@@ -192,14 +197,19 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
          }
 
          await buy()
-         dispatch(setOrderPlaced(true))
+            .then(() => dispatch(setOrderPlaced(true)))
+            .catch(() => dispatch(setOrderPlaced(true)))
+
          await fetchUsdtBalance()
       } else if (props.tradeType === "sell") {
          if (sellTokenBalance === 0) {
             toast.error("Insufficient " + selectedToken?.symbol + " balance")
             return
          }
-         await sell()
+
+         await buy()
+            .then(() => dispatch(setOrderPlaced(true)))
+            .catch(() => dispatch(setOrderPlaced(true)))
          dispatch(setOrderPlaced(true))
          await fetchSellTokenBalance()
       }
@@ -341,7 +351,6 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
          }
       }
    }
-
    useEffect(() => {
       if (walletAddress) {
          fetchUsdtBalance()
@@ -393,16 +402,17 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
    }
 
    useEffect(() => {
-      if (linkBalanceOnWallet) {
-         if (multiTokenKeeper === nullMultiTokenKeeperAddress) {
-            if (multiTokenKeeper === nullMultiTokenKeeperAddress) {
-               const linkBalance = ethers.formatUnits(linkBalanceOnWallet?.toString(), 18)
+      if (linkBalanceOnWallet !== undefined) {
+         console.log(linkBalanceOnWallet)
 
-               if (Number(linkBalance) < 4) {
-                  setShowInsufficientBalanceModal(true)
-               } else {
-                  setShowMultiTokenKeeperModal(true)
-               }
+         if (multiTokenKeeper === nullMultiTokenKeeperAddress) {
+            const linkBalance = ethers.formatUnits(linkBalanceOnWallet?.toString(), 18)
+
+            if (Number(linkBalance) < 4) {
+               setShowInsufficientBalanceModal(true)
+            } else {
+               setShowQRModal(false)
+               setShowMultiTokenKeeperModal(true)
             }
          }
       }
@@ -501,11 +511,20 @@ const TriggerForm: React.FC<ITriggerFormProps> = (props) => {
             onApprove={createAndRegisterMultiTokenKeeper}
             onClose={() => setShowMultiTokenKeeperModal(false)}
          />
-         <InsufficientBalance isOpen={showInsufficientBalanceModal} onClose={() => setShowInsufficientBalanceModal(false)} />
+         <InsufficientBalance
+            onDeposit={() => {
+               setShowInsufficientBalanceModal(false)
+               setShowQRModal(true)
+            }}
+            isOpen={showInsufficientBalanceModal}
+            onClose={() => setShowInsufficientBalanceModal(false)}
+         />
 
          <CommonAllowanceModal isOpen={showCommonAllowanceModal} onClose={() => setShowCommonAllowanceModal(false)} />
          <NetworkChangeModal isOpen={showNetworkChangeModal} onClose={() => setShowNetworkChangeModal(false)} />
          <TransactionApprovingModal isOpen={showMultiTokenKeeperApprovalModal} onClose={() => setShowMultiTokenKeeperApprovalModal(false)} />
+
+         {walletAddress && showQRModal && <DepositQRCodeModal onClose={() => setShowQRModal(false)} walletAddress={walletAddress} />}
       </Fragment>
    )
 }

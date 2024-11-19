@@ -62,11 +62,10 @@ export const usdtToken: ITokenType = {
    price_usd: 1.0,
    price_increase_24h_percent: 0.0,
    logo_url: "https://cryptologos.cc/logos/tether-usdt-logo.png",
-   address: "0xe7A527BD98566FDc99EA72bf16c6cc4eFe3606a0",
+   address: import.meta.env.VITE_USDT_TOKEN_ADDRESS,
    decimal: 18,
 }
 
-// Replace 'your_client_id_here' with your actual Thirdweb client ID
 export const client = createThirdwebClient({
    clientId: import.meta.env.VITE_THIRD_WEB_CLIENT_ID,
 })
