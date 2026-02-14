@@ -17,7 +17,7 @@ const App: React.FC = () => {
    const { walletAddress } = useSelector((state: RootState) => state.wallet)
    const [showInsufficientLinkBalance, setShowInsufficientLinkBalance] = useState<boolean>(false)
    const { smartAccount } = useSelector((state: RootState) => state.wallet)
-
+   console.log('welcome')
    const { data: linkBalanceOnWallet, refetch } = useReadContract({
       contract: getContract({
          client,
